@@ -1,0 +1,73 @@
+cod;descr;fatorCusto;seqApresent;origem
+5200201001;Salários e Ordenados                                   ;A;1;c
+5200504024;Administração de Serviços - RH                         ;A;2;c
+5200201002;Horas Extras                                           ;A;3;i
+5200201003;Aviso Prévio                                           ;A;4;c
+5200202002;Prêmios e Gratificações a Empregados                   ;A;5;i
+5200203001;Provisão de Férias                                     ;A;6;c
+5200203002;Encargos Sobre Provisão de Férias                      ;A;7;c
+5200204001;Provisão para 13° Salário                              ;A;8;c
+5200204002;Encargos Sobre Provisão para 13° Salário               ;A;9;c
+5200205001;INSS Empregador                                        ;A;10;c
+5200205002;FGTS                                                   ;A;11;c
+5200206003;Pró-Labore                                             ;A;12;c
+5200206050;INSS sobre honorário                                   ;A;13;c
+5200207001;Indenizações                                           ;A;14;i
+5200207002;Causas Trabalhistas                                    ;A;15;i
+5200208007;Bolsa Auxílio                                          ;A;16;c
+5200208001;Assistência Médica, Hospitalar e Odontol               ;B;17;c
+5200208002;Medicamentos                                           ;B;18;i
+5200208003;Seguro de Vida                                         ;B;19;c
+5200208004;PAT - Programa de Alimentação ao Trabalh               ;B;20;c
+5200208008;Programa Qualidade Vida (RH & Você em Eq               ;B;21;i
+5200208009;Vale Transporte                                        ;B;22;c
+5200502008;Transporte de Pessoal                                  ;B;23;i
+5200208006;Cursos e Treinamentos                                  ;C;24;t
+5200501001;Alugueis e Condomínios                                 ;D;25;c
+5200501002;Benfeitorias em Imóveis de Terceiros                   ;D;26;i
+5200501003;Manutenção e Conservação Predial                       ;D;27;i
+5200502001;Energia Elétrica                                       ;D;28;i
+5200502002;Água e Esgoto                                          ;D;29;i
+5200502007;Higiene e Limpeza                                      ;D;30;i
+5200502009;Seguros                                                ;D;31;i
+5200503004;Copa e Cozinha                                         ;D;32;i
+5200504021;Paisagismo e Jardinagem                                ;D;33;i
+5200505002;Imposto Predial e Territorial Urbano - IPTU            ;D;34;i
+5200502003;Comunicações (Telefone, Assinaturas digi               ;E;35;i
+5200503001;Viagens e Representações                               ;F;36;i
+5200502004;Correios e Malotes                                     ;G;37;i
+5200502005;Reproduções e Encadernações                            ;G;38;i
+5200503002;Material de Escritório                                 ;G;39;i
+5200503003;Material Auxiliar e de Consumo                         ;G;40;i
+5200503005;Condução, Lanches e Refeições                          ;G;41;i
+5200504019;Fretes, Carretos e Courrier                            ;G;42;i
+5200504001;Auditoria                                              ;H;43;i
+5200504002;Assessoria e Consultoria                               ;H;44;i
+5200504003;Contábeis                                              ;H;45;i
+5200504004;Advocatícios                                           ;H;46;i
+5200504005;Recrutamento, Seleção e Cessão de Mão-de               ;H;47;i
+5200504006;Segurança e Vigilância                                 ;H;48;i
+5200504010;Manutenção e Reparos de Máquinas e Equip               ;H;49;i
+5200504007;Desenvolvimento de Softwares                           ;I;50;i
+5200504020;Manutenção de Softwares/Licenças                       ;I;51;t
+5200209001;Despesas Admissionais                                  ;J;52;i
+5200209002;Seconci                                                ;J;53;i
+5200503006;Revistas e Publicações                                 ;J;54;i
+5200503007;Donativos e Contribuições                              ;J;55;i
+5200503008;Legais e Cartoriais                                    ;J;56;i
+5200503009;Imobilizado de Pequeno Valor                           ;J;57;i
+5200503011;Uniformes e Acessórios                                 ;J;58;i
+5200503013;Assinatura Anual de Livros, Jornais e Re               ;J;59;i
+5200503016;Taxas e Contribuições a Entidades de Cla               ;J;60;i
+5200504008;Locação de Equipamentos                                ;J;61;i
+5200504009;Locação de Veículos                                    ;J;62;i
+5200504012;Buffet e Eventos                                       ;J;63;i
+5200504014;Vídeo, Foto e Som (Multi Mídia)                        ;J;64;i
+5200504016;Traduções, Criação e Revisões de Textos                ;J;65;i
+5200504017;Agenciamento de Publicações                            ;J;66;i
+5200504018;Gestão de Arquivos e Digitalizações                    ;J;67;i
+5200505004;Contribuição Sindical                                  ;J;68;i
+5300202001;Multas Sobre Tributos                                  ;J;69;i
+5300202002;Multas Diversas                                        ;J;70;i
+5200410004;Marketing Institucional                                ;K;71;i
+5200901001;Depreciação(custo/desp)                                ;L;72;c

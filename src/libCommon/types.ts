@@ -1,0 +1,1 @@
+export interface IGenericObject extends Record<string, any> { } // trazer outros para cá @!!!!!!

@@ -1,0 +1,23 @@
+# valores monitorados: dev, devCompiled, tst, prd
+NEXT_PUBLIC_AMB='xxx'
+
+# para "mode_auth" use "azure" (integração com AD) ou qualquer outro valor para autenticação normal por usuário e senha
+NEXT_PUBLIC_DEPLOY_CONFIG={ "front_end": true, "back_end": true, "domain": "", "app_url": "http://localhost:3008", "api_url": "*/api", "mode_auth": "azure" }
+
+SITE_DATABASE_APP='mongodb+srv://xxx'
+SITE_INTERFACE_SAP_REALIZADO_CONFIG={ "url": "http://xxx", "auth": { "user": "xxx" , "pass": "xxx" } }
+
+
+# outras variáveis que podem ser iguais em vários ambientes
+SITE_SESSION_USER={ "psw": "E7773B18CA9E74E5CF9C542DC2192E7773B18CA9E74E5CF9C542" }
+SITE_EMAIL_CONFIG={ "host": "smtp.gmail.com", "port": 465, "secure": true, "auth": { "user": "cydag.suporte@gmail.com", "pass": "tqgoezgdljevxnsm", "name": "Cydag Suporte" } }
+NEXT_PUBLIC_MSAL_CONFIG={ "client_id": "xxx", "authority": "https://xxx" }
+
+# identificação do tipo de tecnologia do host (valores monitorados: localhost, vercel, azure)
+SITE_PLATAFORM='localhost'
+
+# use para bloquear o sistema em um deploy
+# NEXT_PUBLIC_BLOCK_MSG='Manutenção em andamento, previsão de liberação as 20 hrs'
+
+# outras variáveis
+NEXT_PUBLIC_NIVEL_LOG={ "api":0, "db":0, "email":0, "test":0, "commom":0 }
