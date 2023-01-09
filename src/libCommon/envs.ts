@@ -1,4 +1,4 @@
-import { csd } from './dbg';
+import { csd, dbgError } from './dbg';
 import { CheckProps, CtrlRecursion, OnClient, PrimitivesType, StrLeft } from './util';
 
 const _ctrlRecursion: { func: string, ctrlRecursion: CtrlRecursion }[] = [];
@@ -9,7 +9,17 @@ const GetCtrlRecursion = (func: string) => {
   return item.ctrlRecursion;
 };
 
-const nullOrObj = (valueStr) => valueStr == null ? null : JSON.parse(valueStr);
+const nullOrObj = (valueStr) => {
+  if (valueStr == null)
+    return null;
+  try {
+    return JSON.parse(valueStr);
+  }
+  catch (error) {
+    dbgError(`valor JSON '${valueStr}' inválido`);
+    return null;
+  }
+};
 
 export const isLocalhost = () => (EnvDeployConfig().app_url.includes('//localhost'));
 
@@ -77,7 +87,7 @@ export function Env(envName: EnvName, suffix?: string) {
         envName == 'cloudinaryCloudName' ||
         envName == 'emailSupport' ||
         envName == 'supportPhone'))
-      throw new Error(`Env(${envName}) obrigatória e não configurada no sistema`);
+      throw new Error(`Env(${envName}) não configurada`);
   } catch (error) {
     throw new Error(`Env(${envName}), value: ${value}: ${error.message}`);
   }
@@ -102,8 +112,6 @@ export function EnvSvrDatabase(database: string) {
     //const envVar = envName.replace(/^(database)/,'SITE_DATABASE_');
     const envVar = `SITE_DATABASE_${database.toUpperCase()}`;
     value = process.env[envVar];
-    // if (value == null)
-    //   throw new Error(`EnvSvrDatabase(${database}) obrigatória e não configurada no sistema`);
   } catch (error) {
     throw new Error(`EnvSvrDatabase(${database}), value: ${value}: ${error.message}`);
   }
@@ -125,7 +133,7 @@ export function EnvSvr(envName: EnvNameSvr) {
     else
       throw new Error(`EnvSvr(${envName}) não prevista`);
     if (value == null)
-      throw new Error(`EnvSvr(${envName}) obrigatória e não configurada no sistema`);
+      throw new Error(`EnvSvr(${envName}) não configurada`);
   } catch (error) {
     throw new Error(`EnvSvr(${envName}), value: ${value}: ${error.message}`);
   }
@@ -146,7 +154,7 @@ interface IDeployConfig {
 export function EnvDeployConfig() {
   const envName = 'NEXT_PUBLIC_DEPLOY_CONFIG';
   const value: IDeployConfig = nullOrObj(process.env.NEXT_PUBLIC_DEPLOY_CONFIG);
-  if (value == null) throw new Error(`Env ${envName} não configurada`);
+  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
   const errorProp = CheckProps(value, [
     { name: 'front_end', type: PrimitivesType.boolean },
     { name: 'back_end', type: PrimitivesType.boolean },
@@ -202,7 +210,7 @@ interface IMSalConfig {
 export function EnvMSalConfig() {
   const envName = 'NEXT_PUBLIC_MSAL_CONFIG';
   const value: IMSalConfig = nullOrObj(process.env.NEXT_PUBLIC_MSAL_CONFIG);
-  if (value == null) throw new Error(`Env ${envName} não configurada`);
+  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
   const errorProp = CheckProps(value, [
     { name: 'client_id', type: PrimitivesType.string },
     { name: 'authority', type: PrimitivesType.string },
@@ -224,7 +232,7 @@ interface INivelLog {
 export function EnvNivelLog() {
   const envName = 'NEXT_PUBLIC_NIVEL_LOG';
   const value: INivelLog = nullOrObj(process.env.NEXT_PUBLIC_NIVEL_LOG);
-  if (value == null) throw new Error(`Env ${envName} não configurada`);
+  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
   const errorProp = CheckProps(value, [
     { name: 'api', type: PrimitivesType.number, optional: true },
     { name: 'db', type: PrimitivesType.number, optional: true },
@@ -246,7 +254,7 @@ interface IApiTimeout {
 export function EnvApiTimeout() {
   const envName = 'NEXT_PUBLIC_API_TIMEOUT';
   const value: IApiTimeout = nullOrObj(process.env.NEXT_PUBLIC_API_TIMEOUT);
-  if (value == null) throw new Error(`Env ${envName} não configurada`);
+  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
   const errorProp = CheckProps(value, [
     { name: 'exec', type: PrimitivesType.number, optional: false },
     { name: 'alertCallFromCli', type: PrimitivesType.number, optional: false },
@@ -269,7 +277,7 @@ export function EnvSvrIpinfo() {
   const envName = 'SITE_IPINFO';
   if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
   const value: IIpinfo = nullOrObj(process.env.SITE_IPINFO);
-  if (value == null) throw new Error(`Env ${envName} não configurada`);
+  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
   const errorProp = CheckProps(value, [
     { name: 'token', type: PrimitivesType.string },
     { name: 'timeout', type: PrimitivesType.number },
@@ -289,7 +297,7 @@ export function EnvSvrEmailConfig() {
   const envName = 'SITE_EMAIL_CONFIG';
   if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
   const value: IEmailConfig = nullOrObj(process.env.SITE_EMAIL_CONFIG);
-  if (value == null) throw new Error(`Env ${envName} não configurada`);
+  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
   const errorProp = CheckProps(value, [
     { name: 'host', type: PrimitivesType.string },
     { name: 'port', type: PrimitivesType.number },
@@ -327,7 +335,7 @@ export function EnvSvrCloudinaryAccount() {
   const envName = 'SITE_CLOUDINARY_APIACCOUNT';
   if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
   const value: ICloudinaryAccount = nullOrObj(process.env.SITE_CLOUDINARY_APIACCOUNT);
-  if (value == null) throw new Error(`Env ${envName} não configurada`);
+  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
   const errorProp = CheckProps(value, [
     { name: 'key', type: PrimitivesType.string },
     { name: 'secret', type: PrimitivesType.string },
@@ -345,7 +353,7 @@ export function EnvSvrMobizon() {
   const envName = 'SITE_MOBIZON';
   if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
   const value: IMobizon = nullOrObj(process.env.SITE_MOBIZON);
-  if (value == null) throw new Error(`Env ${envName} não configurada`);
+  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
   const errorProp = CheckProps(value, [
     { name: 'domain', type: PrimitivesType.string },
     { name: 'api_key', type: PrimitivesType.string },
@@ -364,7 +372,7 @@ export function EnvSvrSessionUser() {
   const envName = 'SITE_SESSION_USER';
   if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
   const value: ISessionUser = nullOrObj(process.env.SITE_SESSION_USER);
-  if (value == null) throw new Error(`Env ${envName} não configurada`);
+  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
   const errorProp = CheckProps(value, [
     { name: 'psw', type: PrimitivesType.string },
     { name: 'ttl_minutes', type: PrimitivesType.number, optional: true },
