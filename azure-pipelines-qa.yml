@@ -1,5 +1,5 @@
 trigger:
-- main
+- homologacao/staging
 
 pool:
   vmImage: ubuntu-latest
