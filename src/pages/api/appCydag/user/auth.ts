@@ -9,6 +9,7 @@ import { ErrorPlus, HttpStatusCode, SleepMsDevRandom } from '../../../../libComm
 import { csd, dbgWarn } from '../../../../libCommon/dbg';
 import { EnvDeployConfig, EnvDeveloper } from '../../../../libCommon/envs';
 import { RolesDevArray } from '../../../../libCommon/endPoints';
+import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ResumoApi } from '../../../../libServer/util';
@@ -29,6 +30,7 @@ import { LoggedUser } from '../../../../appCydag/loggedUser';
 
 const apiSelf = apisApp.userAuth;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);

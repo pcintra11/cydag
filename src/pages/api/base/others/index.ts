@@ -6,6 +6,7 @@ import { RefererLogModel } from '../../../../base/db/models';
 import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
 
 import { csd, dbg, dbgWarn, ScopeDbg } from '../../../../libCommon/dbg';
+import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ResumoApi } from '../../../../libServer/util';
@@ -18,6 +19,7 @@ import { CmdApi_Others } from './types';
 
 const apiSelf = apisBase.others;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true }); // @@!! pesquisar melhor sobre credentials !
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd', 'attrSector'], ['email']);
   //await SleepMsDevApi(varsReq);

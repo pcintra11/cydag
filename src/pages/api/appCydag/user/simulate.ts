@@ -6,6 +6,7 @@ import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
 
 import { ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
 import { EnvDeployConfig } from '../../../../libCommon/envs';
+import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ResumoApi } from '../../../../libServer/util';
@@ -23,6 +24,7 @@ import { ProcessoOrcamentarioCentroCusto, User } from '../../../../appCydag/mode
 
 const apiSelf = apisApp.userSimulate;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);

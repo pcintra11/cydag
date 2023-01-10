@@ -1,4 +1,5 @@
 import { csd, dbgError } from './dbg';
+import { isAmbNone } from './isAmb';
 import { CheckProps, CtrlRecursion, OnClient, PrimitivesType, StrLeft } from './util';
 
 const _ctrlRecursion: { func: string, ctrlRecursion: CtrlRecursion }[] = [];
@@ -104,6 +105,7 @@ export function EnvDeveloper() {
 }
 
 export function EnvSvrDatabase(database: string) {
+  if (isAmbNone()) return null;
   const ctrlRecursion = GetCtrlRecursion('EnvSvrDatabase');
   if (ctrlRecursion.inExceeded(database)) return;
   let value: string = null;
@@ -121,6 +123,7 @@ export function EnvSvrDatabase(database: string) {
 
 
 export function EnvSvr(envName: EnvNameSvr) {
+  if (isAmbNone()) return null;
   const ctrlRecursion = GetCtrlRecursion('EnvSvr');
   if (ctrlRecursion.inExceeded(envName)) return;
   let value: string = null;
@@ -152,6 +155,7 @@ interface IDeployConfig {
   mode_auth: string;
 }
 export function EnvDeployConfig() {
+  if (isAmbNone()) return {} as IDeployConfig;
   const envName = 'NEXT_PUBLIC_DEPLOY_CONFIG';
   const value: IDeployConfig = nullOrObj(process.env.NEXT_PUBLIC_DEPLOY_CONFIG);
   if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
@@ -208,6 +212,7 @@ interface IMSalConfig {
   authority: string;
 }
 export function EnvMSalConfig() {
+  if (isAmbNone()) return {} as IMSalConfig;
   const envName = 'NEXT_PUBLIC_MSAL_CONFIG';
   const value: IMSalConfig = nullOrObj(process.env.NEXT_PUBLIC_MSAL_CONFIG);
   if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
@@ -232,7 +237,8 @@ interface INivelLog {
 export function EnvNivelLog() {
   const envName = 'NEXT_PUBLIC_NIVEL_LOG';
   const value: INivelLog = nullOrObj(process.env.NEXT_PUBLIC_NIVEL_LOG);
-  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
+  //if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
+  if (value == null) return { api: 0, db: 0, email: 0, test: 0, commom: 0 } as INivelLog;
   const errorProp = CheckProps(value, [
     { name: 'api', type: PrimitivesType.number, optional: true },
     { name: 'db', type: PrimitivesType.number, optional: true },
@@ -254,7 +260,7 @@ interface IApiTimeout {
 export function EnvApiTimeout() {
   const envName = 'NEXT_PUBLIC_API_TIMEOUT';
   const value: IApiTimeout = nullOrObj(process.env.NEXT_PUBLIC_API_TIMEOUT);
-  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
+  if (value == null) return { exec: 0, alertCallFromCli: 0, waitCallFromCli: 0, waitCallFromSvr: 0 } as IApiTimeout;
   const errorProp = CheckProps(value, [
     { name: 'exec', type: PrimitivesType.number, optional: false },
     { name: 'alertCallFromCli', type: PrimitivesType.number, optional: false },
@@ -277,7 +283,7 @@ export function EnvSvrIpinfo() {
   const envName = 'SITE_IPINFO';
   if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
   const value: IIpinfo = nullOrObj(process.env.SITE_IPINFO);
-  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
+  if (value == null) return {} as IIpinfo;
   const errorProp = CheckProps(value, [
     { name: 'token', type: PrimitivesType.string },
     { name: 'timeout', type: PrimitivesType.number },
@@ -294,6 +300,7 @@ export interface IEmailConfig {
   auth: { user: string; pass: string; name: string; };
 }
 export function EnvSvrEmailConfig() {
+  if (isAmbNone()) return {} as IEmailConfig;
   const envName = 'SITE_EMAIL_CONFIG';
   if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
   const value: IEmailConfig = nullOrObj(process.env.SITE_EMAIL_CONFIG);
@@ -332,6 +339,7 @@ interface ICloudinaryAccount {
   secret: string;
 }
 export function EnvSvrCloudinaryAccount() {
+  if (isAmbNone()) return {} as ICloudinaryAccount;
   const envName = 'SITE_CLOUDINARY_APIACCOUNT';
   if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
   const value: ICloudinaryAccount = nullOrObj(process.env.SITE_CLOUDINARY_APIACCOUNT);
@@ -350,6 +358,7 @@ interface IMobizon {
   api_key: string;
 }
 export function EnvSvrMobizon() {
+  if (isAmbNone()) return {} as IMobizon;
   const envName = 'SITE_MOBIZON';
   if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
   const value: IMobizon = nullOrObj(process.env.SITE_MOBIZON);
@@ -372,7 +381,7 @@ export function EnvSvrSessionUser() {
   const envName = 'SITE_SESSION_USER';
   if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
   const value: ISessionUser = nullOrObj(process.env.SITE_SESSION_USER);
-  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
+  if (value == null) return {} as ISessionUser;
   const errorProp = CheckProps(value, [
     { name: 'psw', type: PrimitivesType.string },
     { name: 'ttl_minutes', type: PrimitivesType.number, optional: true },

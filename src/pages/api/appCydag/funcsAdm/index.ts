@@ -10,6 +10,7 @@ import { collectionsDef as collectionsDefBase } from '../../../../base/db/models
 import { AddToDate, compareForBinSearch, CtrlCollect, ErrorPlus, isPlataformVercel, StrRight } from '../../../../libCommon/util';
 import { csd, dbg, ScopeDbg } from '../../../../libCommon/dbg';
 import { FldCsvDef, FromCsvUpload, IUploadMessage, MessageLevelUpload } from '../../../../libCommon/uploadCsv';
+import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ResumoApi } from '../../../../libServer/util';
@@ -28,12 +29,13 @@ import { configApp } from '../../../../appCydag/config';
 
 import { CmdApi_FuncAdm } from './types';
 import { CategRegional, OrigemFunc, ProcessoOrcamentarioStatus, RevisaoValor, TipoColaborador, TipoParticipPerOrcam, TipoPlanejViagem, TipoSegmCentroCusto } from '../../../../appCydag/types';
-import { isAmbDevOrTst } from '../../../../libCommon/isAmb';
+import { isAmbDevOrQas } from '../../../../libCommon/isAmb';
 import { premissaCod } from '../valoresContas/calcsCydag';
 import { anoAdd, mesesFld, multiplyValMeses, sumValMeses } from '../../../../appCydag/util';
 
 const apiSelf = apisApp.funcsAdm;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['idProc']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
@@ -208,7 +210,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         //#endregion
 
         if (parm.cmd == CmdApi_FuncAdm.setTesteDataPlan) {
-          if (!isAmbDevOrTst())
+          if (!isAmbDevOrQas())
             throw new Error('Apenas em dev e tst é possível criar dados de teste');
           const promoAndDespRecorr = false; // isAmbDev(); 
 
@@ -661,7 +663,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         }
 
         else if (parm.cmd == CmdApi_FuncAdm.setTesteDataInterfaceSap) {
-          if (!isAmbDevOrTst())
+          if (!isAmbDevOrQas())
             throw new Error('Apenas em dev e tst é possível criar dados de teste');
           const msgs = [];
 

@@ -2,7 +2,7 @@ import _ from 'underscore';
 
 import { BinSearchItem, RoundDecs } from '../../../../libCommon/util';
 import { csd } from '../../../../libCommon/dbg';
-import { isAmbDevOrTst } from '../../../../libCommon/isAmb';
+import { isAmbDevOrQas } from '../../../../libCommon/isAmb';
 
 import { Funcionario, localidadeCoringa, Viagem, Premissa, Terceiro, ValoresLocalidade, ValoresPremissa, ValoresTransfer } from '../../../../appCydag/modelTypes';
 import { RevisaoValor, TipoColaborador, TipoColaboradorMd, TipoParticipPerOrcam, TipoPlanejViagem } from '../../../../appCydag/types';
@@ -148,7 +148,7 @@ export function FuncionariosForCalc(centroCusto: string, premissaDissidioVals: P
 }
 
 const calcContaSalario = (tipoCalc: string, funcionariosForCalc: FuncionarioForCalc[], tipoColaboradorArray: TipoColaborador[], showCalcFunc = false) => {
-  const showCalcUse = showCalcFunc && isAmbDevOrTst();
+  const showCalcUse = showCalcFunc && isAmbDevOrQas();
   const memoriaCalcDets: any = [];
   const valMeses = genValMeses(0); const countMeses = genValMeses(0); let anyValue = false;
   for (const item of funcionariosForCalc) {
@@ -170,7 +170,7 @@ const calcContaSalario = (tipoCalc: string, funcionariosForCalc: FuncionarioForC
   return { tipoCalc, valMeses, countMeses, anyValue, memoriaCalcDets } as ValsContaCalc;
 };
 const calcContaAvisoPrevio = (funcionariosForCalc: FuncionarioForCalc[], showCalcFunc = false) => {
-  const showCalcUse = showCalcFunc && isAmbDevOrTst();
+  const showCalcUse = showCalcFunc && isAmbDevOrQas();
   const memoriaCalcDets: any = [];
   const valMeses = genValMeses(0); const countMeses = genValMeses(0); let anyValue = false;
   for (const item of funcionariosForCalc) {
@@ -196,7 +196,7 @@ const calcContaAvisoPrevio = (funcionariosForCalc: FuncionarioForCalc[], showCal
   return { tipoCalc: 'avisoPrevio', valMeses, countMeses, anyValue, memoriaCalcDets } as ValsContaCalc;
 };
 const calcContasPercSalario = (tipoCalc: string, funcionariosForCalc: FuncionarioForCalc[], tipoColaboradorArray: TipoColaborador[], premissaVals: PremissaValores, dobraMesDesl: boolean, showCalcFunc = false) => {
-  const showCalcUse = showCalcFunc && isAmbDevOrTst();
+  const showCalcUse = showCalcFunc && isAmbDevOrQas();
   const memoriaCalcDets: any = [];
   const valMeses = genValMeses(0); const countMeses = genValMeses(0); let anyValue = false;
   if (premissaVals != null) {
@@ -232,7 +232,7 @@ const calcContasPercSalario = (tipoCalc: string, funcionariosForCalc: Funcionari
   return { tipoCalc, valMeses, countMeses, anyValue, memoriaCalcDets } as ValsContaCalc;
 };
 const calcContasValorPorPessoa = (tipoCalc: string, funcionariosForCalc: FuncionarioForCalc[], tipoColaboradorArray: TipoColaborador[], premissaVals: PremissaValores, incluiDependentes: boolean, showCalcFunc = false) => {
-  const showCalcUse = showCalcFunc && isAmbDevOrTst();
+  const showCalcUse = showCalcFunc && isAmbDevOrQas();
   const memoriaCalcDets: any = [];
   const valMeses = genValMeses(0); const countMeses = genValMeses(0); let anyValue = false;
   if (premissaVals != null) {
@@ -263,7 +263,7 @@ const calcContasValorPorPessoa = (tipoCalc: string, funcionariosForCalc: Funcion
   return { tipoCalc, valMeses, countMeses, anyValue, memoriaCalcDets } as ValsContaCalc;
 };
 const calcConta_vt = (funcionariosForCalc: FuncionarioForCalc[], showCalcFunc = false) => {
-  const showCalcUse = showCalcFunc && isAmbDevOrTst();
+  const showCalcUse = showCalcFunc && isAmbDevOrQas();
   const memoriaCalcDets: any = [];
   const valMeses = genValMeses(0); const countMeses = genValMeses(0); let anyValue = false;
   for (const item of funcionariosForCalc) {
@@ -284,7 +284,7 @@ const calcConta_vt = (funcionariosForCalc: FuncionarioForCalc[], showCalcFunc = 
   return { tipoCalc: 'vt', valMeses, countMeses, anyValue, memoriaCalcDets } as ValsContaCalc;
 };
 export const calcContaDespCorr = (despRecorr: string, funcionariosForCalc: FuncionarioForCalc[], premissaVals: PremissaValores, showCalcFunc = false) => {
-  const showCalcUse = showCalcFunc && isAmbDevOrTst();
+  const showCalcUse = showCalcFunc && isAmbDevOrQas();
   const memoriaCalcDets: any = [];
   //csl('premissa vals', despRecorr, JSON.stringify(premissaVals, null, 2));
 

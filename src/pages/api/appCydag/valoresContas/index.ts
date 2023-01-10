@@ -7,6 +7,7 @@ import { NotifyAdmASync } from '../../../../base/notifyAdm';
 
 import { BinSearchIndex, BinSearchItem, BinSearchProp, compareForBinSearch, compareForBinSearchArray, CtrlCollect, DateDisp, ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
 import { csd, dbgError, dbgWarn } from '../../../../libCommon/dbg';
+import { isAmbNone } from '../../../../libCommon/isAmb';
 import { CallApiSvrASync } from '../../../../fetcher/fetcherSvr';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
@@ -35,6 +36,7 @@ import { calcContaDespCorr, contasCalc, FuncionariosForCalc, premissaCod, Premis
 
 const apiSelf = apisApp.valoresContas;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['ano']);  // #!!!! filter
 
