@@ -272,6 +272,9 @@ export class ResumoApi { // @@@@!!!! nome!
     this.#_redirectUrl = url;
     return this;
   }
+  static jsonAmbNone(res: NextApiResponse) {
+    res.status(HttpStatusCode.badRequest).json({ _ErrorPlusObj: new ErrorPlus('Ambiente não configurado') });
+  }
   json() {
     const context = this.#_ctrlApiExec.context();
     let elapsedMs = null;

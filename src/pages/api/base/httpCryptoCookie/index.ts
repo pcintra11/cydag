@@ -4,6 +4,7 @@ import { apisBase } from '../../../../base/endPoints';
 
 import { EnvDeployConfig } from '../../../../libCommon/envs';
 import { dbgError } from '../../../../libCommon/dbg';
+import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ResumoApi } from '../../../../libServer/util';
@@ -18,6 +19,7 @@ const SESSION_GENERIC_PSW = 'DC2192E7773B18CA9E74E5CF9C542DC2192E7773B18CA9E74E5
 
 const apiSelf = apisBase.httpCryptoCookie;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist());
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['cookieName']);
   const parm = ctrlApiExec.parm;

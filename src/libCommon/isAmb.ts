@@ -5,6 +5,7 @@ enum Amb {
   qas = 'qas',
   prd = 'prd',
   devCompiled = 'devCompiled',
+  none = 'none',
 }
 export function GetAmb() {
   try {
@@ -12,7 +13,8 @@ export function GetAmb() {
     if (amb != Amb.dev &&
       amb != Amb.qas &&
       amb != Amb.prd &&
-      amb != Amb.devCompiled)
+      amb != Amb.devCompiled &&
+      amb != Amb.none)
       throw new Error(`amb ${amb} não previsto`);
     return amb;
   } catch (error) {
@@ -21,10 +23,11 @@ export function GetAmb() {
   }
 }
 
+export const isAmbNone = () => (GetAmb() === Amb.none);
 export const isAmbDev = () => (GetAmb() === Amb.dev || GetAmb() === Amb.devCompiled);
 export const isAmbDevCompiled = () => (GetAmb() === Amb.devCompiled);
-export const isAmbTst = () => (GetAmb() === Amb.qas);
-export const isAmbDevOrTst = () => (GetAmb() === Amb.dev || GetAmb() === Amb.qas);
+export const isAmbQas = () => (GetAmb() === Amb.qas);
+export const isAmbDevOrQas = () => (GetAmb() === Amb.dev || GetAmb() === Amb.qas);
 export const isAmbPrd = () => (GetAmb() === Amb.prd);
 
 // export const isAmb = {

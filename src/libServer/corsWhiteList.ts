@@ -1,6 +1,6 @@
 import { Env } from '../libCommon/envs';
 
-import { isAmbDev, isAmbDevCompiled, isAmbTst, isAmbPrd } from '../libCommon/isAmb';
+import { isAmbDev, isAmbDevCompiled, isAmbQas, isAmbPrd } from '../libCommon/isAmb';
 
 export function CorsWhitelist(): string[] {
   let result = [];
@@ -25,9 +25,9 @@ export function CorsWhitelist(): string[] {
       'http://localhost:3104',
       'http://localhost:3105',
     ];
-  else if (isAmbTst() || isAmbPrd()) {
+  else if (isAmbQas() || isAmbPrd()) {
     const knowSubDomains = [appName];
-    if (isAmbTst())
+    if (isAmbQas())
       result = [
         //...knowSubDomains.map(x => `https://${x}-git-test-pcintra11.vercel.app`),
         ...knowSubDomains.map(x => `https://${x}-tst.vercel.app`),
