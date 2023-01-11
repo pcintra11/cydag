@@ -4,7 +4,6 @@ import { csd, dbgError } from '../libCommon/dbg';
 import { ErrorPlus, FillClass } from '../libCommon/util';
 import { IGenericObject } from '../libCommon/types';
 import { FldCsvDef, FldsCsvAll } from '../libCommon/uploadCsv';
-import { isAmbDev } from '../libCommon/isAmb';
 
 import { configApp } from './config';
 import { amountParse, mesesFld, sumRound } from './util';
@@ -83,10 +82,10 @@ export class ProcessoOrcamentarioStatusMd {
       if (status !== ProcessoOrcamentarioStatus.preparacao) return 'O status atual do Processo Orçamentário não permite carga de funcionários';
     }
     else if (oper === OperInProcessoOrcamentario.altPremissas) {
-      if (status >= ProcessoOrcamentarioStatus.bloqueado) return 'O status atual do Processo Orçamentário não permite alteração em premissas';
+      if (status > ProcessoOrcamentarioStatus.bloqueado) return 'O status atual do Processo Orçamentário não permite alteração em premissas';
     }
     else if (oper === OperInProcessoOrcamentario.altConfigCCs) {
-      if (status >= ProcessoOrcamentarioStatus.bloqueado) return 'O status atual do Processo Orçamentário não permite ajustes na Configuração de Centros de Custo';
+      if (status > ProcessoOrcamentarioStatus.bloqueado) return 'O status atual do Processo Orçamentário não permite ajustes na Configuração de Centros de Custo';
     }
     else if (oper === OperInProcessoOrcamentario.altValoresPlanejados) {
       if (status !== ProcessoOrcamentarioStatus.inputPlanej) return 'O status atual do Processo Orçamentário não permite alteração nos valores planejados';

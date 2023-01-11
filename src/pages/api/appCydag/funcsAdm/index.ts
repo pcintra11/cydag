@@ -73,7 +73,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       if (loggedUserReq == null)
         throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      const userDb = await UserModel.findOne({ email: loggedUserReq.email } as User);
+      const userDb = await UserModel.findOne({ email: loggedUserReq.email }).lean();
       await CheckApiAuthorized(apiSelf, userDb);
 
       if (parm.cmd == CmdApi_FuncAdm.ensureIndexes) {

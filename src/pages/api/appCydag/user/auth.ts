@@ -24,7 +24,7 @@ import { HttpCriptoCookieCmdASync } from '../../../../libServer/httpCryptoCookie
 import { apisApp, rolesApp } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, CheckUserAllowed, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 import { ProcessoOrcamentarioCentroCustoModel, UserModel } from '../../../../appCydag/models';
-import { ProcessoOrcamentarioCentroCusto, User } from '../../../../appCydag/modelTypes';
+import { User } from '../../../../appCydag/modelTypes';
 import { CmdApi_UserAuth as CmdApi, pswSignInAzure } from './types';
 import { LoggedUser } from '../../../../appCydag/loggedUser';
 
@@ -55,7 +55,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
     //#region pre-carga
     {
-      const anyDocDb = await UserModel.findOne({});
+      const anyDocDb = await UserModel.findOne({}).lean();
       if (anyDocDb == null) {
         const documentInsert: User = {
           email: EnvDeveloper().email,   // @!!!!!! implementar senha e reset por email !
@@ -109,7 +109,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         // }
         // else 
         {
-          const userDb = await UserModel.findOne({ email: parm.email } as User);
+          const userDb = await UserModel.findOne({ email: parm.email }).lean();
           CheckUserAllowed(userDb, parm.email);
           if (EnvDeployConfig().mode_auth == 'azure') {
             if (parmPsw != pswSignInAzure)
@@ -120,8 +120,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             if (parmPsw != pswCheck)
               throw new ErrorPlus('Senha incorreta.', { data: { fldName: 'psw' }, httpStatusCode: HttpStatusCode.unAuthorized });
           }
-          const hasSomeCCResponsavel = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailResponsavel: userDb.email } as ProcessoOrcamentarioCentroCusto)) != null;
-          const hasSomeCCPlanejador = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailPlanejador: userDb.email } as ProcessoOrcamentarioCentroCusto)) != null;
+          const hasSomeCCResponsavel = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailResponsavel: userDb.email })) != null;
+          const hasSomeCCPlanejador = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailPlanejador: userDb.email })) != null;
           const hasSomeCCConsulta = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailConsulta: userDb.email })) != null;
           loggedUserNow = User.loggedUser(userDb, parm.email, agora, agora, agora, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta, cookieUserConfig.TTLSeconds);
           await CheckBlockAsync(loggedUserNow);
@@ -145,10 +145,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         let loggedUserFromCookie: LoggedUser = null;
         if (loggedUserReq != null) {
           loggedUserFromCookie = loggedUserReq;
-          const userDb = await UserModel.findOne({ _id: new ObjectId(loggedUserFromCookie.userIdStr) } as User);
+          const userDb = await UserModel.findOne({ _id: new ObjectId(loggedUserFromCookie.userIdStr) }).lean();
           if (userDb != null) {
-            const hasSomeCCResponsavel = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailResponsavel: userDb.email } as ProcessoOrcamentarioCentroCusto)) != null;
-            const hasSomeCCPlanejador = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailPlanejador: userDb.email } as ProcessoOrcamentarioCentroCusto)) != null;
+            const hasSomeCCResponsavel = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailResponsavel: userDb.email })) != null;
+            const hasSomeCCPlanejador = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailPlanejador: userDb.email })) != null;
             const hasSomeCCConsulta = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailConsulta: userDb.email })) != null;
             loggedUserFromCookie = User.loggedUser(userDb, loggedUserReq.emailSigned, loggedUserFromCookie.firstSignIn, loggedUserFromCookie.lastReSignIn,
               loggedUserFromCookie.lastActivity, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta, cookieUserConfig.TTLSeconds);
@@ -163,12 +163,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       else {
         if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
         await CheckBlockAsync(loggedUserReq);
-        const userDb = await UserModel.findOne({ _id: new ObjectId(loggedUserReq?.userIdStr) } as User);
+        const userDb = await UserModel.findOne({ _id: new ObjectId(loggedUserReq?.userIdStr) }).lean();
         CheckApiAuthorized(apiSelf, userDb);
 
         if (parm.cmd == CmdApi.reSignIn) {
-          const hasSomeCCResponsavel = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailResponsavel: userDb.email } as ProcessoOrcamentarioCentroCusto)) != null;
-          const hasSomeCCPlanejador = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailPlanejador: userDb.email } as ProcessoOrcamentarioCentroCusto)) != null;
+          const hasSomeCCResponsavel = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailResponsavel: userDb.email })) != null;
+          const hasSomeCCPlanejador = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailPlanejador: userDb.email })) != null;
           const hasSomeCCConsulta = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailConsulta: userDb.email })) != null;
           const loggedUser = User.loggedUser(userDb, loggedUserReq.emailSigned, loggedUserReq.firstSignIn, agora, agora, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta, cookieUserConfig.TTLSeconds);
           loggedUser.emailSigned = loggedUserReq.emailSigned;

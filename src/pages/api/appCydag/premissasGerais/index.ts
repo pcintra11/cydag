@@ -20,7 +20,7 @@ import { ApiLogFinish, ApiLogStart } from '../../../../libServer/apiLog';
 import { apisApp } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 import { AgrupPremissasModel, EmpresaModel, PremissaModel, ProcessoOrcamentarioModel, UserModel, ValoresPremissaModel } from '../../../../appCydag/models';
-import { ProcessoOrcamentario, User, ValoresPremissa } from '../../../../appCydag/modelTypes';
+import { ValoresPremissa } from '../../../../appCydag/modelTypes';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatusMd, RevisaoValor, TipoSegmCentroCusto } from '../../../../appCydag/types';
 
 import { CmdApi_PremissaGeral as CmdApi, IChangedLine } from './types';
@@ -45,14 +45,14 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      CheckApiAuthorized(apiSelf, await UserModel.findOne({ _id: new ObjectId(loggedUserReq?.userIdStr) } as User));
+      CheckApiAuthorized(apiSelf, await UserModel.findOne({ _id: new ObjectId(loggedUserReq?.userIdStr) }).lean());
 
-      const premissaArray = await PremissaModel.find().sort({ cod: 1 });
+      const premissaArray = await PremissaModel.find().lean().sort({ cod: 1 });
 
       if (parm.cmd == CmdApi.initialization) {
-        const processoOrcamentarioArray = await ProcessoOrcamentarioModel.find().sort({ ano: -1 });
-        const empresaArray = await EmpresaModel.find().sort({ cod: 1 });
-        const agrupPremissasArray = await AgrupPremissasModel.find().sort({ cod: 1 });
+        const processoOrcamentarioArray = await ProcessoOrcamentarioModel.find().lean().sort({ ano: -1 });
+        const empresaArray = await EmpresaModel.find().lean().sort({ cod: 1 });
+        const agrupPremissasArray = await AgrupPremissasModel.find().lean().sort({ cod: 1 });
         resumoApi.jsonData({ value: { processoOrcamentarioArray, premissaArray, empresaArray, agrupPremissasArray } });
         deleteIfOk = true;
       }
@@ -60,7 +60,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       else if (parm.cmd == CmdApi.valoresGet ||
         parm.cmd == CmdApi.valoresSet) {
         const { ano, revisao, empresa, agrupPremissas } = parm.filter || {};
-        const processoOrcamentario = await ProcessoOrcamentarioModel.findOne({ ano } as ProcessoOrcamentario);
+        const processoOrcamentario = await ProcessoOrcamentarioModel.findOne({ ano }).lean();
         if (processoOrcamentario == null) throw new ErrorPlus(`Processo Orçamentário para ${ano} não encontrado`);
         if (parm.cmd == CmdApi.valoresGet) {
           const filterDb = {
@@ -71,7 +71,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
               { tipoSegmCentroCusto: TipoSegmCentroCusto.agrupPremissas, agrupPremissas },
             ],
           };
-          const valoresPremissa = await ValoresPremissaModel.find(filterDb).sort({ premissa: 1, agrupPremissas: 1, empresa: 1, tipoColaborador: 1 });
+          const valoresPremissa = await ValoresPremissaModel.find(filterDb).lean().sort({ premissa: 1, agrupPremissas: 1, empresa: 1, tipoColaborador: 1 });
           resumoApi.jsonData({ value: { processoOrcamentario, valoresPremissa } });
           deleteIfOk = true;
         }

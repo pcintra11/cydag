@@ -20,7 +20,6 @@ import { configApp } from '../../../../appCydag/config';
 import { apisApp } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 import { CentroCustoMd, CentroCustoModel, ClasseCustoModel, UserModel } from '../../../../appCydag/models';
-import { ClasseCusto, User } from '../../../../appCydag/modelTypes';
 
 import { Entity_Crud, CmdApi_Crud as CmdApi } from './types';
 import { ClasseCustoRestritaModel as Model_Crud } from '../../../../appCydag/models';
@@ -45,12 +44,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      CheckApiAuthorized(apiSelf, await UserModel.findOne({ _id: new ObjectId(loggedUserReq?.userIdStr) } as User));
+      CheckApiAuthorized(apiSelf, await UserModel.findOne({ _id: new ObjectId(loggedUserReq?.userIdStr) }).lean());
 
       let documentsCentroCusto: CentroCustoMd[] = [];
       if (parm.cmd == CmdApi.insert ||
         parm.cmd == CmdApi.update)
-        documentsCentroCusto = await CentroCustoModel.find({}).sort({ cod: 1 });
+        documentsCentroCusto = await CentroCustoModel.find({}).lean().sort({ cod: 1 });
 
       if (parm.cmd == CmdApi.list) {
         const { classeCusto } = parm.filter || {};
@@ -61,8 +60,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         }
         const recordsToGet = 99999;
         const documentsDb = await Model_Crud.find(filterDb)
-          .sort({ classeCusto: 1 })
-          .limit(recordsToGet + 1);
+          .lean().sort({ classeCusto: 1 }).limit(recordsToGet + 1);
         let partialResults = false;
         if (documentsDb.length > recordsToGet) {
           documentsDb.pop();
@@ -74,10 +72,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
       else if (parm.cmd == CmdApi.insert) {
         const data = parm.data;
-        const documentConflict = await Model_Crud.findOne({ classeCusto: data.classeCusto } as Entity_Crud);
+        const documentConflict = await Model_Crud.findOne({ classeCusto: data.classeCusto }).lean();
         if (documentConflict != null)
           throw new ErrorPlus('Definição de restrição para essa Classe de Custo já cadastrada.');
-        const documentClasseCusto = await ClasseCustoModel.findOne({ classeCusto: data.classeCusto } as ClasseCusto);
+        const documentClasseCusto = await ClasseCustoModel.findOne({ classeCusto: data.classeCusto }).lean();
         if (documentClasseCusto == null)
           throw new ErrorPlus('Classe de Custo não cadastrada.');
         data.centroCustoArray.forEach((x) => {
@@ -94,7 +92,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
       else if (parm.cmd == CmdApi.update) {
         const data = parm.data;
-        let documentDb = await Model_Crud.findOne({ _id: new ObjectId(parm._id) });
+        let documentDb = await Model_Crud.findOne({ _id: new ObjectId(parm._id) }).lean();
         if (documentDb == null)
           throw new ErrorPlus('Não foi encontrado a definição de restrição para essa Classe de Custo.');
         const documentUpdate: Entity_Crud = {

@@ -64,7 +64,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       //console.log('apiAsyncProc parm', parm);
 
-      const asyncProc = await ApiAsyncLogModel.findOne({ _id: new ObjectId(parm.idStr) });
+      const asyncProc = await ApiAsyncLogModel.findOne({ _id: new ObjectId(parm.idStr) }).lean();
       if (asyncProc == null)
         throw new Error(`id '${parm.idStr}' não encontrado (${parm.info}).`);
       if (asyncProc.type != parm.type)

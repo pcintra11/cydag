@@ -20,7 +20,6 @@ import { configApp } from '../../../../appCydag/config';
 import { apisApp } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 import { UserModel } from '../../../../appCydag/models';
-import { User } from '../../../../appCydag/modelTypes';
 
 import { Entity_Crud, CmdApi_Crud as CmdApi, crudValidations } from './types';
 import { GerenciaModel as Model_Crud } from '../../../../appCydag/models';
@@ -45,7 +44,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      CheckApiAuthorized(apiSelf, await UserModel.findOne({ _id: new ObjectId(loggedUserReq?.userIdStr) } as User));
+      CheckApiAuthorized(apiSelf, await UserModel.findOne({ _id: new ObjectId(loggedUserReq?.userIdStr) }).lean());
 
       if (parm.cmd == CmdApi.list) {
         const { searchTerms } = parm.filter || {};
@@ -57,8 +56,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         const recordsToGet = parm.getAll == true ? 99999 : configApp.maximumSearchResult + 1;
         const documentsDb = await Model_Crud.find(filterDb,
           { cod: 1, descr: 1 })
-          .sort({ cod: 1 })
-          .limit(recordsToGet + 1);
+          .lean().sort({ cod: 1 }).limit(recordsToGet + 1);
         let partialResults = false;
         if (documentsDb.length > recordsToGet) {
           documentsDb.pop();
@@ -70,7 +68,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
       else if (parm.cmd == CmdApi.insert) {
         const data = parm.data;
-        const documentConflict = await Model_Crud.findOne({ cod: data.cod } as Entity_Crud);
+        const documentConflict = await Model_Crud.findOne({ cod: data.cod }).lean();
         if (documentConflict != null)
           throw new ErrorPlus('Grupo de Departamento já cadastrado.', { data: { fldName: Entity_Crud.F.cod } });
         const fldError = ValidateObjectFirstError({ ...data }, crudValidations);
@@ -87,7 +85,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
       else if (parm.cmd == CmdApi.update) {
         const data = parm.data;
-        let documentDb = await Model_Crud.findOne({ _id: new ObjectId(parm._id) });
+        let documentDb = await Model_Crud.findOne({ _id: new ObjectId(parm._id) }).lean();
         if (documentDb == null)
           throw new ErrorPlus('Não foi encontrado o Grupo de Departamento.');
         const fldError = ValidateObjectFirstError({ ...data }, crudValidations);

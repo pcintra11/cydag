@@ -17,7 +17,7 @@ import { CorsMiddlewareAsync } from '../../../../libServer/cors';
 import { AlertTimeExecApiASync } from '../../../../libServer/alertTimeExecApi';
 import { ApiLogFinish, ApiLogStart } from '../../../../libServer/apiLog';
 
-import { User, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto, Terceiro } from '../../../../appCydag/modelTypes';
+import { Terceiro } from '../../../../appCydag/modelTypes';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatusMd, RevisaoValor } from '../../../../appCydag/types';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 
@@ -51,7 +51,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      const userDb = await UserModel.findOne({ _id: new ObjectId(loggedUserReq?.userIdStr) } as User);
+      const userDb = await UserModel.findOne({ _id: new ObjectId(loggedUserReq?.userIdStr) }).lean();
       CheckApiAuthorized(apiSelf, userDb);
 
       const UserCanWrite = (ccConfig: any) => (
@@ -66,7 +66,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       if (parm.cmd == CmdApi.crudInitialization) {
         const procsCentrosCustoConfigAllYears = await procsCentroCustosConfigAuthAllYears(loggedUserReq, authCC);
         const centroCustoArray = await ccsAuthArray(procsCentrosCustoConfigAllYears);
-        const funcaoTerceirosArray = await FuncaoTerceiroModel.find().sort({ cod: 1 });
+        const funcaoTerceirosArray = await FuncaoTerceiroModel.find().lean().sort({ cod: 1 });
 
         resumoApi.jsonData({ value: { procsCentrosCustoConfigAllYears, centroCustoArray, funcaoTerceirosArray } });
         deleteIfOk = true;
@@ -75,14 +75,14 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       else if (parm.cmd == CmdApi.itensGet ||
         parm.cmd == CmdApi.itensSet) {
         const { ano, centroCusto, revisao } = parm.filter || {};
-        const processoOrcamentario = await ProcessoOrcamentarioModel.findOne({ ano } as ProcessoOrcamentario);
+        const processoOrcamentario = await ProcessoOrcamentarioModel.findOne({ ano }).lean();
         if (processoOrcamentario == null) throw new ErrorPlus(`Processo Orçamentário para ${ano} não encontrado`);
-        const processoOrcamentarioCentroCusto = await ProcessoOrcamentarioCentroCustoModel.findOne({ ano, centroCusto } as ProcessoOrcamentarioCentroCusto);
+        const processoOrcamentarioCentroCusto = await ProcessoOrcamentarioCentroCustoModel.findOne({ ano, centroCusto }).lean();
         if (processoOrcamentarioCentroCusto == null) throw new ErrorPlus(`Centro de Custo ${centroCusto} não configurado para o Processo Orçamentário`);
         CheckProcCentroCustosAuth(loggedUserReq, processoOrcamentarioCentroCusto, authCC);
         if (parm.cmd == CmdApi.itensGet) {
           const filterDb: any = { ano, revisao, centroCusto };
-          const terceiroItens = await TerceiroModel.find(filterDb).sort({ refer: 1 });
+          const terceiroItens = await TerceiroModel.find(filterDb).lean().sort({ refer: 1 });
 
           const userCanWrite = UserCanWrite(processoOrcamentarioCentroCusto);
           resumoApi.jsonData({

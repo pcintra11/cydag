@@ -358,12 +358,14 @@ export function RegExprTextSearchMongo(text: string) {
   if (text == null)
     return '';
   const comps = text.trim().split(' ');
+
   // escapes como \b não funcionam !
-  const wordBoundaries = false;
-  if (wordBoundaries)
-    return `(.*(${comps.map((str) => `( ${str} )`).join('|')}).*){${comps.length}}`;
-  else
-    return `(.*(${comps.map((str) => `(${str})`).join('|')}).*){${comps.length}}`;
+  // const wordBoundaries = false;
+  // if (wordBoundaries)
+  //   return `(.*(${comps.map((str) => `( ${str} )`).join('|')}).*){${comps.length}}`; // vide abaixo erro com quantificadores
+  // else
+  // return `(.*(${comps.map((str) => `(${str})`).join('|')}).*){${comps.length}}`; {x} quantificadores dá erro, pois se for exigido 3 ocorrências e tiver só 2 ele dá match!
+  return `${comps.map((str) => `.*(${str}).*`).join('')}`; // nesse código é exigido a mesma posição dos strings
 }
 
 const locks: { point: string, obj: IGenericObject }[] = [];
