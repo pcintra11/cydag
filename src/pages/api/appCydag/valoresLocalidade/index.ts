@@ -6,6 +6,7 @@ import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
 
 import { ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
 import { csd, dbgWarn } from '../../../../libCommon/dbg';
+import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ResumoApi } from '../../../../libServer/util';
@@ -19,7 +20,7 @@ import { ApiLogFinish, ApiLogStart } from '../../../../libServer/apiLog';
 import { apisApp } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 import { LocalidadeModel, ProcessoOrcamentarioModel, UserModel, ValoresLocalidadeModel } from '../../../../appCydag/models';
-import { ProcessoOrcamentario, User, ValoresLocalidade } from '../../../../appCydag/modelTypes';
+import { ValoresLocalidade } from '../../../../appCydag/modelTypes';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatusMd, RevisaoValor } from '../../../../appCydag/types';
 
 import { CmdApi_ValoresLocalidade as CmdApi, IChangedLine } from './types';
@@ -27,6 +28,7 @@ import { amountParse } from '../../../../appCydag/util';
 
 const apiSelf = apisApp.valoresLocalidade;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
@@ -44,11 +46,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      CheckApiAuthorized(apiSelf, await UserModel.findOne({ _id: new ObjectId(loggedUserReq?.userIdStr) } as User));
+      const userDb = await UserModel.findOne({ email: loggedUserReq?.email }).lean();
+      CheckApiAuthorized(apiSelf, userDb, loggedUserReq?.email);
 
       if (parm.cmd == CmdApi.initialization) {
-        const processoOrcamentarioArray = await ProcessoOrcamentarioModel.find().sort({ ano: -1 });
-        const localidadeArray = await LocalidadeModel.find().sort({ cod: 1 });
+        const processoOrcamentarioArray = await ProcessoOrcamentarioModel.find().lean().sort({ ano: -1 });
+        const localidadeArray = await LocalidadeModel.find().lean().sort({ cod: 1 });
         resumoApi.jsonData({ value: { processoOrcamentarioArray, localidadeArray } });
         deleteIfOk = true;
       }
@@ -56,11 +59,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       else if (parm.cmd == CmdApi.valoresGet ||
         parm.cmd == CmdApi.valoresSet) {
         const { ano, revisao } = parm.filter || {};
-        const processoOrcamentario = await ProcessoOrcamentarioModel.findOne({ ano } as ProcessoOrcamentario);
+        const processoOrcamentario = await ProcessoOrcamentarioModel.findOne({ ano }).lean();
         if (processoOrcamentario == null) throw new ErrorPlus(`Processo Orçamentário para ${ano} não encontrado`);
         if (parm.cmd == CmdApi.valoresGet) {
           const filterDb = { ano, revisao };
-          const valoresLocalidade = await ValoresLocalidadeModel.find(filterDb).sort({ localidade: 1 });
+          const valoresLocalidade = await ValoresLocalidadeModel.find(filterDb).lean().sort({ localidade: 1 });
           resumoApi.jsonData({ value: { processoOrcamentario, valoresLocalidade } });
           deleteIfOk = true;
         }

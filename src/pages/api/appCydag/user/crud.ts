@@ -5,6 +5,7 @@ import { ObjectId } from 'mongodb';
 import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
 
 import { ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
+import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ResumoApi, ValidateObjectFirstError, SearchTermsForFindPtBr } from '../../../../libServer/util';
@@ -26,6 +27,7 @@ import { CmdApi_UserCrud as CmdApi, crudValidations } from './types';
 
 const apiSelf = apisApp.user;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
@@ -44,8 +46,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      const userDbSigned = await UserModel.findOne({ email: loggedUserReq.emailSigned } as User);
-      CheckApiAuthorized(apiSelf, userDbSigned);
+      const userDbSigned = await UserModel.findOne({ email: loggedUserReq.emailSigned }).lean();
+      CheckApiAuthorized(apiSelf, userDbSigned, loggedUserReq.emailSigned);
 
       if (parm.cmd == CmdApi.list) {
         const { searchTerms } = parm.filter || {};
@@ -62,8 +64,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             ativo: 1,
             roles: 1
           })
-          .sort({ email: 1 })
-          .limit(recordsToGet);
+          .lean().sort({ email: 1 }).limit(recordsToGet);
         let partialResults = false;
         if (documentsDb.length > recordsToGet) {
           documentsDb.pop();
@@ -75,7 +76,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
       else if (parm.cmd == CmdApi.insert) {
         const data = parm.data;
-        const documentConflict = await UserModel.findOne({ email: data.email } as User);
+        const documentConflict = await UserModel.findOne({ email: data.email } as User).lean();
         if (documentConflict != null) // @!!!!!! padrão para nome
           throw new ErrorPlus('Email já cadastrado.', { data: { fldName: User.F.email } });
         const fldError = ValidateObjectFirstError({ ...data }, crudValidations);
@@ -96,7 +97,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
       else if (parm.cmd == CmdApi.update) {
         const data = parm.data;
-        let documentDb = await UserModel.findOne({ _id: new ObjectId(parm._id) });
+        let documentDb = await UserModel.findOne({ _id: new ObjectId(parm._id) }).lean();
         if (documentDb == null)
           throw new ErrorPlus('Não foi encontrado o Usuário.');
         const fldError = ValidateObjectFirstError({ ...data }, crudValidations);
@@ -115,7 +116,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         resumoApi.jsonData({ value: documentDb });
       }
       else if (parm.cmd == CmdApi.delete) {
-        const documentDb = await UserModel.findOne({ _id: new ObjectId(parm._id) });
+        const documentDb = await UserModel.findOne({ _id: new ObjectId(parm._id) }).lean();
         if (parm._id == loggedUserReq.userIdStr)
           throw new ErrorPlus('Você não pode excluir a sí mesmo.');
         if (!loggedUserReq.roles.includes(rolesApp.gestorContr) &&

@@ -1,7 +1,7 @@
 import { DropzoneState } from 'react-dropzone';
 
 //import { CircularProgress, SxProps } from '@mui/material';
-import { Box, Stack, SxProps, Tooltip, useTheme } from '@mui/material';
+import { Box, Stack, SxProps, useTheme } from '@mui/material';
 
 //#region icons
 import DownloadIcon from '@mui/icons-material/Download';
@@ -98,7 +98,7 @@ interface IconButtonCrudProps {
   onClick: () => void;
   disabled?: boolean;
 }
-export const IconButtonApp = ({ icon, title, fontSize, color, colorSx, onClick, disabled }: IconButtonCrudProps) => {
+export const IconButtonApp = ({ icon, fontSize, color, colorSx, onClick, disabled }: IconButtonCrudProps) => {
   const fontSizeUse = fontSize || '1rem';
   return (
     // <Tooltip title={'title'} placement='top' onClose={() => csd('close')}>

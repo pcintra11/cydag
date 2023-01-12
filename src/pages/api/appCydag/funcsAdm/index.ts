@@ -1,15 +1,16 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import path from 'path';
-import csvdata from 'csvdata';
+//import path from 'path';
+//import csvdata from 'csvdata';
 import mongoose from 'mongoose';
 
 import { ApiAsyncLogModel, ApiSyncLogModel, SendMailLogModel } from '../../../../base/db/models';
-import { ConnectDbASync, CloseDbASync, CheckModelsIndexesASync, DbErrors, EnsureModelsIndexesASync } from '../../../../base/db/functions';
+import { ConnectDbASync, CloseDbASync, CheckModelsIndexesASync, EnsureModelsIndexesASync } from '../../../../base/db/functions';
 import { collectionsDef as collectionsDefBase } from '../../../../base/db/models';
 
-import { AddToDate, compareForBinSearch, CtrlCollect, ErrorPlus, isPlataformVercel, StrRight } from '../../../../libCommon/util';
+import { AddToDate, compareForBinSearch, CtrlCollect, ErrorPlus, StrRight } from '../../../../libCommon/util';
 import { csd, dbg, ScopeDbg } from '../../../../libCommon/dbg';
 import { FldCsvDef, FromCsvUpload, IUploadMessage, MessageLevelUpload } from '../../../../libCommon/uploadCsv';
+import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ResumoApi } from '../../../../libServer/util';
@@ -28,12 +29,14 @@ import { configApp } from '../../../../appCydag/config';
 
 import { CmdApi_FuncAdm } from './types';
 import { CategRegional, OrigemFunc, ProcessoOrcamentarioStatus, RevisaoValor, TipoColaborador, TipoParticipPerOrcam, TipoPlanejViagem, TipoSegmCentroCusto } from '../../../../appCydag/types';
-import { isAmbDevOrTst } from '../../../../libCommon/isAmb';
+import { isAmbDevOrQas } from '../../../../libCommon/isAmb';
 import { premissaCod } from '../valoresContas/calcsCydag';
 import { anoAdd, mesesFld, multiplyValMeses, sumValMeses } from '../../../../appCydag/util';
 
 const apiSelf = apisApp.funcsAdm;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
+
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['idProc']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
@@ -49,21 +52,20 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     await ConnectDbASync({ ctrlApiExec });
     const apiLogProc = await ApiLogStart(ctrlApiExec, loggedUserReq);
 
-    const qtdLoadDefault = 100000;
-
-    const FullPath = (file: string) => {
-      let fullPath: string;
-      if (isPlataformVercel())
-        fullPath = path.join(process.cwd(), 'data', file);
-      else
-        fullPath = 'data' + '/' + file;
-      //csl({ fullPath });
-      return fullPath;
-    };
+    //const qtdLoadDefault = 100000;
+    // const FullPath = (file: string) => {
+    //   let fullPath: string;
+    //   if (isPlataformVercel())
+    //     fullPath = path.join(process.cwd(), 'data', file);
+    //   else
+    //     fullPath = 'data' + '/' + file;
+    //   //csl({ fullPath });
+    //   return fullPath;
+    // };
 
     // comum a todos uploads
-    const bloco = parm.bloco != null ? Number(parm.bloco) : 1;
-    const qtd = parm.qtd != null ? Number(parm.qtd) : qtdLoadDefault;
+    // const bloco = parm.bloco != null ? Number(parm.bloco) : 1;
+    // const qtd = parm.qtd != null ? Number(parm.qtd) : qtdLoadDefault;
     //csl({ bloco, qtd });
 
 
@@ -71,8 +73,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       if (loggedUserReq == null)
         throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      const userDb = await UserModel.findOne({ email: loggedUserReq.email } as User);
-      await CheckApiAuthorized(apiSelf, userDb);
+      const userDb = await UserModel.findOne({ email: loggedUserReq.email }).lean();
+      await CheckApiAuthorized(apiSelf, userDb, loggedUserReq.email);
 
       if (parm.cmd == CmdApi_FuncAdm.ensureIndexes) {
         const messagesIndexesCydag = await EnsureModelsIndexesASync('cydag', collectionsDefCydag);
@@ -103,50 +105,50 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         resumoApi.jsonData({ value: [`deletados - apiSync: ${apiSync.deletedCount}, apiAsync: ${apiAsync.deletedCount}, sendMail: ${sendMail.deletedCount}`] });
       }
 
-      else if (parm.cmd == CmdApi_FuncAdm.loadUser) {
+      // else if (parm.cmd == CmdApi_FuncAdm.loadUser) {
 
-        class Entity extends User { }
-        const EntityModel = UserModel;
-        const fullPath = FullPath('user.csv');
+      //   class Entity extends User { }
+      //   const EntityModel = UserModel;
+      //   const fullPath = FullPath('user.csv');
 
-        const data = await csvdata.load(fullPath, { delimiter: ';', encoding: 'latin1' }); // ansi?
+      //   vai dar pau qdo executar o build compilado, pois é serverless !!! E o erro não dá pra saber que é por isso !!
+      //   const data = await csvdata.load(fullPath, { delimiter: ';', encoding: 'latin1' }); // ansi?
 
-        const bulkImport: Entity[] = [];
-        data.forEach((reg: any, index: number) => {
-          //csl(index, reg);
-          if (index >= ((bloco - 1) * qtd) &&
-            index < ((bloco) * qtd)) {
-            const documentInsert: Entity = {
-              ativo: true,
-              email: reg.email.trim().toLowerCase(),
-              //email_superior: reg.email_superior.trim() != '' ? reg.email_superior.trim().toLowerCase() : null,
-              roles: reg.roles.trim() != '' ? reg.roles.trim().toLowerCase().split(',') : [],
-              rolesControlled: [],
-              nome: reg.nome.trim(),
-              created: agora,
-              lastUpdated: agora,
-            };
-            documentInsert.searchTerms = Entity.SearchTermsGen(documentInsert);
-            bulkImport.push(documentInsert);
-          }
-        });
-        //csl(JSON.stringify(bulkImport, null, 2));
-        const msgs = [];
-        try {
-          await EntityModel.insertMany(bulkImport, { ordered: false });
-          msgs.push(`${bulkImport.length} registros incluídos`);
-        }
-        catch (error) {
-          if (error.code == DbErrors.duplicateKey.code) {
-            msgs.push(`${error.insertedDocs.length} ok, ${error.writeErrors.length} errors`);
-            error.writeErrors.forEach((x) => msgs.push(`error ${x.errmsg} - email: ${x.err?.op?.email}`));
-          }
-          else
-            msgs.push(`Erro em ${parm.cmd}: ${error.message}`);
-        }
-        resumoApi.jsonData({ value: msgs });
-      }
-
+      //   const bulkImport: Entity[] = [];
+      //   data.forEach((reg: any, index: number) => {
+      //     //csl(index, reg);
+      //     if (index >= ((bloco - 1) * qtd) &&
+      //       index < ((bloco) * qtd)) {
+      //       const documentInsert: Entity = {
+      //         ativo: true,
+      //         email: reg.email.trim().toLowerCase(),
+      //         //email_superior: reg.email_superior.trim() != '' ? reg.email_superior.trim().toLowerCase() : null,
+      //         roles: reg.roles.trim() != '' ? reg.roles.trim().toLowerCase().split(',') : [],
+      //         rolesControlled: [],
+      //         nome: reg.nome.trim(),
+      //         created: agora,
+      //         lastUpdated: agora,
+      //       };
+      //       documentInsert.searchTerms = Entity.SearchTermsGen(documentInsert);
+      //       bulkImport.push(documentInsert);
+      //     }
+      //   });
+      //   //csl(JSON.stringify(bulkImport, null, 2));
+      //   const msgs = [];
+      //   try {
+      //     await EntityModel.insertMany(bulkImport, { ordered: false });
+      //     msgs.push(`${bulkImport.length} registros incluídos`);
+      //   }
+      //   catch (error) {
+      //     if (error.code == DbErrors.duplicateKey.code) {
+      //       msgs.push(`${error.insertedDocs.length} ok, ${error.writeErrors.length} errors`);
+      //       error.writeErrors.forEach((x) => msgs.push(`error ${x.errmsg} - email: ${x.err?.op?.email}`));
+      //     }
+      //     else
+      //       msgs.push(`Erro em ${parm.cmd}: ${error.message}`);
+      //   }
+      //   resumoApi.jsonData({ value: msgs });
+      // }
 
       else if (parm.cmd == CmdApi_FuncAdm.setTesteDataPlan ||
         parm.cmd == CmdApi_FuncAdm.setTesteDataInterfaceSap) {
@@ -208,7 +210,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         //#endregion
 
         if (parm.cmd == CmdApi_FuncAdm.setTesteDataPlan) {
-          if (!isAmbDevOrTst())
+          if (!isAmbDevOrQas())
             throw new Error('Apenas em dev e tst é possível criar dados de teste');
           const promoAndDespRecorr = false; // isAmbDev(); 
 
@@ -661,7 +663,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         }
 
         else if (parm.cmd == CmdApi_FuncAdm.setTesteDataInterfaceSap) {
-          if (!isAmbDevOrTst())
+          if (!isAmbDevOrQas())
             throw new Error('Apenas em dev e tst é possível criar dados de teste');
           const msgs = [];
 
@@ -721,260 +723,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       //     }
       //   });
       //   //csl(JSON.stringify(bulkImport, null, 2));
-      //   const msgs = [];
-      //   try {
-      //     await EntityModel.insertMany(bulkImport, { ordered: false });
-      //     msgs.push(`${bulkImport.length} registros incluídos`);
-      //   }
-      //   catch (error) {
-      //     if (error.code == DbErrors.duplicateKey.code) {
-      //       msgs.push(`${error.insertedDocs.length} ok, ${error.writeErrors.length} errors`);
-      //       error.writeErrors.forEach((x) => msgs.push(`error ${x.errmsg} - key: ${x.err?.op?.cod}`));
-      //     }
-      //     else
-      //       msgs.push(`Erro em ${parm.cmd}: ${error.message}`);
-      //   }
-      //   resumoApi.jsonData({ value: msgs });
-      // }
-
-      // else if (parm.cmd == CmdApi_FuncAdm.loadEmpresa) {
-      //   class Entity extends Empresa { }
-      //   const EntityModel = EmpresaModel;
-      //   const fullPath = FullPath('empresa.csv');
-
-      //   const data = await csvdata.load(fullPath, { delimiter: ';', encoding: 'latin1' });
-      //   const bulkImport: Entity[] = [];
-      //   data.forEach((reg: any, index: number) => {
-      //     //csl(index, reg);
-      //     if (index >= ((bloco - 1) * qtd) &&
-      //       index < ((bloco) * qtd)) {
-      //       const documentInsert: Entity = {
-      //         cod: reg.cod.trim().toUpperCase(),
-      //         descr: reg.descr.trim(),
-      //         created: agora,
-      //         lastUpdated: agora,
-      //       };
-      //       documentInsert.searchTerms = Entity.SearchTermsGen(documentInsert);
-      //       bulkImport.push(documentInsert);
-      //     }
-      //   });
-      //   const msgs = [];
-      //   try {
-      //     await EntityModel.insertMany(bulkImport, { ordered: false });
-      //     msgs.push(`${bulkImport.length} registros incluídos`);
-      //   }
-      //   catch (error) {
-      //     if (error.code == DbErrors.duplicateKey.code) {
-      //       msgs.push(`${error.insertedDocs.length} ok, ${error.writeErrors.length} errors`);
-      //       error.writeErrors.forEach((x) => msgs.push(`error ${x.errmsg} - key: ${x.err?.op?.cod}`));
-      //     }
-      //     else
-      //       msgs.push(`Erro em ${parm.cmd}: ${error.message}`);
-      //   }
-      //   resumoApi.jsonData({ value: msgs });
-      // }
-
-      // else if (parm.cmd == CmdApi_FuncAdm.loadUnidadeNegocio) {
-      //   class Entity extends UnidadeNegocio { }
-      //   const EntityModel = UnidadeNegocioModel;
-      //   const fullPath = FullPath('unidadeNegocio.csv');
-
-      //   const data = await csvdata.load(fullPath, { delimiter: ';', encoding: 'latin1' });
-
-      //   const bulkImport: Entity[] = [];
-      //   data.forEach((reg: any, index: number) => {
-      //     //csl(index, reg);
-      //     if (index >= ((bloco - 1) * qtd) &&
-      //       index < ((bloco) * qtd)) {
-      //       const documentInsert: Entity = {
-      //         cod: reg.cod.trim().toUpperCase(),
-      //         descr: reg.descr.trim(),
-      //         created: agora,
-      //         lastUpdated: agora,
-      //       };
-      //       documentInsert.searchTerms = Entity.SearchTermsGen(documentInsert);
-      //       bulkImport.push(documentInsert);
-      //     }
-      //   });
-      //   const msgs = [];
-      //   try {
-      //     await EntityModel.insertMany(bulkImport, { ordered: false });
-      //     msgs.push(`${bulkImport.length} registros incluídos`);
-      //   }
-      //   catch (error) {
-      //     if (error.code == DbErrors.duplicateKey.code) {
-      //       msgs.push(`${error.insertedDocs.length} ok, ${error.writeErrors.length} errors`);
-      //       error.writeErrors.forEach((x) => msgs.push(`error ${x.errmsg} - key: ${x.err?.op?.cod}`));
-      //     }
-      //     else
-      //       msgs.push(`Erro em ${parm.cmd}: ${error.message}`);
-      //   }
-      //   resumoApi.jsonData({ value: msgs });
-      // }
-
-      // else if (parm.cmd == CmdApi_FuncAdm.loadLocalidade) {
-      //   class Entity extends Localidade { }
-      //   const EntityModel = LocalidadeModel;
-      //   const fullPath = FullPath('localidade.csv');
-
-      //   const data = await csvdata.load(fullPath, { delimiter: ';', encoding: 'latin1' });
-      //   const bulkImport: Entity[] = [];
-      //   data.forEach((reg: any, index: number) => {
-      //     if (index >= ((bloco - 1) * qtd) &&
-      //       index < ((bloco) * qtd)) {
-      //       const documentInsert: Entity = {
-      //         cod: reg.cod.trim().toUpperCase(),
-      //         descr: reg.descr.trim(),
-      //         created: agora,
-      //         lastUpdated: agora,
-      //       };
-      //       documentInsert.searchTerms = Entity.SearchTermsGen(documentInsert);
-      //       bulkImport.push(documentInsert);
-      //     }
-      //   });
-      //   const msgs = [];
-      //   try {
-      //     await EntityModel.insertMany(bulkImport, { ordered: false });
-      //     msgs.push(`${bulkImport.length} registros incluídos`);
-      //   }
-      //   catch (error) {
-      //     if (error.code == DbErrors.duplicateKey.code) {
-      //       msgs.push(`${error.insertedDocs.length} ok, ${error.writeErrors.length} errors`);
-      //       error.writeErrors.forEach((x) => msgs.push(`error ${x.errmsg} - key: ${x.err?.op?.cod}`));
-      //     }
-      //     else
-      //       msgs.push(`Erro em ${parm.cmd}: ${error.message}`);
-      //   }
-      //   resumoApi.jsonData({ value: msgs });
-      // }
-
-      // else if (parm.cmd == CmdApi_FuncAdm.loadAgrupPremissas) {
-      //   class Entity extends AgrupPremissas { }
-      //   const EntityModel = AgrupPremissasModel;
-      //   const fullPath = FullPath('agrupPremissas.csv');
-
-      //   const data = await csvdata.load(fullPath, { delimiter: ';', encoding: 'latin1' });
-      //   const bulkImport: Entity[] = [];
-      //   data.forEach((reg: any, index: number) => {
-      //     if (index >= ((bloco - 1) * qtd) &&
-      //       index < ((bloco) * qtd)) {
-      //       const documentInsert: Entity = {
-      //         cod: reg.cod.trim().toUpperCase(),
-      //         descr: reg.descr.trim(),
-      //         created: agora,
-      //         lastUpdated: agora,
-      //       };
-      //       documentInsert.searchTerms = Entity.SearchTermsGen(documentInsert);
-      //       bulkImport.push(documentInsert);
-      //     }
-      //   });
-      //   const msgs = [];
-      //   try {
-      //     await EntityModel.insertMany(bulkImport, { ordered: false });
-      //     msgs.push(`${bulkImport.length} registros incluídos`);
-      //   }
-      //   catch (error) {
-      //     if (error.code == DbErrors.duplicateKey.code) {
-      //       msgs.push(`${error.insertedDocs.length} ok, ${error.writeErrors.length} errors`);
-      //       error.writeErrors.forEach((x) => msgs.push(`error ${x.errmsg} - key: ${x.err?.op?.cod}`));
-      //     }
-      //     else
-      //       msgs.push(`Erro em ${parm.cmd}: ${error.message}`);
-      //   }
-      //   resumoApi.jsonData({ value: msgs });
-      // }
-
-      // else if (parm.cmd == CmdApi_FuncAdm.loadFatorCusto) {
-      //   class Entity extends FatorCusto { }
-      //   const EntityModel = FatorCustoModel;
-      //   const fullPath = FullPath('fatorCusto.csv');
-
-      //   const data = await csvdata.load(fullPath, { delimiter: ';', encoding: 'latin1' });
-      //   const bulkImport: Entity[] = [];
-      //   data.forEach((reg: any, index: number) => {
-      //     if (index >= ((bloco - 1) * qtd) &&
-      //       index < ((bloco) * qtd)) {
-      //       const documentInsert: Entity = {
-      //         fatorCusto: reg.fatorCusto.trim().toLowerCase(),
-      //         descr: reg.descr.trim(),
-      //       };
-      //       bulkImport.push(documentInsert);
-      //     }
-      //   });
-      //   const msgs = [];
-      //   try {
-      //     await EntityModel.insertMany(bulkImport, { ordered: false });
-      //     msgs.push(`${bulkImport.length} registros incluídos`);
-      //   }
-      //   catch (error) {
-      //     if (error.code == DbErrors.duplicateKey.code) {
-      //       msgs.push(`${error.insertedDocs.length} ok, ${error.writeErrors.length} errors`);
-      //       error.writeErrors.forEach((x) => msgs.push(`error ${x.errmsg} - key: ${x.err?.op?.cod}`));
-      //     }
-      //     else
-      //       msgs.push(`Erro em ${parm.cmd}: ${error.message}`);
-      //   }
-      //   resumoApi.jsonData({ value: msgs });
-      // }
-
-      // else if (parm.cmd == CmdApi_FuncAdm.loadClasseCusto) {
-      //   class Entity extends ClasseCusto { }
-      //   const EntityModel = ClasseCustoModel;
-      //   const fullPath = FullPath('classeCusto.csv');
-
-      //   const data = await csvdata.load(fullPath, { delimiter: ';', encoding: 'latin1' });
-      //   const bulkImport: Entity[] = [];
-      //   data.forEach((reg: any, index: number) => {
-      //     if (index >= ((bloco - 1) * qtd) &&
-      //       index < ((bloco) * qtd)) {
-      //       const documentInsert: Entity = {
-      //         classeCusto: reg.classeCusto.toString().trim().toUpperCase(),
-      //         descr: reg.descr.trim(),
-      //         fatorCusto: reg.fatorCusto.trim().toLowerCase(),
-      //         origem: reg.origem.trim().toLowerCase(),
-      //         seqApresent: Number(reg.seqApresent),
-      //         created: agora,
-      //         lastUpdated: agora,
-      //       };
-      //       documentInsert.searchTerms = Entity.SearchTermsGen(documentInsert);
-      //       bulkImport.push(documentInsert);
-      //     }
-      //   });
-      //   const msgs = [];
-      //   try {
-      //     await EntityModel.insertMany(bulkImport, { ordered: false });
-      //     msgs.push(`${bulkImport.length} registros incluídos`);
-      //   }
-      //   catch (error) {
-      //     if (error.code == DbErrors.duplicateKey.code) {
-      //       msgs.push(`${error.insertedDocs.length} ok, ${error.writeErrors.length} errors`);
-      //       error.writeErrors.forEach((x) => msgs.push(`error ${x.errmsg} - key: ${x.err?.op?.cod}`));
-      //     }
-      //     else
-      //       msgs.push(`Erro em ${parm.cmd}: ${error.message}`);
-      //   }
-      //   resumoApi.jsonData({ value: msgs });
-      // }
-
-      // else if (parm.cmd == CmdApi_FuncAdm.loadSubClasseCusto) {
-      //   class Entity extends SubClasseCusto { }
-      //   const EntityModel = SubClasseCustoModel;
-      //   const fullPath = FullPath('subClasseCusto.csv');
-
-      //   const data = await csvdata.load(fullPath, { delimiter: ';', encoding: 'latin1' });
-      //   const bulkImport: Entity[] = [];
-      //   data.forEach((reg: any, index: number) => {
-      //     if (index >= ((bloco - 1) * qtd) &&
-      //       index < ((bloco) * qtd)) {
-      //       const documentInsert: Entity = {
-      //         classeCusto: reg.classeCusto.toString().trim().toUpperCase(),
-      //         subClasseCusto: reg.subClasseCusto.toString().trim().toUpperCase(),
-      //         descr: reg.descr.trim(),
-      //         origem: reg.origem.trim().toLowerCase(),
-      //       };
-      //       bulkImport.push(documentInsert);
-      //     }
-      //   });
       //   const msgs = [];
       //   try {
       //     await EntityModel.insertMany(bulkImport, { ordered: false });
@@ -1092,10 +840,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             try {
               const result = await model.insertMany(documentsInsert, { ordered: false });
               if (result.length != documentsInsert.length) {
+                messages.push({ level: MessageLevelUpload.error, message: `Total de linhas incluídas (${result.length}) diferente do arquivo (${documentsInsert.length})` });
                 linesErrorNotIdenf = (documentsInsert.length - result.length);
                 linesOk -= linesErrorNotIdenf;
               }
             } catch (error) {
+              messages.push({ level: MessageLevelUpload.error, message: error.message });
               linesErrorNotIdenf = (documentsInsert.length - error.result.nInserted);
               linesOk -= linesErrorNotIdenf;
               //error.writeErrors.forEach((x) => messages.push({ level: MessageLevel.error, message: `linha ${documentsInsert[x.err.index].line}: ${x.err.errmsg}` }));

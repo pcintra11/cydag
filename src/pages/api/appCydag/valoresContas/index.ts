@@ -7,6 +7,7 @@ import { NotifyAdmASync } from '../../../../base/notifyAdm';
 
 import { BinSearchIndex, BinSearchItem, BinSearchProp, compareForBinSearch, compareForBinSearchArray, CtrlCollect, DateDisp, ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
 import { csd, dbgError, dbgWarn } from '../../../../libCommon/dbg';
+import { isAmbNone } from '../../../../libCommon/isAmb';
 import { CallApiSvrASync } from '../../../../fetcher/fetcherSvr';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
@@ -22,7 +23,7 @@ import { EnvSvrInterfaceSapRealizadoConfig } from '../../../../appCydag/envs';
 import { apisApp, quadroPage, rolesApp } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 import { ViagemModel, TerceiroModel, UserModel, ValoresLocalidadeModel, ValoresTransferModel, UnidadeNegocioModel, ValoresRealizadosInterfaceSapModel, DiretoriaModel, CtrlInterfaceModel, ValoresPlanejadosHistoricoModel, GerenciaModel } from '../../../../appCydag/models';
-import { agrupPremissasCoringa, empresaCoringa, Premissa, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto, User, ValoresRealizados, ValoresPremissa, UnidadeNegocio, CtrlInterface } from '../../../../appCydag/modelTypes';
+import { agrupPremissasCoringa, empresaCoringa, Premissa, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto, ValoresRealizados, ValoresPremissa, UnidadeNegocio, CtrlInterface } from '../../../../appCydag/modelTypes';
 import { InterfaceSapStatus, InterfaceSapCateg, OperInProcessoOrcamentario, OrigemClasseCusto, ProcessoOrcamentarioStatus, ProcessoOrcamentarioStatusMd, RevisaoValor, TipoSegmCentroCusto, ValoresAnaliseAnual, ValoresComparativoAnual, ValoresPlanejadosDetalhes, ValoresTotCentroCustoClasseCusto, ValoresAnaliseRealPlan } from '../../../../appCydag/types';
 
 import { ClasseCustoModel, ClasseCustoRestritaModel, FatorCustoModel, FuncionarioModel, PremissaModel, ProcessoOrcamentarioCentroCustoModel, ProcessoOrcamentarioModel, ValoresImputadosModel, ValoresPlanejadosCalcModel, ValoresPremissaModel, ValoresRealizadosModel } from '../../../../appCydag/models';
@@ -35,6 +36,7 @@ import { calcContaDespCorr, contasCalc, FuncionariosForCalc, premissaCod, Premis
 
 const apiSelf = apisApp.valoresContas;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['ano']);  // #!!!! filter
 
@@ -53,7 +55,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      CheckApiAuthorized(apiSelf, await UserModel.findOne({ _id: new ObjectId(loggedUserReq?.userIdStr) } as User));
+      CheckApiAuthorized(apiSelf, await UserModel.findOne({ email: loggedUserReq?.email }).lean(), loggedUserReq?.email);
 
       const classeCustoRestritaArrayGet = async () => {
         const documentsDb = await ClasseCustoRestritaModel.find().lean().sort({ classeCusto: 1 });
@@ -663,7 +665,7 @@ export const ValoresPlanejadosCalc = async (processoOrcamentario: ProcessoOrcame
     // premissas
     const premissas = await PremissaModel.find({ anoIni: { $lte: ano }, anoFim: { $gte: ano }, revisao }, { _id: 0, cod: 1, tipoSegmCentroCusto: 1, segmTipoClb: 1, despRecorrFunc: 1, descrDespRecorrFunc: 1, classeCusto: 1 }).lean();
     const valoresPremissas = await ValoresPremissaModel.find({ ano, revisao, ativa: true }, { _id: 0, premissa: 1, tipoSegmCentroCusto: 1, segmTipoClb: 1, empresa: 1, agrupPremissas: 1, tipoColaborador: 1, valMeses: 1 }).lean().sort({ premissa: 1, agrupPremissas: 1, empresa: 1, tipoColaborador: 1 });
-    const valoresLocalidades = await ValoresLocalidadeModel.find({ ano, revisao }, { _id: 0, localidade: 1, valMeses: 1 }).sort({ localidade: 1 }).lean();
+    const valoresLocalidades = await ValoresLocalidadeModel.find({ ano, revisao }, { _id: 0, localidade: 1, valMeses: 1 }).lean().sort({ localidade: 1 });
     const valoresTransfers = await ValoresTransferModel.find({ ano, revisao }, { _id: 0, localidadeOrigem: 1, localidadeDestino: 1, valMeses: 1 }).lean().sort({ localidadeOrigem: 1, localidadeDestino: 1 });
 
     // controle

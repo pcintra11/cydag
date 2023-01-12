@@ -1388,7 +1388,7 @@ export const mimeTypes = {
 export type LanguageSearch = 'br';
 
 /**
- * * Para os vários parametros passados retorna um string apenas com palavras as relevantes para pesquisas
+ * * Para os vários parametros passados retorna um string apenas com as palavras relevantes para pesquisas
  * * Remove: palavras duplicadas, acentos, pontuação, preposições, parametros com valor nulo
  * @param params 
  * @returns 
@@ -1430,19 +1430,23 @@ function OnlyLetterOrNumber(text: string) {
  * @returns array classificado apenas com as palavras relevantes 
  */
 export function FilterRelevantWordsForSearch(language: LanguageSearch, texts: string[]) {
-  const allTextsInWords = texts.reduce((prev, curr) => [...prev, ...curr.split(' ')], []).filter((str) => str != ' ');
-  const wordsUnique = [...new Set(allTextsInWords)]; // exclui palavras duplicadas
-  let wordsRelevant = wordsUnique;
+  let words = texts.join(' ').split(' ').filter((str) => str != ''); // remove espaços extras, 
+  if (language == 'br')
+    words = words.map((word) => Portuguese.RemoveAccentuation(word));
+
+  // remove os caracteres especiais, como o '.' => poderá haver quebra de mais words
+  words = words.map((word) => OnlyLetterOrNumber(word)).join(' ').split(' ').filter((str) => str != ''); 
+
+  //const allTextsInWords = allWords.reduce((prev, curr) => [...prev, ...curr.split(' ')], []);
+  words = [...new Set(words)]; // exclui palavras duplicadas
 
   //const wordsUnique = [...new Set(textClear.split(' '))]; // exclui palavras duplicadas e espaços adicionais
-  if (language == 'br') {
-    wordsRelevant = wordsRelevant.map((str) => Portuguese.RemoveAccentuation(str));
-    wordsRelevant = wordsRelevant.filter((str) => Portuguese.WordIsRelevant(str)); // exclui o ' ' e palavras não relevantes
-  }
-  wordsRelevant = wordsRelevant.map((str) => OnlyLetterOrNumber(str));
+  if (language == 'br')
+    words = words.filter((word) => Portuguese.WordIsRelevant(word)); // exclui o ' ' e palavras não relevantes
+  //wordsRelevant = wordsRelevant.map((str) => OnlyLetterOrNumber(str));
 
   //let result = compsUnique.filter((str) => !(str == '' || Portuguese.WordIsNotRelevant(str))).join(' ');
   //result = ` ${result} `;
-  //console.log('NormalizeStrForSearch', { result });
-  return wordsRelevant; //result;
+  //wordsAux;
+  return words;
 }

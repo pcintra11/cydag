@@ -7,6 +7,7 @@ import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
 import { BinSearchItem, ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
 import { csd, dbgError, dbgWarn } from '../../../../libCommon/dbg';
 import { FromCsvUpload, IUploadMessage, MessageLevelUpload } from '../../../../libCommon/uploadCsv';
+import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { CtrlApiExec, GetCtrlApiExec, ResumoApi } from '../../../../libServer/util';
@@ -16,7 +17,7 @@ import { CorsMiddlewareAsync } from '../../../../libServer/cors';
 import { AlertTimeExecApiASync, CheckTimeOutAndAbort } from '../../../../libServer/alertTimeExecApi';
 import { ApiLogFinish, ApiLogStart } from '../../../../libServer/apiLog';
 
-import { ProcessoOrcamentarioCentroCusto, User } from '../../../../appCydag/modelTypes';
+import { ProcessoOrcamentarioCentroCusto } from '../../../../appCydag/modelTypes';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatus, ProcessoOrcamentarioStatusMd, RevisaoValor } from '../../../../appCydag/types';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 
@@ -32,6 +33,7 @@ import { GetValsPlanejados, ValoresPlanejadosCalc } from '../valoresContas';
 
 const apiSelf = apisApp.processoOrcamentario;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
@@ -66,7 +68,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      CheckApiAuthorized(apiSelf, await UserModel.findOne({ _id: new ObjectId(loggedUserReq?.userIdStr) } as User));
+      CheckApiAuthorized(apiSelf, await UserModel.findOne({ email: loggedUserReq?.email }).lean(), loggedUserReq?.email);
       ctrlApiExec.checkElapsed(`pre ${parm.cmd}`);
 
       if (parm.cmd == CmdApi.list) {

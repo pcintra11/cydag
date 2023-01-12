@@ -5,6 +5,7 @@ import { ObjectId } from 'mongodb';
 import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
 
 import { ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
+import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ResumoApi } from '../../../../libServer/util';
@@ -19,13 +20,13 @@ import { configApp } from '../../../../appCydag/config';
 import { apisApp } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 import { UserModel } from '../../../../appCydag/models';
-import { User } from '../../../../appCydag/modelTypes';
 
 import { CmdApi_Diversos } from './types';
 import { FatorCustoModel } from '../../../../appCydag/models';
 
 const apiSelf = apisApp.diversos;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
@@ -43,7 +44,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      CheckApiAuthorized(apiSelf, await UserModel.findOne({ _id: new ObjectId(loggedUserReq?.userIdStr) } as User));
+      CheckApiAuthorized(apiSelf, await UserModel.findOne({ email: loggedUserReq?.email }).lean(), loggedUserReq?.email);
 
       if (parm.cmd == CmdApi_Diversos.listFatorCusto) {
         const documentsDb = await FatorCustoModel.find({},
@@ -51,7 +52,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             fatorCusto: 1,
             descr: 1,
           })
-          .sort({ cod: 1 });
+          .lean().sort({ cod: 1 });
         resumoApi.jsonData({ value: { documents: documentsDb } });
         deleteIfOk = true;
       }

@@ -8,6 +8,7 @@ import { BinSearchItem, ErrorPlus, SleepMsDevRandom } from '../../../../libCommo
 import { csd } from '../../../../libCommon/dbg';
 import { FromCsvUpload, IUploadMessage, MessageLevelUpload } from '../../../../libCommon/uploadCsv';
 import { CheckRoleAllowed } from '../../../../libCommon/endPoints';
+import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ResumoApi } from '../../../../libServer/util';
@@ -17,7 +18,7 @@ import { CorsMiddlewareAsync } from '../../../../libServer/cors';
 import { AlertTimeExecApiASync } from '../../../../libServer/alertTimeExecApi';
 import { ApiLogFinish, ApiLogStart } from '../../../../libServer/apiLog';
 
-import { FuncionarioRevisao, Funcionario, User, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto } from '../../../../appCydag/modelTypes';
+import { FuncionarioRevisao, Funcionario, ProcessoOrcamentario } from '../../../../appCydag/modelTypes';
 import { OperInProcessoOrcamentario, OrigemFunc, ProcessoOrcamentarioStatusMd, RevisaoValor } from '../../../../appCydag/types';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 
@@ -33,6 +34,7 @@ import { amountParse } from '../../../../appCydag/util';
 
 const apiSelf = apisApp.funcionario;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
@@ -50,8 +52,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      const userDb = await UserModel.findOne({ _id: new ObjectId(loggedUserReq?.userIdStr) } as User);
-      CheckApiAuthorized(apiSelf, userDb);
+      const userDb = await UserModel.findOne({ email: loggedUserReq?.email }).lean();
+      CheckApiAuthorized(apiSelf, userDb, loggedUserReq?.email);
 
       const UserCanWrite = (ccConfig: any) => (
         ccConfig.emailResponsavel == loggedUserReq.email
@@ -70,15 +72,15 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       else if (parm.cmd == CmdApi.itensGet ||
         parm.cmd == CmdApi.itensSet) {
         const { ano, centroCusto, revisao } = parm.filter || {};
-        const processoOrcamentario = await ProcessoOrcamentarioModel.findOne({ ano } as ProcessoOrcamentario);
+        const processoOrcamentario = await ProcessoOrcamentarioModel.findOne({ ano }).lean();
         if (processoOrcamentario == null) throw new ErrorPlus(`Processo Orçamentário para ${ano} não encontrado`);
-        const processoOrcamentarioCentroCusto = await ProcessoOrcamentarioCentroCustoModel.findOne({ ano, centroCusto } as ProcessoOrcamentarioCentroCusto);
+        const processoOrcamentarioCentroCusto = await ProcessoOrcamentarioCentroCustoModel.findOne({ ano, centroCusto }).lean();
         if (processoOrcamentarioCentroCusto == null) throw new ErrorPlus(`Centro de Custo ${centroCusto} não configurado para o Processo Orçamentário`);
         CheckProcCentroCustosAuth(loggedUserReq, processoOrcamentarioCentroCusto, authCC);
         if (parm.cmd == CmdApi.itensGet) {
           const filterDb: any = { ano, centroCusto };
           const funcionarios = await FuncionarioModel.find(filterDb).lean().sort({ origem: 1, refer: 1 });
-          const premissaDespRecorrArray = await PremissaModel.find({ anoIni: { $lte: ano }, anoFim: { $gte: ano }, revisao: RevisaoValor.atual, despRecorrFunc: true }).sort({ cod: 1 });
+          const premissaDespRecorrArray = await PremissaModel.find({ anoIni: { $lte: ano }, anoFim: { $gte: ano }, revisao: RevisaoValor.atual, despRecorrFunc: true }).lean().sort({ cod: 1 });
 
           const funcionariosClient = funcionarios.map((funcionario) => {
             const funcionarioRevisao = funcionario[Funcionario.funcionarioRevisao(revisao)];
@@ -211,10 +213,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         const uploadData: string[][] = parm.data;
         const deleteAllBefore = parm.deleteAllBefore;
 
-        const processoOrcamentario = await ProcessoOrcamentarioModel.findOne({ ano });
+        const processoOrcamentario = await ProcessoOrcamentarioModel.findOne({ ano }).lean();
         if (processoOrcamentario == null) throw new ErrorPlus('Processo Orçamentário não encontrado');
         ProcessoOrcamentarioStatusMd.checkOperAllowed(OperInProcessoOrcamentario.cargaFunc, processoOrcamentario.status);
-        const documentsCentroCustoProc = await ProcessoOrcamentarioCentroCustoModel.find({ ano }).sort({ centroCusto: 1 });
+        const documentsCentroCustoProc = await ProcessoOrcamentarioCentroCustoModel.find({ ano }).lean().sort({ centroCusto: 1 });
 
         const messages: IUploadMessage[] = [];
         let linesError = 0, linesOk = 0;

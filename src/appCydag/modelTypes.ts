@@ -163,8 +163,8 @@ export class User {
   }
   static SearchTermsGen(documentInsOrUpd: IGenericObject, documentDb?: User) {
     const textsUpd = [];
-    if (documentInsOrUpd.email != undefined) { textsUpd.push(documentInsOrUpd.email); } else if (documentDb != null) textsUpd.push(documentDb.email);
     if (documentInsOrUpd.nome != undefined) { textsUpd.push(documentInsOrUpd.nome); } else if (documentDb != null) textsUpd.push(documentDb.nome);
+    if (documentInsOrUpd.email != undefined) { textsUpd.push(documentInsOrUpd.email.replace(/@.*/, '')); } else if (documentDb != null) textsUpd.push(documentDb.email.replace(/@.*/, ''));
     return SearchTermsForDbSavePtBr(textsUpd);
   }
   Fill?(values: IGenericObject) { FillClass(this, values); return this; }

@@ -4,7 +4,7 @@ import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
 import { Env, EnvSvr, EnvSvrEmailConfig, IEmailConfig } from '../libCommon/envs';
 
-import { isAmbDevOrTst } from '../libCommon/isAmb';
+import { isAmbDevOrQas } from '../libCommon/isAmb';
 import { dbg, ScopeDbg } from '../libCommon/dbg';
 import { CalcExecTime, CtrlRecursion } from '../libCommon/util';
 
@@ -75,7 +75,7 @@ async function _SendMailASync(sendEmailParams: SendEmailParams, context: string,
 
   const dbgE = (level: number, ...params) => dbg({ level, levelScope: ScopeDbg.e, context }, `==> SendMail(${++seqMailCtr})`, ...params);
 
-  const subjectUseMail = (isAmbDevOrTst() ? `(${Env('amb')}/${EnvSvr('plataform')}) ` : '') + sendEmailParams.subject;
+  const subjectUseMail = (isAmbDevOrQas() ? `(${Env('amb')}/${EnvSvr('plataform')}) ` : '') + sendEmailParams.subject;
 
   dbgE(1, `subject: ${sendEmailParams.subject}`);
 

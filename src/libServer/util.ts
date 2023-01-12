@@ -272,6 +272,9 @@ export class ResumoApi { // @@@@!!!! nome!
     this.#_redirectUrl = url;
     return this;
   }
+  static jsonAmbNone(res: NextApiResponse) {
+    res.status(HttpStatusCode.badRequest).json({ _ErrorPlusObj: new ErrorPlus('Ambiente não configurado') });
+  }
   json() {
     const context = this.#_ctrlApiExec.context();
     let elapsedMs = null;
@@ -355,12 +358,14 @@ export function RegExprTextSearchMongo(text: string) {
   if (text == null)
     return '';
   const comps = text.trim().split(' ');
+
   // escapes como \b não funcionam !
-  const wordBoundaries = false;
-  if (wordBoundaries)
-    return `(.*(${comps.map((str) => `( ${str} )`).join('|')}).*){${comps.length}}`;
-  else
-    return `(.*(${comps.map((str) => `(${str})`).join('|')}).*){${comps.length}}`;
+  // const wordBoundaries = false;
+  // if (wordBoundaries)
+  //   return `(.*(${comps.map((str) => `( ${str} )`).join('|')}).*){${comps.length}}`; // vide abaixo erro com quantificadores
+  // else
+  // return `(.*(${comps.map((str) => `(${str})`).join('|')}).*){${comps.length}}`; {x} quantificadores dá erro, pois se for exigido 3 ocorrências e tiver só 2 ele dá match!
+  return `${comps.map((str) => `.*(${str}).*`).join('')}`; // nesse código é exigido a mesma posição dos strings
 }
 
 const locks: { point: string, obj: IGenericObject }[] = [];
