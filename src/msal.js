@@ -6,14 +6,15 @@ const msalConfig = {
   auth: {
     clientId: EnvMSalConfig().client_id,
     authority: EnvMSalConfig().authority,
-    //redirectUri: `${EnvDeployConfig().app_url}`,
-    redirectUri: '/',
-    scopes: ['user.read', 'email', 'offline_access']
+    redirectUri: `${EnvDeployConfig().app_url}`,
+    //redirectUri: '/',
+    //scopes: ['user.read', 'email', 'offline_access']
     //redirectUri: `${EnvDeployConfig().app_url}/cydag`, // /cydag
     //redirectUri: 'http://localhost:3008/',
   },
   cache: {
-    secureCookies: true,
+    cacheLocation: "sessionStorage", // This configures where your cache will be stored
+    storeAuthStateInCookie: false, // Set this to "true" if you are having issues on IE11 or Edge
   }
 };
 
@@ -23,7 +24,7 @@ const msalInstance = new msal.PublicClientApplication(msalConfig);
 const clientId = msalConfig.auth.clientId;
 msalInstance.addEventCallback(event => {
   try {
-    if (event.eventType === EventType.LOGIN_SUCCESS && event.payload.account) {
+    if (event != undefined && event.eventType === EventType.LOGIN_SUCCESS && event.payload.account) {
       console.log('Autenticador >> ', event.payload.account);
       msalInstance.setActiveAccount(event.payload.account);
     }

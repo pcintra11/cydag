@@ -39,16 +39,27 @@ export default function PageSignInAzure() {
       //https://stackoverflow.com/questions/71414668/intermittent-problem-using-loginpopup-msal-js-in-a-react
       //https://www.thirdrocktechkno.com/blog/microsoft-login-integration-with-react/
       console.log('*********** LOGIN AZURE ****************');
-
-      const accountAzureApp: AuthenticationResult | undefined = await instance.loginPopup({
+      
+      instance.loginPopup({
         scopes: ['user.read', 'email', 'offline_access'],
         prompt: 'select_account',
+      }).then(r => {
+        console.log('Retorno do login >> ', r);
+
+        UserSignInASync(r.account.username.toLowerCase(), pswSignInAzure).then(loggedUserNow => {
+          setUser(loggedUserNow, pageSelf.pagePath);
+        });
       });
 
-      console.log('Azure details> ', accountAzureApp);
+      // const accountAzureApp: AuthenticationResult | undefined = await instance.loginPopup({
+      //   scopes: ['user.read', 'email', 'offline_access'],
+      //   prompt: 'select_account',
+      // });
 
-      const loggedUserNow = await UserSignInASync(accountAzureApp.account.username.toLowerCase(), pswSignInAzure);
-      setUser(loggedUserNow, pageSelf.pagePath);
+      // console.log('Azure details> ', accountAzureApp);
+
+      // const loggedUserNow = await UserSignInASync(accountAzureApp.account.username.toLowerCase(), pswSignInAzure);
+      // setUser(loggedUserNow, pageSelf.pagePath);
     }
     catch (error) {
       //setAutoLoginStage(2);
