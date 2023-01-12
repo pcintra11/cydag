@@ -105,19 +105,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
 
       // else if (parm.cmd == CmdApi_FuncAdm.loadUser) {
-<<<<<<< HEAD
 
       //   class Entity extends User { }
       //   const EntityModel = UserModel;
       //   const fullPath = FullPath('user.csv');
 
-=======
-
-      //   class Entity extends User { }
-      //   const EntityModel = UserModel;
-      //   const fullPath = FullPath('user.csv');
-
->>>>>>> main
       //   vai dar pau qdo executar o build compilado, pois é serverless !!! E o erro não dá pra saber que é por isso !!
       //   const data = await csvdata.load(fullPath, { delimiter: ';', encoding: 'latin1' }); // ansi?
 
