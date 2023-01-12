@@ -6,7 +6,7 @@ const msalConfig = {
   auth: {
     clientId: EnvMSalConfig().client_id,
     authority: EnvMSalConfig().authority,
-    redirectUri: `${EnvDeployConfig().app_url}`,
+    redirectUri: `${EnvDeployConfig().app_url}/cydag/home`,
     //redirectUri: '/',
     //scopes: ['user.read', 'email', 'offline_access']
     //redirectUri: `${EnvDeployConfig().app_url}/cydag`, // /cydag
