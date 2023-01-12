@@ -17,7 +17,7 @@ import { CorsMiddlewareAsync } from '../../../../libServer/cors';
 import { AlertTimeExecApiASync, CheckTimeOutAndAbort } from '../../../../libServer/alertTimeExecApi';
 import { ApiLogFinish, ApiLogStart } from '../../../../libServer/apiLog';
 
-import { ProcessoOrcamentarioCentroCusto, User } from '../../../../appCydag/modelTypes';
+import { ProcessoOrcamentarioCentroCusto } from '../../../../appCydag/modelTypes';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatus, ProcessoOrcamentarioStatusMd, RevisaoValor } from '../../../../appCydag/types';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 
@@ -68,7 +68,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      CheckApiAuthorized(apiSelf, await UserModel.findOne({ _id: new ObjectId(loggedUserReq?.userIdStr) } as User));
+      CheckApiAuthorized(apiSelf, await UserModel.findOne({ email: loggedUserReq?.email }).lean(), loggedUserReq?.email);
       ctrlApiExec.checkElapsed(`pre ${parm.cmd}`);
 
       if (parm.cmd == CmdApi.list) {

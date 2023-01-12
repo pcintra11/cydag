@@ -4,7 +4,7 @@ import { ErrorPlus } from '../libCommon/util';
 import { rolesApp } from './endPoints';
 import { LoggedUser } from './loggedUser';
 import { CentroCustoModel, ProcessoOrcamentarioCentroCustoModel, ProcessoOrcamentarioModel } from './models';
-import { CentroCusto, ProcessoOrcamentarioCentroCusto } from './modelTypes';
+import { ProcessoOrcamentarioCentroCusto } from './modelTypes';
 import { CentroCustoConfig, ProcCentrosCustoConfig } from './types';
 
 // Centros de Custo autorizados para o usuário

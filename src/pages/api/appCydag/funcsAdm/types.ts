@@ -4,7 +4,7 @@ enum CmdApi {
   clearLogsToDelete = 'clearLogsToDelete',
   clearOldLogs = 'clearOldLogs',
 
-  loadUser = 'loadUser',
+  //loadUser = 'loadUser',
   setTesteDataPlan = 'setTesteDataPlan',
   setTesteDataInterfaceSap = 'setTesteDataInterfaceSap',
 
