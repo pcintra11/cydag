@@ -46,7 +46,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       await CheckBlockAsync(loggedUserReq);
       const subCmd = parm.email != null ? 'simulStart' : 'simulCancel';
       const userDbSigned = await UserModel.findOne({ email: loggedUserReq.emailSigned }).lean();
-      CheckApiAuthorized(apiSelf, userDbSigned);
+      CheckApiAuthorized(apiSelf, userDbSigned, loggedUserReq.emailSigned);
 
       const userDbNew = subCmd == 'simulCancel' ? userDbSigned : await UserModel.findOne({ email: parm.email }).lean();
       CheckUserAllowed(userDbNew, parm.email);

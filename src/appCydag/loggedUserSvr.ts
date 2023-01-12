@@ -19,18 +19,18 @@ export const LoggedUserReqASync = async (ctrlApiExec: CtrlApiExec, extendCookieE
   return loggedUserReq;
 };
 
-export const CheckApiAuthorized = (apiDef: ApiDef, userDb: UserMd) => {
+export const CheckApiAuthorized = (apiDef: ApiDef, userDb: UserMd, email: string) => {
   //console.log({ apiDef, loggedUserReq });
   if (apiDef == null)
     throw new Error('Sem apiDef.');
   // if (!(apiDef.options?.onlyAuthenticated == true || onlyAuthenticatedForced))
   //   return;
-  CheckUserAllowed(userDb);
+  CheckUserAllowed(userDb, email);
   //const loggedUser = await LoggedUserReq(req, res);
   CheckRoleAllowed(apiDef.roles, [...userDb.roles, ...userDb.rolesControlled]);
 };
 
-export const CheckUserAllowed = (userDb: UserMd, email?: string) => {
+export const CheckUserAllowed = (userDb: UserMd, email: string) => {
   if (userDb == null)
     throw new ErrorPlus(`Conta ${email} não encontrada.`, { data: { fldName: User.F.email }, httpStatusCode: HttpStatusCode.notFound });
   if (!userDb.ativo)

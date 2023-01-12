@@ -51,8 +51,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      const userDb = await UserModel.findOne({ _id: new ObjectId(loggedUserReq?.userIdStr) }).lean();
-      CheckApiAuthorized(apiSelf, userDb);
+      const userDb = await UserModel.findOne({ email: loggedUserReq?.email }).lean();
+      CheckApiAuthorized(apiSelf, userDb, loggedUserReq?.email);
 
       const UserCanWrite = (ccConfig: any) => (
         ccConfig.emailResponsavel == loggedUserReq.email ||

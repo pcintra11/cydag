@@ -337,8 +337,8 @@ export default function PageComparativoAnualControladoria() {
           <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Orçado {anoAntAbrev}</Box></GridCell>
           <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Real {anoAntAbrev}</Box></GridCell>
           <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Orçado {anoAbrev}</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Dif.</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Dif. %</Box></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Dif. (OxR)</Box></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Dif. (OxR) %</Box></GridCell>
         </>
       );
     };
@@ -372,7 +372,7 @@ export default function PageComparativoAnualControladoria() {
         const paddingLeft = 0.8 * level;
         const propsColorLevel = node.group ? propsColorByTotLevel(themePlus, level + 1) : {};
 
-        const varAbs = node.nodeContent.vals.planAtu - node.nodeContent.vals.planAnt;
+        const varAbs = node.nodeContent.vals.planAtu - node.nodeContent.vals.realAnt;
         const varPerc = node.nodeContent.vals.planAnt == 0 ? null : (varAbs) / node.nodeContent.vals.planAnt;
         const propsColorVar = propsColorByCompRealPlan(themePlus, varAbs);
 

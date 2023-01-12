@@ -7,7 +7,7 @@ import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
 
 import { ErrorPlus, HttpStatusCode, SleepMsDevRandom } from '../../../../libCommon/util';
 import { csd, dbgWarn } from '../../../../libCommon/dbg';
-import { EnvDeployConfig, EnvDeveloper } from '../../../../libCommon/envs';
+import { EnvDeployConfig } from '../../../../libCommon/envs';
 import { RolesDevArray } from '../../../../libCommon/endPoints';
 import { isAmbNone } from '../../../../libCommon/isAmb';
 
@@ -28,6 +28,7 @@ import { User } from '../../../../appCydag/modelTypes';
 import { CmdApi_UserAuth as CmdApi, pswSignInAzure } from './types';
 import { LoggedUser } from '../../../../appCydag/loggedUser';
 
+const emailDeveloper = 'paulocintra@cyrela.com.br';
 const apiSelf = apisApp.userAuth;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
@@ -55,10 +56,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
     //#region pre-carga
     {
-      const anyDocDb = await UserModel.findOne({}).lean();
+      const anyDocDb = await UserModel.findOne({ email: emailDeveloper }).lean();
       if (anyDocDb == null) {
         const documentInsert: User = {
-          email: EnvDeveloper().email,   // @!!!!!! implementar senha e reset por email !
+          email: emailDeveloper,
           nome: 'Desenvolvedor do sistema',
           ativo: true,
           //email_superior: null,
@@ -116,7 +117,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
               throw new ErrorPlus('login inválido', { httpStatusCode: HttpStatusCode.unAuthorized });
           }
           else {
-            const pswCheck = (parm.email == EnvDeveloper().email) ? `${parm.email}senhasenha` : `${parm.email}senha`;
+            const pswCheck = (parm.email == emailDeveloper) ? `${parm.email}senhasenha` : `${parm.email}senha`;
             if (parmPsw != pswCheck)
               throw new ErrorPlus('Senha incorreta.', { data: { fldName: 'psw' }, httpStatusCode: HttpStatusCode.unAuthorized });
           }
@@ -163,8 +164,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       else {
         if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
         await CheckBlockAsync(loggedUserReq);
-        const userDb = await UserModel.findOne({ _id: new ObjectId(loggedUserReq?.userIdStr) }).lean();
-        CheckApiAuthorized(apiSelf, userDb);
+        const userDb = await UserModel.findOne({ email: loggedUserReq?.email }).lean();
+        CheckApiAuthorized(apiSelf, userDb, loggedUserReq?.email);
 
         if (parm.cmd == CmdApi.reSignIn) {
           const hasSomeCCResponsavel = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailResponsavel: userDb.email })) != null;
