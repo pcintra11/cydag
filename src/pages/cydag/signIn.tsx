@@ -9,7 +9,7 @@ import { _AppLogRedir } from '../_app';
 import { IsErrorManaged, ObjUpdAllProps, ErrorPlus } from '../../libCommon/util';
 import { dbg, ScopeDbg } from '../../libCommon/dbg';
 
-import { Btn, BtnLine, WaitingObs, FrmSetError } from '../../components';
+import { Btn, BtnLine, WaitingObs, FrmSetError, FakeLink, PopupMsg } from '../../components';
 import { AbortProc, LogErrorUnmanaged } from '../../components';
 import { FrmError, FrmInput } from '../../components';
 import { FrmDefaultValues, NormalizePropsString, useFrm } from '../../hooks/useMyForm';
@@ -17,15 +17,14 @@ import { FrmDefaultValues, NormalizePropsString, useFrm } from '../../hooks/useM
 import { pagesApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 //import { userSchema } from '../../appCydag/types_user_db'; //@@!!!!!
-import { UserSignInASync } from '../../appCydag/userResourcesCli';
+import { UserEmailLinkASync, UserSignInASync } from '../../appCydag/userResourcesCli';
 import { User } from '../../appCydag/modelTypes';
-import { signInValidations } from '../api/appCydag/user/types';
+import { signInValidations, UserLinkType } from '../api/appCydag/user/types';
 
 enum Phase {
   initiating = 'initiating',
   ready = 'ready',
 }
-
 
 class FrmDataSignIn {
   email: string;
@@ -108,6 +107,20 @@ export default function PageSignIn() {
       FrmError(frmSignIn, error);
     }
   };
+  const sendResetPswLink = async (dataForm) => {
+    const data = NormalizePropsString(dataForm);
+    try {
+      const message = await UserEmailLinkASync(data.email, UserLinkType.resetPsw);
+      PopupMsg.success(message);
+    } catch (error) {
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-sendResetPswLink`);
+      if (!IsErrorManaged(error)) {
+        setMainStatesCache({ error });
+        return;
+      }
+      FrmError(frmSignIn, error);
+    }
+  };
   //#endregion
 
   try {
@@ -124,8 +137,9 @@ export default function PageSignIn() {
               : <FrmInput label='Email' frm={frmSignIn} name={User.F.email} autoFocus {...disabledIfInitiating} />
             }
             <FrmInput label='Senha' frm={frmSignIn} name={User.F.psw} type='password' {...disabledIfInitiating} />
-            <BtnLine>
+            <BtnLine left>
               <Btn submit {...disabledIfInitiating}>Entrar</Btn>
+              <FakeLink onClick={frmSignIn.handleSubmit(sendResetPswLink)}>Esqueci a senha (reset)</FakeLink>
             </BtnLine>
           </Stack>
         </form>

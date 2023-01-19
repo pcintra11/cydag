@@ -102,6 +102,8 @@ export const UserModel = (() => {
     //email_superior: { type: String, required: false },
     roles: { type: Array, required: true },
     rolesControlled: { type: Array, required: true },
+    psw: { type: String, required: false },
+    tokenResetPsw: { type: String, required: false },
     searchTerms: { type: String, required: false },
     created: { type: Date, required: true },
     lastUpdated: { type: Date, required: true },

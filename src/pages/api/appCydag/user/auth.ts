@@ -12,7 +12,7 @@ import { RolesDevArray } from '../../../../libCommon/endPoints';
 import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
-import { GetCtrlApiExec, ResumoApi } from '../../../../libServer/util';
+import { GetCtrlApiExec, ReqNoParm, ResumoApi } from '../../../../libServer/util';
 import { CheckBlockAsync } from '../../../../libServer/checkBlockAsync';
 import { ApiStatusDataByErrorASync } from '../../../../libServer/apiStatusDataByError';
 import { CorsMiddlewareAsync } from '../../../../libServer/cors';
@@ -27,22 +27,19 @@ import { ProcessoOrcamentarioCentroCustoModel, UserModel } from '../../../../app
 import { User } from '../../../../appCydag/modelTypes';
 import { CmdApi_UserAuth as CmdApi, pswSignInAzure } from './types';
 import { LoggedUser } from '../../../../appCydag/loggedUser';
+import { Crypt } from '../../../../libServer/crypt';
 
-const emailDeveloper = 'paulocintra@cyrela.com.br';
+const accountDeveloper = 'paulocintra@cyrela.com.br';
 const apiSelf = apisApp.userAuth;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
+  if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
   const parm = ctrlApiExec.parm;
-
   const parmPsw = parm.psw;
-  //const parmPswConfirm = parm.pswConfirm;
-  if (parm.psw != null)
-    parm.psw = '****';
-  if (parm.pswConfirm != null)
-    parm.pswConfirm = '****';
+  if (parm.psw != null) parm.psw = '****';
 
   const resumoApi = new ResumoApi(ctrlApiExec);
   const agora = new Date();
@@ -56,10 +53,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
     //#region pre-carga
     {
-      const anyDocDb = await UserModel.findOne({ email: emailDeveloper }).lean();
+      const anyDocDb = await UserModel.findOne({ email: accountDeveloper }).lean();
       if (anyDocDb == null) {
         const documentInsert: User = {
-          email: emailDeveloper,
+          email: accountDeveloper,
           nome: 'Desenvolvedor do sistema',
           ativo: true,
           //email_superior: null,
@@ -117,9 +114,24 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
               throw new ErrorPlus('login inválido', { httpStatusCode: HttpStatusCode.unAuthorized });
           }
           else {
-            const pswCheck = (parm.email == emailDeveloper) ? `${parm.email}senhasenha` : `${parm.email}senha`;
-            if (parmPsw != pswCheck)
-              throw new ErrorPlus('Senha incorreta.', { data: { fldName: 'psw' }, httpStatusCode: HttpStatusCode.unAuthorized });
+            if (userDb.psw == null) {
+              //throw new ErrorPlus('Senha ainda não definida. Faça um reset para defini-la.', { data: { fldName: 'psw' }, httpStatusCode: HttpStatusCode.unAuthorized });
+              const pswCheck = (parm.email !== accountDeveloper) ? `${parm.email}senha` : null; // `${parm.email}senhasenha`
+              if (pswCheck == null)
+                throw new ErrorPlus('Não foi possível determinar a forma de checagem de senha para esse usuário', { data: { fldName: 'email' }, httpStatusCode: HttpStatusCode.unAuthorized });
+              if (parmPsw != pswCheck)
+                throw new ErrorPlus('Senha incorreta.', { data: { fldName: 'psw' }, httpStatusCode: HttpStatusCode.unAuthorized });
+            }
+            else {
+              let senhaOk = false;
+              try {
+                senhaOk = Crypt.compareSync(parmPsw, userDb.psw);
+              } catch (error) {
+                throw new Error(`Erro na conferência da senha. ${error.message}`);
+              }
+              if (!senhaOk)
+                throw new ErrorPlus('Senha incorreta.', { data: { fldName: 'psw' }, httpStatusCode: HttpStatusCode.unAuthorized });
+            }
           }
           const hasSomeCCResponsavel = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailResponsavel: userDb.email })) != null;
           const hasSomeCCPlanejador = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailPlanejador: userDb.email })) != null;

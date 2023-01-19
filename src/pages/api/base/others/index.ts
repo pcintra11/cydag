@@ -9,7 +9,7 @@ import { csd, dbg, dbgWarn, ScopeDbg } from '../../../../libCommon/dbg';
 import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
-import { GetCtrlApiExec, ResumoApi } from '../../../../libServer/util';
+import { GetCtrlApiExec, ReqNoParm, ResumoApi } from '../../../../libServer/util';
 import { ApiStatusDataByErrorASync } from '../../../../libServer/apiStatusDataByError';
 import { CorsMiddlewareAsync } from '../../../../libServer/cors';
 import { AlertTimeExecApiASync } from '../../../../libServer/alertTimeExecApi';
@@ -20,6 +20,7 @@ import { CmdApi_Others } from './types';
 const apiSelf = apisBase.others;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
+  if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true }); // @@!! pesquisar melhor sobre credentials !
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd', 'attrSector'], ['email']);
   //await SleepMsDevApi(varsReq);

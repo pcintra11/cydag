@@ -186,7 +186,7 @@ export class OrigemFuncMd {
   static get all() {
     return [
       new EnumMd(OrigemFunc.legado, 'Legado'),
-      new EnumMd(OrigemFunc.local, 'Cydag'),
+      new EnumMd(OrigemFunc.local, 'Local'),
       //new EnumMd(OrigemFunc.terceiro, 'Terc.'),
     ];
   }

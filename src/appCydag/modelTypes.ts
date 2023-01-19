@@ -142,6 +142,8 @@ export class User {
   //email_superior?: string;
   roles?: string[];
   rolesControlled?: string[];
+  psw?: string;
+  tokenResetPsw?: string;
   searchTerms?: string;
   created?: Date;
   lastUpdated?: Date;

@@ -15,7 +15,7 @@ import { dbg, dbgError, ScopeDbg } from '../../../libCommon/dbg';
 import { CategMsgSystem } from '../../../libCommon/logSystemMsg_cliSvr';
 import { isAmbNone } from '../../../libCommon/isAmb';
 
-import { GetCtrlApiExec, ResumoApi } from '../../../libServer/util';
+import { GetCtrlApiExec, ReqNoParm, ResumoApi } from '../../../libServer/util';
 import { ApiStatusDataByErrorASync } from '../../../libServer/apiStatusDataByError';
 import { CorsMiddlewareAsync } from '../../../libServer/cors';
 import { SendMailASync } from '../../../libServer/sendMail';
@@ -28,6 +28,7 @@ import { AsyncProcTypes } from '../../../libServer/asyncProcsCalls';
 const apiSelf = apisBase.asyncProc;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
+  if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
   await CorsMiddlewareAsync(req, res, null, { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['type'], ['info']);
   const parm = ctrlApiExec.parm;

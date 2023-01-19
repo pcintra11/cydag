@@ -1,3 +1,5 @@
+import { isAmbDev } from '../libCommon/isAmb';
+
 export const configApp = {
   forceWaitMinimumMs: 500,
   maximumSearchResult: 200,
@@ -44,3 +46,12 @@ export const classeCustoPessoalArray = [  // #!!!!!! deve ir para o MD !!!!
   '5200502008',
   '5200504030',
 ]; 
+
+//#region tokens para links por email e call back ao sistema
+export const linkEmailExpirationMinutes = () => {
+  const minutes = isAmbDev() ? (30) : (24 * 60);
+  return minutes;
+};
+export enum TokenType {
+  resetPsw = 'resetPswTk',
+}

@@ -28,7 +28,7 @@ export default function PageIndex() {
         <Stack gap={1}>
           {loggedUser == null
             ? <BtnLine left>
-              <Btn onClick={() => router.push(pagesApp.signIn.pagePath)}>Entrar no Cydag</Btn>
+              <Btn onClick={() => router.push(pagesApp.signIn.pagePath)}>Entrar no Sistema</Btn>
             </BtnLine>
             : <Box>
               <Btn onClick={() => router.push(pagesApp.home.pagePath)}>Ir para o menu</Btn>

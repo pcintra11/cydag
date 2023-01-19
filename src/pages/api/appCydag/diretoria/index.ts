@@ -8,7 +8,7 @@ import { ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
 import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
-import { GetCtrlApiExec, ResumoApi, ValidateObjectFirstError, SearchTermsForFindPtBr } from '../../../../libServer/util';
+import { GetCtrlApiExec, ResumoApi, ValidateObjectFirstError, SearchTermsForFindPtBr, ReqNoParm } from '../../../../libServer/util';
 import { CheckBlockAsync } from '../../../../libServer/checkBlockAsync';
 import { ApiStatusDataByErrorASync } from '../../../../libServer/apiStatusDataByError';
 import { CorsMiddlewareAsync } from '../../../../libServer/cors';
@@ -27,6 +27,7 @@ import { DiretoriaModel as Model_Crud } from '../../../../appCydag/models';
 const apiSelf = apisApp.diretoria;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
+  if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);

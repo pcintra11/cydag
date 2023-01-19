@@ -1,6 +1,8 @@
 import { ApiDef, PageDef, rolesDev } from '../libCommon/endPoints';
 import { EnvDeployConfig } from '../libCommon/envs';
 
+// appXXX
+
 export const rolesApp = {
   gestorContr: 'gestor_contr',
   cargaFunc: 'carga_func',
@@ -66,6 +68,7 @@ export const pagesApp = {
   signIn: new PageDef(EnvDeployConfig().mode_auth == 'azure' ? `${pathPages}/signInAzure` : `${pathPages}/signIn`, 'Login'),
   signOut: new PageDef(EnvDeployConfig().mode_auth == 'azure' ? `${pathPages}/signOutAzure` : `${pathPages}/signOut`, 'Logout'),
   userSimulate: new PageDef(`${pathPages}/userSimulate`, 'Simulação de Usuário', null, { onlyAuthenticated: true, roles: [rolesApp.gestorContr, roleSimulateUserDyn] }),
+  userResetPsw: new PageDef(`${pathPages}/resetPsw`, 'Reset de Senha'),
 
   funcionario: new PageDef(`${pathPages}/plan/funcionario`, 'Composição da Equipe', null, { onlyAuthenticated: true, roles: [rolesApp.dyn_responsCC] }),
   terceiro: new PageDef(`${pathPages}/plan/terceiro`, 'Terceirizados', null, { onlyAuthenticated: true, roles: rolesQuadro }),
@@ -96,6 +99,7 @@ export const PagesAppArray = () => {
 const pathApi = 'appCydag';
 export const apisApp = {
   userAuth: new ApiDef(`${pathApi}/user/auth`),
+  userOthers: new ApiDef(`${pathApi}/user/others`),
   userSimulate: new ApiDef(`${pathApi}/user/simulate`, [rolesApp.gestorContr, roleSimulateUserDyn]),
 
   processoOrcamentario: new ApiDef(`${pathApi}/processoOrcamentario`),

@@ -11,7 +11,7 @@ import { isAmbNone } from '../../../../libCommon/isAmb';
 import { CallApiSvrASync } from '../../../../fetcher/fetcherSvr';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
-import { CtrlApiExec, GetCtrlApiExec, ResumoApi } from '../../../../libServer/util';
+import { CtrlApiExec, GetCtrlApiExec, ReqNoParm, ResumoApi } from '../../../../libServer/util';
 import { CheckBlockAsync } from '../../../../libServer/checkBlockAsync';
 import { ApiStatusDataByErrorASync } from '../../../../libServer/apiStatusDataByError';
 import { CorsMiddlewareAsync } from '../../../../libServer/cors';
@@ -37,6 +37,7 @@ import { calcContaDespCorr, contasCalc, FuncionariosForCalc, premissaCod, Premis
 const apiSelf = apisApp.valoresContas;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
+  if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['ano']);  // #!!!! filter
 
@@ -266,8 +267,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           const interfaceSapRealizado = EnvSvrInterfaceSapRealizadoConfig();
           const apiReturn = await CallApiSvrASync(interfaceSapRealizado.url, ctrlApiExec, null, { params: [ctrlInterfaceMd.dag_run_id] }, { method: 'getParams', auth: { username: interfaceSapRealizado.auth.user, password: interfaceSapRealizado.auth.pass } });
           const info: any = { resultSap: apiReturn };
-          const errosCydag = [];
-          let inseridosCydag = 0;
+          const errosImport = [];
+          let inseridos = 0;
           if (apiReturn.state === InterfaceSapStatus.success) {
             const valsInterface = await ValoresRealizadosInterfaceSapModel.find({}).lean().sort({ ano: 1, centroCusto: 1, classeCusto: 1 });
             if (valsInterface.length !== 0) {
@@ -281,7 +282,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
               for (let index = 0; index < valsInterface.length; index++) {
                 const val = valsInterface[index];
                 if (val.ano != ano) {
-                  errosCydag.push(`foram encontrados dois anos no fluxo de carga: ${ano} e ${val.ano}`);
+                  errosImport.push(`foram encontrados dois anos no fluxo de carga: ${ano} e ${val.ano}`);
                   break;
                 }
                 if (val.centroCusto != lastCentroCusto) {
@@ -295,12 +296,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 }
               }
               if (centroCustoNotFoundArray.length > 0)
-                errosCydag.push(`Centros de Custo não configurados para o Processo Orçamentário de ${ano}: ${centroCustoNotFoundArray.join(', ')}`);
+                errosImport.push(`Centros de Custo não configurados para o Processo Orçamentário de ${ano}: ${centroCustoNotFoundArray.join(', ')}`);
               if (classeCustoNotFoundArray.length > 0) {
                 classeCustoNotFoundArray.sort((x, y) => compareForBinSearch(x, y));
-                errosCydag.push(`Classes de Custo não cadastradas: ${classeCustoNotFoundArray.join(', ')}`);
+                errosImport.push(`Classes de Custo não cadastradas: ${classeCustoNotFoundArray.join(', ')}`);
               }
-              if (errosCydag.length == 0) {
+              if (errosImport.length == 0) {
                 const resultDel = await ValoresRealizadosModel.deleteMany({ ano } as ProcessoOrcamentario);
                 //resultProc.push(`Valores anteriores removidos: ${resultDel.deletedCount}`);
                 const resultIncl = await ValoresRealizadosModel.insertMany(valsInterface.map((x) => ({
@@ -310,16 +311,16 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                     roundInterface(x.m05), roundInterface(x.m06), roundInterface(x.m07), roundInterface(x.m08),
                     roundInterface(x.m09), roundInterface(x.m10), roundInterface(x.m11), roundInterface(x.m12)]
                 })));
-                inseridosCydag = resultIncl.length;
+                inseridos = resultIncl.length;
                 await ValoresRealizadosInterfaceSapModel.deleteMany({});
               }
             }
             else
-              errosCydag.push('Nenhum registro SAP');
+              errosImport.push('Nenhum registro SAP');
 
             info.registrosSap = valsInterface.length;
-            info.inseridosCydag = inseridosCydag;
-            info.errosCydag = errosCydag;
+            info.inseridos = inseridos;
+            info.errosImport = errosImport;
           }
           else if (apiReturn.state === InterfaceSapStatus.failed)
             await NotifyAdmASync('interfaceSapRealizado-carga', `dag_run_id ${ctrlInterfaceMd.dag_run_id}`, ctrlApiExec, apiReturn);

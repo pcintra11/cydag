@@ -8,7 +8,7 @@ import { BinSearchItem, ErrorPlus, SleepMsDevRandom } from '../../../../libCommo
 import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
-import { GetCtrlApiExec, ResumoApi, SearchTermsForFindPtBr } from '../../../../libServer/util';
+import { GetCtrlApiExec, ReqNoParm, ResumoApi, SearchTermsForFindPtBr } from '../../../../libServer/util';
 import { CheckBlockAsync } from '../../../../libServer/checkBlockAsync';
 import { ApiStatusDataByErrorASync } from '../../../../libServer/apiStatusDataByError';
 import { CorsMiddlewareAsync } from '../../../../libServer/cors';
@@ -27,6 +27,7 @@ import { ClasseCustoRestritaModel as Model_Crud } from '../../../../appCydag/mod
 const apiSelf = apisApp.classeCustoRestrita;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
+  if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);

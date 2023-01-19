@@ -3,9 +3,11 @@ import RequestIp from 'request-ip';
 import { ipVersion } from 'is-ip';
 import URLParse from 'url-parse';
 import * as yup from 'yup';
+import jwtThen from 'jwt-then';
+import { v1 as uuidv1 } from 'uuid';
 
 import { EnvDeployConfig } from '../libCommon/envs';
-import { CalcExecTime, ErrorPlus, FilterRelevantWordsForSearch, LanguageSearch, SleepMs } from '../libCommon/util';
+import { AddToDate, CalcExecTime, CompareDates, DateFromStrISO, DateToStrISO, ErrorPlus, FilterRelevantWordsForSearch, LanguageSearch, SleepMs, StrLeft } from '../libCommon/util';
 import { csd, dbg, dbgError, dbgWarn, NivelLog, ScopeDbg, SetNivelLog } from '../libCommon/dbg';
 import { HttpStatusCode, IdByTime, DispAbrev } from '../libCommon/util';
 import { IGenericObject } from '../libCommon/types';
@@ -57,13 +59,22 @@ export class CtrlApiExec {
     const elapsedTot = this.calcExecTime.elapsedMs();
     const gap = elapsedTot - this.lastElapsed;
     if (showAlways || gap > 1000)
-      console.log(this.apiPath, point, `elapsed tot ${elapsedTot}ms, gap ${gap}ms ${gap > 1000 ? '- !!!!!!!!!!!!!' : ''}`);
+      console.log(this.apiPath, point, `elapsed tot ${elapsedTot}ms, gap ${gap}ms ${gap > 1000 ? '- **********' : ''}`);
     this.lastElapsed = elapsedTot;
   }
 }
 
 let colorDestaqSeq = 1;
 let seqApi = 0;
+
+const ReqParm = (req: NextApiRequest) => {
+  return (req.method === 'GET') ? req.query : req.body;
+};
+export const ReqNoParm = (req: NextApiRequest) => {
+  const parm = ReqParm(req);
+  if (Object.keys(parm).length == 0) return true;
+  else return false;
+};
 
 let ctrlApiExecGlobal: CtrlApiExec = null;
 export function GetCtrlApiExec(req: NextApiRequest, res: NextApiResponse, paramsTypeVariantSel: string[] = ['cmd'], paramsTypeKeySel: string[] = []) {
@@ -120,10 +131,7 @@ export function GetCtrlApiExec(req: NextApiRequest, res: NextApiResponse, params
 
     //_protocolHost = ctrlApiExec.protocolHost;
 
-    if (req.method === 'GET')
-      ctrlApiExec.parm = req.query;
-    else
-      ctrlApiExec.parm = req.body;
+    ctrlApiExec.parm = ReqParm(req);
     //console.log('parm em varsHttp', varsHttp.parm);
 
     const paramsTypeVariantVals = [];
@@ -275,6 +283,9 @@ export class ResumoApi { // @@@@!!!! nome!
   static jsonAmbNone(res: NextApiResponse) {
     res.status(HttpStatusCode.badRequest).json({ _ErrorPlusObj: new ErrorPlus('Ambiente não configurado') });
   }
+  static jsonNoParm(res: NextApiResponse) {
+    res.status(HttpStatusCode.badRequest).json({ _ErrorPlusObj: new ErrorPlus('Nenhum parâmetro informado') });
+  }
   json() {
     const context = this.#_ctrlApiExec.context();
     let elapsedMs = null;
@@ -411,3 +422,43 @@ export function UnLockObj(obj: { id: string }, context: string, point: string, d
     locks.splice(lockIndex, 1);
   }
 }
+
+//#region tokens
+const tokenLinksKey = 'jflksfgsdfsdfg-0';
+
+function RandomKeyToken(length: number = null): string {
+  const result = uuidv1();
+  if (length != null) return StrLeft(result, length);
+  else return result;
+}
+
+export async function TokenEncodeASync(tokenType: string, data: IGenericObject, expirationMinutes: number) {
+  try {
+    const agora = new Date();
+    const expireIn = AddToDate(agora, { minutes: expirationMinutes });
+    const payLoadCtrl = { data, ctrl: { generateIn: DateToStrISO(agora), expireIn: DateToStrISO(expireIn), type: tokenType, key: RandomKeyToken(8) } };
+    //csd({ payLoadCtrl });
+    const token = await jwtThen.sign(payLoadCtrl, tokenLinksKey) as string;
+    return { token, expireIn };
+  } catch (error) {
+    return null;
+  }
+}
+export async function TokenDecodeASync(tokenType: string, token: string) {
+  //try {
+  const agora = new Date();
+  const payLoad: any = await jwtThen.verify(token, tokenLinksKey);
+  if (payLoad?.ctrl?.type != tokenType)
+    throw new Error('type');
+  //const horaExpiration = AddToDate(DateFromStrISO(payLoad.ctrl.hora), { seconds: payLoad.ctrl.expirationSecs });
+  // if (compareAsc(agora, horaExpiration) > 0)
+  //   throw new Error('Expirado');
+  const expired = payLoad.ctrl.expireIn != null && CompareDates(agora, DateFromStrISO(payLoad.ctrl.expireIn)) > 0 ? true : false;
+  //if (expired) // @!!!!!
+  //csl('token gerado em:', payLoad.ctrl.generateIn, '; expira em:', payLoad.ctrl.expireIn, expired ? ' **** EXPIRADO ****' : '');
+  return { payLoad: payLoad.data, expired, expireIn: DateFromStrISO(payLoad.ctrl.expireIn) };
+  // } catch (error) {
+  //   throw error;
+  // }
+}
+//#endregion

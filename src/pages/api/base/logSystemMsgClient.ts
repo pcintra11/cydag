@@ -6,7 +6,7 @@ import { ConnectDbASync, CloseDbASync, UriDb } from '../../../base/db/functions'
 import { isAmbNone } from '../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../libServer/corsWhiteList';
-import { ResumoApi, GetCtrlApiExec } from '../../../libServer/util';
+import { ResumoApi, GetCtrlApiExec, ReqNoParm } from '../../../libServer/util';
 import { ApiStatusDataByErrorASync } from '../../../libServer/apiStatusDataByError';
 import { CorsMiddlewareAsync } from '../../../libServer/cors';
 import { _SystemMsgSvrFromClientASync } from '../../../libServer/systemMsgSvr';
@@ -17,6 +17,7 @@ import { AlertTimeExecApiASync } from '../../../libServer/alertTimeExecApi';
 const apiSelf = apisBase.logSystemMsgClient;
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
+  if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist());
   const ctrlApiExec = GetCtrlApiExec(req, res, ['categ', 'point']);
   const parm = ctrlApiExec.parm;

@@ -13,7 +13,7 @@ import { FldCsvDef, FromCsvUpload, IUploadMessage, MessageLevelUpload } from '..
 import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
-import { GetCtrlApiExec, ResumoApi } from '../../../../libServer/util';
+import { GetCtrlApiExec, ReqNoParm, ResumoApi } from '../../../../libServer/util';
 import { CheckBlockAsync } from '../../../../libServer/checkBlockAsync';
 import { ApiStatusDataByErrorASync } from '../../../../libServer/apiStatusDataByError';
 import { CorsMiddlewareAsync } from '../../../../libServer/cors';
@@ -21,7 +21,7 @@ import { AlertTimeExecApiASync } from '../../../../libServer/alertTimeExecApi';
 import { ResolvePromisesExecUntilResponse } from '../../../../libServer/opersASync';
 import { ApiLogFinish, ApiLogStart } from '../../../../libServer/apiLog';
 
-import { collectionsDef as collectionsDefCydag, UserModel, CentroCustoModel, EmpresaModel, UnidadeNegocioModel, LocalidadeModel, ClasseCustoModel, FatorCustoModel, AgrupPremissasModel, DiretoriaModel, GerenciaModel, ValoresRealizadosModel, PremissaModel, ValoresPremissaModel, FuncaoTerceiroModel, ViagemModel, ValoresLocalidadeModel, ValoresTransferModel, FuncionarioModel, ProcessoOrcamentarioCentroCustoModel, TerceiroModel, ValoresImputadosModel, ValoresRealizadosInterfaceSapModel, ProcessoOrcamentarioModel, ValoresPlanejadosHistoricoModel } from '../../../../appCydag/models';
+import { collectionsDef as collectionsDefApp, UserModel, CentroCustoModel, EmpresaModel, UnidadeNegocioModel, LocalidadeModel, ClasseCustoModel, FatorCustoModel, AgrupPremissasModel, DiretoriaModel, GerenciaModel, ValoresRealizadosModel, PremissaModel, ValoresPremissaModel, FuncaoTerceiroModel, ViagemModel, ValoresLocalidadeModel, ValoresTransferModel, FuncionarioModel, ProcessoOrcamentarioCentroCustoModel, TerceiroModel, ValoresImputadosModel, ValoresRealizadosInterfaceSapModel, ProcessoOrcamentarioModel, ValoresPlanejadosHistoricoModel } from '../../../../appCydag/models';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 import { apisApp } from '../../../../appCydag/endPoints';
 import { User, Empresa, Gerencia, Diretoria, AgrupPremissas, CentroCusto, Localidade, UnidadeNegocio, FatorCusto, ClasseCusto, Premissa, ValoresPremissa, FuncaoTerceiro, Viagem, ValoresLocalidade, ValoresTransfer, ValoresRealizados, Funcionario, FuncionarioRevisao, empresaCoringa, localidadeCoringa, ValoresImputados, ValoresPlanejadosHistorico } from '../../../../appCydag/modelTypes';
@@ -36,6 +36,7 @@ import { anoAdd, mesesFld, multiplyValMeses, sumValMeses } from '../../../../app
 const apiSelf = apisApp.funcsAdm;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
+  if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['idProc']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
@@ -76,15 +77,15 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       await CheckApiAuthorized(apiSelf, userDb, loggedUserReq.email);
 
       if (parm.cmd == CmdApi_FuncAdm.ensureIndexes) {
-        const messagesIndexesCydag = await EnsureModelsIndexesASync('cydag', collectionsDefCydag);
+        const messagesIndexesApp = await EnsureModelsIndexesASync('app', collectionsDefApp);
         const messagesIndexesBase = await EnsureModelsIndexesASync('base', collectionsDefBase);
-        resumoApi.jsonData({ value: [...messagesIndexesCydag.map((x) => `cydag: ${x}`), ...messagesIndexesBase.map((x) => `base: ${x}`)] });
+        resumoApi.jsonData({ value: [...messagesIndexesApp.map((x) => `app: ${x}`), ...messagesIndexesBase.map((x) => `base: ${x}`)] });
       }
 
       else if (parm.cmd == CmdApi_FuncAdm.checkIndexes) {
-        const messagesIndexesCydag = await CheckModelsIndexesASync('cydag', collectionsDefCydag);
+        const messagesIndexesApp = await CheckModelsIndexesASync('app', collectionsDefApp);
         const messagesIndexesBase = await CheckModelsIndexesASync('base', collectionsDefBase);
-        resumoApi.jsonData({ value: [...messagesIndexesCydag.map((x) => `cydag: ${x}`), ...messagesIndexesBase.map((x) => `base: ${x}`)] });
+        resumoApi.jsonData({ value: [...messagesIndexesApp.map((x) => `app: ${x}`), ...messagesIndexesBase.map((x) => `base: ${x}`)] });
         deleteIfOk = true;
       }
 
@@ -153,7 +154,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         parm.cmd == CmdApi_FuncAdm.setTesteDataInterfaceSap) {
 
         //#region dados teste
-        const ano = '2019';
+        const ano = '2001';
         const mesesLen = mesesFld.length;
 
         const testUn1p = { unidadeNegocio: '_UN1P', descr: 'Unidade de Negócio 1 (teste - regionais principais)', categRegional: CategRegional.principais };

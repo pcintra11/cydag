@@ -8,7 +8,7 @@ import { v1 as uuidv1 } from 'uuid';
 import { ThemeProvider as ThemeProvider_mui } from '@mui/material/styles';
 import { Box, Stack } from '@mui/material';
 
-import { menuTypeHub, MenuEntriesHub, pagesHub, reSignInFuncHub, ControlledAccessCheckHub, ControlledAccessClaimHub, themeSchemesHub, imgAppHub, DisclaimerHub, routerConfirmLoginHub } from '../link';
+import { MenuEntriesHub, pagesHub, reSignInFuncHub, ControlledAccessCheckHub, ControlledAccessClaimHub, themeSchemesHub, imgAppHub, DisclaimerHub, routerConfirmLoginHub } from '../link';
 import { Env, EnvDeployConfig } from '../libCommon/envs';
 
 import { CmdApi_Others } from './api/base/others/types';
@@ -43,6 +43,7 @@ import { msalInstance } from '../msal';
 import { MsalProvider } from '@azure/msal-react';
 import { useLoggedUser } from '../appCydag/useLoggedUser';
 import { PagesAppArray } from '../appCydag/endPoints';
+import { menuTypeApp } from '../appCydag/themes';
 
 export interface ILogRedir { loggedUser: LoggedUserBase, pathname: string, query?: any }
 export interface ILogRedirContext {
@@ -107,7 +108,7 @@ export default function _app({ Component, pageProps }: AppProps) {
   const [mainStates, setMainStates] = React.useState<MainStates>({
     themeVariants: themeVariants,
     nivelLogA: NivelLog(ScopeDbg.a), nivelLogD: NivelLog(ScopeDbg.d), nivelLogE: NivelLog(ScopeDbg.e), nivelLogT: NivelLog(ScopeDbg.t), nivelLogX: NivelLog(ScopeDbg.x),
-    menuType: menuTypeHub,
+    menuType: menuTypeApp,
   });
   mainStatesCache = { ...mainStates }; const setMainStatesCache = (newValues: MainStates) => { if (!mount) return; ObjUpdAllProps(mainStatesCache, newValues); setMainStates({ ...mainStatesCache }); };
 

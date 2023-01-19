@@ -13,6 +13,10 @@ enum CmdApiCrud {
   download = 'download',
   reset = 'reset',
 }
+enum CmdApiOthers {
+  resetPsw = 'resetPsw',
+  emailLink = 'emailLink',
+}
 enum CmdApiAuth {
   signIn = 'signIn',
   signOut = 'signOut',
@@ -22,8 +26,14 @@ enum CmdApiAuth {
 
 export const pswSignInAzure = 'psw:azure';
 
+export enum UserLinkType {
+  //completeSignUp = 'completeSignUpLink',
+  resetPsw = 'resetPswLink',
+}
+
 export {
   CmdApiCrud as CmdApi_UserCrud,
+  CmdApiOthers as CmdApi_UserOthers,
   CmdApiAuth as CmdApi_UserAuth,
   User as Entity_Crud,
 };
@@ -44,10 +54,16 @@ const fld_psw_min = 3;
 const pswYup = yup
   .string()
   .trim()
-  .required(msgValidRequired)
+  //.required(msgValidRequired) //#!!!!!!!
   .min(fld_psw_min, `Senha deve ter ao menos ${fld_psw_min} caracteres`);
 
 export const signInValidations = yup.object().shape({
   email: validationsYup.email,
   psw: pswYup,
+});
+
+export const resetPswValidations = yup.object().shape({ // @!!!!!!!!!! deve ir para o types da API?
+  email: validationsYup.email,
+  psw: pswYup,
+  pswConfirm: pswYup,
 });

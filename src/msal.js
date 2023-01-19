@@ -13,7 +13,7 @@ const msalConfig = {
     //redirectUri: 'http://localhost:3008/',
   },
   cache: {
-    cacheLocation: "sessionStorage", // This configures where your cache will be stored
+    cacheLocation: 'sessionStorage', // This configures where your cache will be stored
     storeAuthStateInCookie: false, // Set this to "true" if you are having issues on IE11 or Edge
   }
 };
@@ -22,16 +22,16 @@ const msalConfig = {
 
 const msalInstance = new msal.PublicClientApplication(msalConfig);
 const clientId = msalConfig.auth.clientId;
-msalInstance.addEventCallback(event => {
-  try {
-    if (event != undefined && event.eventType === EventType.LOGIN_SUCCESS && event.payload.account) {
-      console.log('Autenticador >> ', event.payload.account);
-      msalInstance.setActiveAccount(event.payload.account);
-    }
-  } catch (error) {
-    console.error("Something wrong in msalInstance.addEventCallback - ", error);
-  }
-});
+// msalInstance.addEventCallback(event => {
+//   try {
+//     if (event != undefined && event.eventType === EventType.LOGIN_SUCCESS && event.payload.account) {
+//       console.log('Autenticador >> ', event.payload.account);
+//       msalInstance.setActiveAccount(event.payload.account);
+//     }
+//   } catch (error) {
+//     console.error('Something wrong in msalInstance.addEventCallback - ', error);
+//   }
+// });
 
 
 export { msalInstance, clientId };

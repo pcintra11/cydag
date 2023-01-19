@@ -284,7 +284,7 @@ export async function CloseDbASync({ ctrlApiExec, context, database }: { ctrlApi
 
 export interface CollectionDef { name: string, indexes: { fields: mongoose.IndexDefinition, options: mongoose.IndexOptions }[] }
 
-export async function EnsureModelsIndexesASync(scope: string, collectionsDef: CollectionDef[], collection?: string) {
+export async function EnsureModelsIndexesASync(scope: 'app' | 'base', collectionsDef: CollectionDef[], collection?: string) {
   const messages = [];
   const collectionsChecked = [];
   const mongoose = MongooseSlot().mongoose;

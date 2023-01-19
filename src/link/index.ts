@@ -24,7 +24,7 @@ import { MenuType } from '../components';
 const DisclaimerApp = null;
 import { themeSchemesApp } from '../appCydag/themes';
 export const imgAppHub = '/appCydag/logo.png';
-export const menuTypeHub = MenuType.lateral;
+//export const menuTypeHub = MenuType.lateral;
 import { pagesApp, apisApp } from '../appCydag/endPoints';
 import { LoggedUser } from '../appCydag/loggedUser';
 import { MenuEntriesApp } from '../appCydag/menuEntries';

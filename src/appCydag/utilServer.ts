@@ -127,3 +127,4 @@ export const ccsAuthArray = async (procsCentrosCustoConfig: ProcCentrosCustoConf
   const centroCustoArray = await CentroCustoModel.find({ cod: { $in: keysCC } }).lean().sort({ cod: 1 });
   return centroCustoArray;
 };
+

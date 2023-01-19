@@ -6,13 +6,23 @@ import { CallApiCliASync } from '../fetcher/fetcherCli';
 
 import { LogErrorUnmanaged } from '../components';
 
-import { CmdApi_UserAuth } from '../pages/api/appCydag/user/types';
+import { CmdApi_UserAuth, CmdApi_UserOthers, UserLinkType } from '../pages/api/appCydag/user/types';
 
 //import { User } from './types';
 import { apisApp } from './endPoints';
 import { LoggedUser } from './loggedUser';
 
 //#region  apiCalls
+export async function UserResetPswASync(token: string, email: string, psw: string, pswConfirm: string) {
+  const apiReturn = await CallApiCliASync(apisApp.userOthers.apiPath, globals.windowId, { cmd: CmdApi_UserOthers.resetPsw, token, email, psw, pswConfirm });
+  return LoggedUser.deserialize(apiReturn.value);
+}
+
+export async function UserEmailLinkASync(email: string, linkType: UserLinkType) {
+  const apiReturn = await CallApiCliASync(apisApp.userOthers.apiPath, globals.windowId, { cmd: CmdApi_UserOthers.emailLink, email, linkType });
+  return apiReturn.value.message as string;
+}
+
 export async function UserSignInASync(email: string, psw: string): Promise<LoggedUser> {
   const apiReturn = await CallApiCliASync(apisApp.userAuth.apiPath, globals.windowId, { cmd: CmdApi_UserAuth.signIn, email, psw });
   //{ callId: globals.callId() }

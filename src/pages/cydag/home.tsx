@@ -23,9 +23,15 @@ export default function PageHome() {
     dbg({ level: 1, context: 'index' }, 'loggedUser cydag (by hook)', loggedUser);
   }, [router.isReady, isLoadingUser, loggedUser?.email]);
 
-  const folderManuais = '/appCydag/manuais'; // em public
-
+  const nomeSistema ='CYDAG';
   const emailSuporte = 'cydag@cyrela.com.br';
+
+  const folderManuais = '/appCydag/manuais'; // em public
+  const files = {
+    manualOrcam: 'Manual_Orçamento_CYDAG_2022.pdf',
+    classesMateriais: 'Lista_de_Classes_ x_Materiais_CYDAG.pdf',
+    manualConsulta: 'Manual_CYDAG_Consulta.pdf',
+  };
 
   try {
     return (
@@ -33,13 +39,13 @@ export default function PageHome() {
 
         <Box>
           <p>
-            <b>Seja bem-vindo ao CYDAG {loggedUser?.name}!</b>
+            <b>Seja bem-vindo ao {nomeSistema} {loggedUser?.name}!</b>
           </p>
         </Box>
 
         <Box>
           <p>
-            O CYDAG é o nosso sistema de orçamento e acompanhamento das despesas gerais e administrativas da Cyrela.
+            O {nomeSistema} é o nosso sistema de orçamento e acompanhamento das despesas gerais e administrativas da Cyrela.
           </p>
           <p>
             Até o 5º dia útil de cada mês, o sistema será atualizado com as despesas incorridas até o final do mês anterior.
@@ -59,15 +65,15 @@ export default function PageHome() {
               Favor consultar os manuais abaixo caso tenha alguma dúvida:
             </p>
 
-            <a href={`${folderManuais}/Manual_Orçamento_CYDAG_2022.pdf`} target='_blank' rel='noreferrer'>
+            <a href={`${folderManuais}/${files.manualOrcam}`} target='_blank' rel='noreferrer'>
               <Box>Manual de Orçamento 2022</Box>
             </a>
 
-            <a href={`${folderManuais}/Lista_de_Classes_ x_Materiais_CYDAG.pdf`} target='_blank' rel='noreferrer'>
-              <Box>Lista de Classes x Materiais - CYDAG</Box>
+            <a href={`${folderManuais}/${files.classesMateriais}`} target='_blank' rel='noreferrer'>
+              <Box>Lista de Classes x Materiais - {nomeSistema}</Box>
             </a>
 
-            <a href={`${folderManuais}/Manual_CYDAG_Consulta.pdf`} target='_blank' rel='noreferrer'>
+            <a href={`${folderManuais}/${files.manualConsulta}`} target='_blank' rel='noreferrer'>
               <Box>Manual de Consulta</Box>
             </a>
           </Box>

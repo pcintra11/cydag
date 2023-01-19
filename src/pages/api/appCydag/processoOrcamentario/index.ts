@@ -10,7 +10,7 @@ import { FromCsvUpload, IUploadMessage, MessageLevelUpload } from '../../../../l
 import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
-import { CtrlApiExec, GetCtrlApiExec, ResumoApi } from '../../../../libServer/util';
+import { CtrlApiExec, GetCtrlApiExec, ReqNoParm, ResumoApi } from '../../../../libServer/util';
 import { CheckBlockAsync } from '../../../../libServer/checkBlockAsync';
 import { ApiStatusDataByErrorASync } from '../../../../libServer/apiStatusDataByError';
 import { CorsMiddlewareAsync } from '../../../../libServer/cors';
@@ -34,6 +34,7 @@ import { GetValsPlanejados, ValoresPlanejadosCalc } from '../valoresContas';
 const apiSelf = apisApp.processoOrcamentario;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
+  if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
