@@ -7,6 +7,7 @@ enum CmdApi {
   //loadUser = 'loadUser',
   setTesteDataPlan = 'setTesteDataPlan',
   setTesteDataInterfaceSap = 'setTesteDataInterfaceSap',
+  getMainAmbs = 'getMainAmbs',
 
   collectionUpload = 'collectionUpload',
   collectionDownload = 'collectionDownload',

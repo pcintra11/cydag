@@ -719,7 +719,7 @@ export default function PageQuadroGeral() {
                 lastValue = node.nodeContent.valMeses[sxMes];
               else {
                 if (lastValue != null &&
-                  node.nodeContent.valMeses[sxMes] != lastValue) { //@@!!!!!!! ?
+                  node.nodeContent.valMeses[sxMes] != lastValue) { // #!!!!!!!
                   const val = lastValue;
                   const delta = deltaMes(sxMes, val);
                   deltas.push({ sxMes, val: delta });

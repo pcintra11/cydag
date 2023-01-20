@@ -62,7 +62,7 @@ export const signInValidations = yup.object().shape({
   psw: pswYup,
 });
 
-export const resetPswValidations = yup.object().shape({ // @!!!!!!!!!! deve ir para o types da API?
+export const resetPswValidations = yup.object().shape({ // #!!!!!!!!!! deve ir para o types da API?
   email: validationsYup.email,
   psw: pswYup,
   pswConfirm: pswYup,

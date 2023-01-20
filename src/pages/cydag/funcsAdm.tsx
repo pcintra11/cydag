@@ -340,6 +340,7 @@ export default function PageFuncsAdm() {
           {/* <BtnS onClick={() => CmdNoParm(CmdApi_FuncAdm.loadUser)}>loadUser</BtnS> */}
           <BtnS onClick={() => CmdNoParm(CmdApi_FuncAdm.setTesteDataPlan)}>setTesteDataPlan</BtnS>
           <BtnS onClick={() => CmdNoParm(CmdApi_FuncAdm.setTesteDataInterfaceSap)}>setTesteDataInterfaceSap</BtnS>
+          <BtnS onClick={() => CmdNoParm(CmdApi_FuncAdm.getMainAmbs)}>getMainAmbs</BtnS>
           <BtnS onClick={() => TestCode()}>TestCode</BtnS>
         </BtnLine>
 

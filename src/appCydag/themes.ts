@@ -3,7 +3,7 @@ import { ThemeSchemes, ThreeColors } from '../styles/themeTools';
 
 // appXXX
 
-export const menuTypeApp = MenuType.barraSuperior;
+export const menuTypeApp = MenuType.lateral;
 
 export const themeSchemesApp: ThemeSchemes = {
   inputVariant: 'standard',

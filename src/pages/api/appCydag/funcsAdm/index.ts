@@ -7,7 +7,7 @@ import { ApiAsyncLogModel, ApiSyncLogModel, SendMailLogModel } from '../../../..
 import { ConnectDbASync, CloseDbASync, CheckModelsIndexesASync, EnsureModelsIndexesASync } from '../../../../base/db/functions';
 import { collectionsDef as collectionsDefBase } from '../../../../base/db/models';
 
-import { AddToDate, compareForBinSearch, CtrlCollect, ErrorPlus, StrRight } from '../../../../libCommon/util';
+import { AddToDate, compareForBinSearch, CtrlCollect, DispAbrev, ErrorPlus, StrRight } from '../../../../libCommon/util';
 import { csd, dbg, ScopeDbg } from '../../../../libCommon/dbg';
 import { FldCsvDef, FromCsvUpload, IUploadMessage, MessageLevelUpload } from '../../../../libCommon/uploadCsv';
 import { isAmbNone } from '../../../../libCommon/isAmb';
@@ -696,6 +696,15 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           //#endregion
           resumoApi.jsonData({ value: msgs });
         }
+      }
+
+      else if (parm.cmd == CmdApi_FuncAdm.getMainAmbs) {
+        const msgs = [];
+        msgs.push(`NEXT_PUBLIC_AMB: ${process.env.NEXT_PUBLIC_AMB}`);
+        msgs.push(`SITE_DATABASE_APP: ${DispAbrev(process.env.SITE_DATABASE_APP, 30)}`);
+        msgs.push(`NEXT_PUBLIC_DEPLOY_CONFIG: ${process.env.NEXT_PUBLIC_DEPLOY_CONFIG}`);
+        msgs.push(`NEXT_PUBLIC_API_TIMEOUT: ${process.env.NEXT_PUBLIC_API_TIMEOUT}`);
+        resumoApi.jsonData({ value: msgs });
       }
 
       //#region lixo

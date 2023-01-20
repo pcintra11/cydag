@@ -1,4 +1,4 @@
-import { ObjectInspector } from 'react-inspector'; // #!!!!!!! atualizar para algo mais moderno !
+import { ObjectInspector } from 'react-inspector'; // @!!!!!!! atualizar para algo mais moderno !
 
 import { IGenericObject } from '../libCommon/types';
 
