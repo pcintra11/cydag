@@ -71,6 +71,7 @@ const ReqParm = (req: NextApiRequest) => {
   return (req.method === 'GET') ? req.query : req.body;
 };
 export const ReqNoParm = (req: NextApiRequest) => {
+  return false;
   const parm = ReqParm(req);
   if (Object.keys(parm).length == 0) return true;
   else return false;
