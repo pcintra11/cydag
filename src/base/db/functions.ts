@@ -42,12 +42,13 @@ enum StatusDb {
 export const lastCompile = HoraDebug();
 
 const mongooseSlots: { database: string, status: StatusDb, cnnCount: number, whenConnected?: Date, mongoose: Mongoose }[] = [];
-export const MongooseSlot = (database = defaultDatabase) => {
-  let item = mongooseSlots.find((x) => x.database == database);
+export const MongooseSlot = (database?: string) => {
+  const databaseUse = database || databaseApp;
+  let item = mongooseSlots.find((x) => x.database == databaseUse);
   if (item == null) {
     //mongooseSlot.connection.set(keyLoad, { load: lastCompile, database });
     item = {
-      database,
+      database: databaseUse,
       status: StatusDb.closed,
       cnnCount: 0,
       whenConnected: null,
@@ -72,9 +73,10 @@ export const MongooseSlot = (database = defaultDatabase) => {
 // //dbg(nivelLogOpersDbDetail, 'compile', infoDb, 'ctrl', ctrl);
 //#endregion
 
-const defaultDatabase = 'app';
+const databaseApp = 'app';
+export const databaseInterfaceSap = 'interfaceSap';
 
-function InfoDb(database = defaultDatabase) {
+function InfoDb(database: string) {
   //const db = MongooseSlot(database).connection.get(keyLoad);
   // if (db == ctrl.load) return ''; //`l:${ctrl.load}`;
   // else return `** db (l:db=${db}/ctrl=${ctrl.load})`;
@@ -82,8 +84,9 @@ function InfoDb(database = defaultDatabase) {
   return `** ${mongooseSlot.database} **`;
 }
 
-export function UriDb(database = defaultDatabase) {
-  const uri = EnvSvrDatabase(database);
+export function UriDb(database?: string) {
+  const databaseUse = database || databaseApp;
+  const uri = EnvSvrDatabase(databaseUse);
   return uri;
 }
 
@@ -91,12 +94,13 @@ const objCnnLock = { id: 'connDb' };
 
 export async function ConnectDbASync({ ctrlApiExec, context, database }: { ctrlApiExec?: CtrlApiExec, context?: string, database?: string }) {
   const contextUse = context || ctrlApiExec?.context();
+  const databaseUse = database || databaseApp;
 
   const dbgD = (level: number, ...params) => dbg({ level, levelScope: ScopeDbg.d, context: contextUse }, '==> ConnectDb', ...params);
 
-  const infoDb = InfoDb(database);
+  const infoDb = InfoDb(databaseUse);
 
-  const mongooseSlot = MongooseSlot(database);
+  const mongooseSlot = MongooseSlot(databaseUse);
 
   dbgD(3, infoDb, 'ConnectDb', `cnnCount: ${mongooseSlot.cnnCount} ; whenConnected: ${DateToStrISO(mongooseSlot.whenConnected)}`); //@@!!!! acho que apos cancelamento por timeout fica com sujeira !
 
@@ -126,9 +130,9 @@ export async function ConnectDbASync({ ctrlApiExec, context, database }: { ctrlA
     mongooseSlot.status = StatusDb.connecting;
     //mongooseSlot.lastConnect = HoraDbg();
 
-    const uri = UriDb(database);
+    const uri = UriDb(databaseUse);
     if (uri == null)
-      throw new Error(`string de conexão para database ${database || defaultDatabase} não configurado`);
+      throw new Error(`string de conexão para database ${databaseUse} não configurado`);
 
     dbgD(1, infoDb, 'connecting ******', `${uri}`);
 
@@ -169,12 +173,14 @@ export function SwitchForceCloseDb() {
 }
 
 export async function CloseDbASync({ ctrlApiExec, context, database }: { ctrlApiExec?: CtrlApiExec, context?: string, database?: string }) {
-  const infoDb = InfoDb(database);
   const contextUse = context || ctrlApiExec?.context();
+  const databaseUse = database || databaseApp;
+
+  const infoDb = InfoDb(databaseUse);
 
   const dbgD = (level: number, ...params) => dbg({ level, levelScope: ScopeDbg.d, context: contextUse, color: ctrlApiExec?.colorDestaq }, '==> CloseDb', ...params);
 
-  const mongooseSlot = MongooseSlot(database);
+  const mongooseSlot = MongooseSlot(databaseUse);
 
   await LockObjASync(objCnnLock, contextUse, 'CloseDb');
 
@@ -282,19 +288,19 @@ export async function CloseDbASync({ ctrlApiExec, context, database }: { ctrlApi
   dbgD(2, infoDb, 'close-pos');
 }
 
-export interface CollectionDef { name: string, indexes: { fields: mongoose.IndexDefinition, options: mongoose.IndexOptions }[] }
+export interface CollectionDef { name: string, database?: string, indexes: { fields: mongoose.IndexDefinition, options: mongoose.IndexOptions }[] }
 
-export async function EnsureModelsIndexesASync(scope: 'app' | 'base', collectionsDef: CollectionDef[], collection?: string) {
+export async function EnsureModelsIndexesASync(scope: 'main' | 'base', collectionsDef: CollectionDef[], collection?: string) {
   const messages = [];
   const collectionsChecked = [];
-  const mongoose = MongooseSlot().mongoose;
+  //const mongoose = MongooseSlot().mongoose;
   for (const collectionDef of collectionsDef) {
     collectionsChecked.push(collectionDef.name);
     if (collection != null &&
       collectionDef.name != collection)
       continue;
-    dbgInfo(`ensuringIndexes ${collectionDef.name}`);
-    const model = mongoose.model(collectionDef.name);
+    dbgInfo(`ensuringIndexes ${collectionDef.name} ${collectionDef.database || ''}`);
+    const model = MongooseSlot(collectionDef.database).mongoose.model(collectionDef.name);
     try {
       await model.ensureIndexes();
     } catch (error) {
@@ -311,11 +317,11 @@ export async function CheckModelsIndexesASync(scope: string, collectionsDef: Col
   // prever que o nome do indice não foi informado e deduzir como o Mongo faz!! @@!!!!! (categ_1_status_1 ...)
   const messages = [];
   const collectionsChecked = [];
-  const mongoose = MongooseSlot().mongoose;
+  //const mongoose = MongooseSlot().mongoose;
   for (const collectionDef of collectionsDef) {
     collectionsChecked.push(collectionDef.name);
-    dbgInfo(`checking ${collectionDef.name}`);
-    const model = mongoose.model(collectionDef.name);
+    dbgInfo(`checking ${collectionDef.name}  ${collectionDef.database || ''}`);
+    const model = MongooseSlot(collectionDef.database).mongoose.model(collectionDef.name);
     const indexesDef = collectionDef.indexes.map((x) => x.options.name);
     const indexesDb = (await model.listIndexes()).map((x) => x.name);
 

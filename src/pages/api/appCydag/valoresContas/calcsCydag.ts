@@ -53,7 +53,7 @@ export interface PremissaValores { premissa: Premissa, valoresPrior1: ValoresPre
 //export interface ContaCalc { classeCusto: string, subClasseCusto?: string, calc: any }
 
 export interface ValsContaCalc { tipoCalc: string, valMeses: number[], countMeses: number[], anyValue: boolean, memoriaCalcDets?: any[] }
-export const RoundCalc = (value: number) => RoundDecs(value, configApp.decimalsVal);
+export const RoundCalc = (value: number) => RoundDecs(value, configApp.decimalsValsCalc);
 
 export const ValorPremissaUse = (premisaValores: PremissaValores, tipoColaborador?: TipoColaborador) => {
   let result: ValoresPremissa = null;

@@ -18,6 +18,7 @@ export default function PageIndex() {
     if (!router.isReady || isLoadingUser) return;
     if (loggedUser != null)
       router.push(pagesApp.home.pagePath);
+    router.push(pagesApp.signIn.pagePath);
     // GetLoggedUserFromHttpCookieASync('index') //@!!!
     //   .then((loggedUserCookieHttp) => dbg({ level: 1, context: 'index' }, 'loggedUser cookie http', loggedUserCookieHttp));
   }, [router.isReady, isLoadingUser, loggedUser?.email]);

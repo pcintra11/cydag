@@ -110,7 +110,7 @@ const valueOriginalForEdit = (dataOriginal: any, fld: string, index?: number, va
   let result: any;
   //const valorOrig = NavigateToProperty(dataOriginal, fld);
   const valorOrig = index == null ? dataOriginal[fld] : dataOriginal[fld][index];
-  if (valueType === ValueType.amount) result = amountToStr(valorOrig);
+  if (valueType === ValueType.amount) result = amountToStr(valorOrig, 2);
   else if (valueType === ValueType.number) result = amountToStr(valorOrig, 0);
   else if (valueType === ValueType.boolean) result = valorOrig;
   else result = valorOrig || '';
@@ -146,7 +146,7 @@ export const GridCellEdit = ({ mainCtrl, fldCtrl, index, disabled }: { mainCtrl:
         if (valToSend == '') valToSend = undefined;
         else {
           if (valueType === ValueType.amount)
-            amountParse(value);
+            amountParse(value, 2);
           else if (valueType === ValueType.number)
             amountParse(value, 0);
         }

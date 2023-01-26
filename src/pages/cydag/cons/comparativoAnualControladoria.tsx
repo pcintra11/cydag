@@ -379,10 +379,10 @@ export default function PageComparativoAnualControladoria() {
         return (<>
           <GridCell {...propsColorLevel}><Box pl={paddingLeft}>{descrUse}</Box></GridCell>
 
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planAnt)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.realAnt)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planAtu)}</GridCell>
-          <GridCell textAlign='right' {...propsColorVar}>{amountToStr(varAbs)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planAnt, configApp.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.realAnt, configApp.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planAtu, configApp.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right' {...propsColorVar}>{amountToStr(varAbs, configApp.decimalsValsCons)}</GridCell>
           <GridCell textAlign='right'>{percToStr(varPerc)}</GridCell>
         </>);
       };

@@ -85,7 +85,7 @@ export class ProcessoOrcamentarioStatusMd {
       if (status > ProcessoOrcamentarioStatus.bloqueado) return 'O status atual do Processo Orçamentário não permite alteração em premissas';
     }
     else if (oper === OperInProcessoOrcamentario.altConfigCCs) {
-      if (status > ProcessoOrcamentarioStatus.bloqueado) return 'O status atual do Processo Orçamentário não permite ajustes na Configuração de Centros de Custo';
+      // if (status > ProcessoOrcamentarioStatus.bloqueado) return 'O status atual do Processo Orçamentário não permite ajustes na Configuração de Centros de Custo';
     }
     else if (oper === OperInProcessoOrcamentario.altValoresPlanejados) {
       if (status !== ProcessoOrcamentarioStatus.inputPlanej) return 'O status atual do Processo Orçamentário não permite alteração nos valores planejados';
@@ -459,9 +459,9 @@ export class ValoresPlanejadosDetalhes {
         new FldCsvDef('valMeses', {
           suppressColumn: true,
           def: (data: IGenericObject) => [
-            amountParse(data.m01), amountParse(data.m02), amountParse(data.m03), amountParse(data.m04),
-            amountParse(data.m05), amountParse(data.m06), amountParse(data.m07), amountParse(data.m08),
-            amountParse(data.m09), amountParse(data.m10), amountParse(data.m11), amountParse(data.m12),
+            amountParse(data.m01, configApp.decimalsValsCalc), amountParse(data.m02, configApp.decimalsValsCalc), amountParse(data.m03, configApp.decimalsValsCalc), amountParse(data.m04, configApp.decimalsValsCalc),
+            amountParse(data.m05, configApp.decimalsValsCalc), amountParse(data.m06, configApp.decimalsValsCalc), amountParse(data.m07, configApp.decimalsValsCalc), amountParse(data.m08, configApp.decimalsValsCalc),
+            amountParse(data.m09, configApp.decimalsValsCalc), amountParse(data.m10, configApp.decimalsValsCalc), amountParse(data.m11, configApp.decimalsValsCalc), amountParse(data.m12, configApp.decimalsValsCalc),
           ]
         }),
       ]);

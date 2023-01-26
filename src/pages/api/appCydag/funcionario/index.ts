@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ObjectId } from 'mongodb';
 import _ from 'underscore';
 
 import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
@@ -182,12 +181,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                   mesIni: dataEdit.mesIni != null ? amountParse(dataEdit.mesIni, 0) : undefined,
                   tipoFim: dataEdit.tipoFim,
                   mesFim: dataEdit.mesFim != null ? amountParse(dataEdit.mesFim, 0) : undefined,
-                  salario_messy: Funcionario.scrambleSalario(amountParse(dataEdit.salario), centroCusto, refer),
+                  salario_messy: Funcionario.scrambleSalario(amountParse(dataEdit.salario, configApp.decimalsValsInput), centroCusto, refer),
                   dependentes: dataEdit.dependentes != null ? amountParse(dataEdit.dependentes, 0) : undefined,
-                  valeTransp: dataEdit.valeTransp != null ? amountParse(dataEdit.valeTransp) : undefined,
+                  valeTransp: dataEdit.valeTransp != null ? amountParse(dataEdit.valeTransp, configApp.decimalsValsInput) : undefined,
                   mesPromo: dataEdit.mesPromo != null ? amountParse(dataEdit.mesPromo, 0) : undefined,
                   tipoColaboradorPromo: dataEdit.tipoColaboradorPromo,
-                  salarioPromo_messy: dataEdit.salarioPromo != null ? Funcionario.scrambleSalario(amountParse(dataEdit.salarioPromo), centroCusto, refer) : undefined,
+                  salarioPromo_messy: dataEdit.salarioPromo != null ? Funcionario.scrambleSalario(amountParse(dataEdit.salarioPromo, configApp.decimalsValsInput), centroCusto, refer) : undefined,
                   despsRecorr: dataEdit.despsRecorr,
                 },
                 lastUpdated: agora,
@@ -266,6 +265,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 else
                   lastKey = key;
               }
+
+              // aqui checar se o salário é válido #!!!!!!!!!!!!
 
               const masterDataChecks = [
                 { fld: 'centroCusto', md: documentsCentroCustoProc, fldMd: 'centroCusto', msg: 'não configurado para o ano' },

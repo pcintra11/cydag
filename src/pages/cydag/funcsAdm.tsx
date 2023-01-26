@@ -228,7 +228,7 @@ export default function PageFuncsAdm() {
   const clearResults = () => {
     resetResults();
   };
-  const TestCode = () => {
+  const TestCodeClient = () => {
     const ctrlCollect = new CtrlCollect<ValoresAnaliseRealPlan>(['centroCusto', 'classeCusto'],
       { fldsSum: [{ fld: 'valMesesPlan', arrayLen: 3 }, { fld: 'valMesesReal', arrayLen: 4 }] });
     [
@@ -341,7 +341,8 @@ export default function PageFuncsAdm() {
           <BtnS onClick={() => CmdNoParm(CmdApi_FuncAdm.setTesteDataPlan)}>setTesteDataPlan</BtnS>
           <BtnS onClick={() => CmdNoParm(CmdApi_FuncAdm.setTesteDataInterfaceSap)}>setTesteDataInterfaceSap</BtnS>
           <BtnS onClick={() => CmdNoParm(CmdApi_FuncAdm.getMainAmbs)}>getMainAmbs</BtnS>
-          <BtnS onClick={() => TestCode()}>TestCode</BtnS>
+          <BtnS onClick={() => CmdNoParm(CmdApi_FuncAdm.testeCodeServer)}>testeCodeServer</BtnS>
+          <BtnS onClick={() => TestCodeClient()}>TestCodeClient</BtnS>
         </BtnLine>
 
         <BtnLine left>

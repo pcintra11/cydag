@@ -4,7 +4,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import mongoose from 'mongoose';
 
 import { ApiAsyncLogModel, ApiSyncLogModel, SendMailLogModel } from '../../../../base/db/models';
-import { ConnectDbASync, CloseDbASync, CheckModelsIndexesASync, EnsureModelsIndexesASync } from '../../../../base/db/functions';
+import { ConnectDbASync, CloseDbASync, CheckModelsIndexesASync, EnsureModelsIndexesASync, databaseInterfaceSap } from '../../../../base/db/functions';
 import { collectionsDef as collectionsDefBase } from '../../../../base/db/models';
 
 import { AddToDate, compareForBinSearch, CtrlCollect, DispAbrev, ErrorPlus, StrRight } from '../../../../libCommon/util';
@@ -50,6 +50,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     await ConnectDbASync({ ctrlApiExec });
+    await ConnectDbASync({ ctrlApiExec, database: databaseInterfaceSap });
     const apiLogProc = await ApiLogStart(ctrlApiExec, loggedUserReq);
 
     //const qtdLoadDefault = 100000;
@@ -77,15 +78,15 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       await CheckApiAuthorized(apiSelf, userDb, loggedUserReq.email);
 
       if (parm.cmd == CmdApi_FuncAdm.ensureIndexes) {
-        const messagesIndexesApp = await EnsureModelsIndexesASync('app', collectionsDefApp);
+        const messagesIndexesApp = await EnsureModelsIndexesASync('main', collectionsDefApp);
         const messagesIndexesBase = await EnsureModelsIndexesASync('base', collectionsDefBase);
-        resumoApi.jsonData({ value: [...messagesIndexesApp.map((x) => `app: ${x}`), ...messagesIndexesBase.map((x) => `base: ${x}`)] });
+        resumoApi.jsonData({ value: [...messagesIndexesApp.map((x) => `main: ${x}`), ...messagesIndexesBase.map((x) => `base: ${x}`)] });
       }
 
       else if (parm.cmd == CmdApi_FuncAdm.checkIndexes) {
         const messagesIndexesApp = await CheckModelsIndexesASync('app', collectionsDefApp);
         const messagesIndexesBase = await CheckModelsIndexesASync('base', collectionsDefBase);
-        resumoApi.jsonData({ value: [...messagesIndexesApp.map((x) => `app: ${x}`), ...messagesIndexesBase.map((x) => `base: ${x}`)] });
+        resumoApi.jsonData({ value: [...messagesIndexesApp.map((x) => `main: ${x}`), ...messagesIndexesBase.map((x) => `base: ${x}`)] });
         deleteIfOk = true;
       }
 
@@ -707,6 +708,18 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         resumoApi.jsonData({ value: msgs });
       }
 
+      else if (parm.cmd == CmdApi_FuncAdm.testeCodeServer) {
+        const msgs = [];
+        const resultIncl = await ValoresRealizadosInterfaceSapModel.create({
+          ano: '2000',
+          centroCusto: 'cc1',
+          classeCusto: 'cl1',
+          m01: 123,
+        });
+        msgs.push('ok incluído em ValoresRealizadosInterfaceSap');
+        resumoApi.jsonData({ value: msgs });
+      }
+
       //#region lixo
       // else if (parm.cmd == CmdApi_FuncAdm.loadCentroCusto) {
       //   class Entity extends CentroCusto { }
@@ -879,6 +892,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     await ApiLogFinish(apiLogProc, resumoApi.resultProc(), deleteIfOk);
+    await CloseDbASync({ ctrlApiExec, database: databaseInterfaceSap });
     await CloseDbASync({ ctrlApiExec });
   } catch (error) {
     const { httpStatusCode, jsonErrorData } = await ApiStatusDataByErrorASync(error, 'throw 2', parm, ctrlApiExec);

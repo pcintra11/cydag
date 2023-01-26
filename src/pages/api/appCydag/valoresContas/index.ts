@@ -1,8 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ObjectId } from 'mongodb';
 import _ from 'underscore';
 
-import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
+import { ConnectDbASync, CloseDbASync, databaseInterfaceSap } from '../../../../base/db/functions';
 import { NotifyAdmASync } from '../../../../base/notifyAdm';
 
 import { BinSearchIndex, BinSearchItem, BinSearchProp, compareForBinSearch, compareForBinSearchArray, CtrlCollect, DateDisp, ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
@@ -51,6 +50,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     await ConnectDbASync({ ctrlApiExec });
+    await ConnectDbASync({ ctrlApiExec, database: databaseInterfaceSap });
     const apiLogProc = await ApiLogStart(ctrlApiExec, loggedUserReq);
 
     try {
@@ -437,6 +437,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     await ApiLogFinish(apiLogProc, resumoApi.resultProc(), deleteIfOk);
+    await CloseDbASync({ ctrlApiExec, database: databaseInterfaceSap });
     await CloseDbASync({ ctrlApiExec });
   } catch (error) {
     const { httpStatusCode, jsonErrorData } = await ApiStatusDataByErrorASync(error, 'throw 2', parm, ctrlApiExec);

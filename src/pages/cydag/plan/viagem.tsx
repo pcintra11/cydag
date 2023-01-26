@@ -419,8 +419,8 @@ export default function PageViagem() {
 
           <GridCell><Box>{BinSearchProp(dataStructure.localidadeMdArray, dataOriginal.localidadeDestino, 'descr', 'cod')}</Box></GridCell>
           <GridCell><Box>{funcDescr}</Box></GridCell>
-          <GridCell textAlign='right'>{amountToStr(dataOriginal.qtdViagens)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(dataOriginal.mediaPernoites)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(dataOriginal.qtdViagens, 0)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(dataOriginal.mediaPernoites, 0)}</GridCell>
         </>);
       }
     };
@@ -502,7 +502,7 @@ export default function PageViagem() {
           <GridCell textAlign='center'>{iconsCmd}</GridCell>
 
           <GridCell><Box>{dataOriginal.obs}</Box></GridCell>
-          <GridCell textAlign='right'>{amountToStr(dataOriginal.valor)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(dataOriginal.valor, configApp.decimalsValsInput)}</GridCell>
         </>);
       }
     };

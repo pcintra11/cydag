@@ -410,19 +410,19 @@ export default function PageAnaliseAnualControladoria() {
         return (<>
           <GridCell {...propsColorLevel}><Box pl={paddingLeft}>{descrUse}</Box></GridCell>
 
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planTot)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(realProj)}</GridCell>
-          <GridCell textAlign='right' {...propsColorVarRealProj}>{amountToStr(varRealProjAbs)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planTot, configApp.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(realProj, configApp.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right' {...propsColorVarRealProj}>{amountToStr(varRealProjAbs, configApp.decimalsValsCons)}</GridCell>
           <GridCell textAlign='right'>{percToStr(varRealProjPerc)}</GridCell>
 
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planYTD)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.realYTD)}</GridCell>
-          <GridCell textAlign='right' {...propsColorVarYTD}>{amountToStr(varYTDAbs)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planYTD, configApp.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.realYTD, configApp.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right' {...propsColorVarYTD}>{amountToStr(varYTDAbs, configApp.decimalsValsCons)}</GridCell>
           <GridCell textAlign='right'>{percToStr(varYTDPerc)}</GridCell>
 
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planMes)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.realMes)}</GridCell>
-          <GridCell textAlign='right' {...propsColorVarMes}>{amountToStr(varMesAbs)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planMes, configApp.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.realMes, configApp.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right' {...propsColorVarMes}>{amountToStr(varMesAbs, configApp.decimalsValsCons)}</GridCell>
           <GridCell textAlign='right'>{percToStr(varMesPerc)}</GridCell>
         </>);
       };

@@ -30,6 +30,7 @@ export default function PageSignInAzure() {
   //const [autoLoginStage, setAutoLoginStage] = React.useState(0);
   //const [msalLogged, setMsalLogged] = React.useState(false);
   const [msalInitiating, setMsalInitiating] = React.useState(true);
+  const [loggingCydag, setLoggingCydag] = React.useState(false);
 
   //csd('sigInAzure render', { msalInitiating, inProgress, accounts, loggedUser });
 
@@ -38,7 +39,7 @@ export default function PageSignInAzure() {
     try {
       //https://stackoverflow.com/questions/71414668/intermittent-problem-using-loginpopup-msal-js-in-a-react
       //https://www.thirdrocktechkno.com/blog/microsoft-login-integration-with-react/
-      console.log('*********** LOGIN AZURE ****************');
+      //console.log('*********** LOGIN AZURE ****************');
 
       // instance.loginPopup({
       //   scopes: ['user.read', 'email', 'offline_access'],
@@ -56,10 +57,12 @@ export default function PageSignInAzure() {
         prompt: 'select_account',
       });
 
+      setLoggingCydag(true);
       // console.log('Azure details> ', accountAzureApp);
 
       const loggedUserNow = await UserSignInASync(accountAzureApp.account.username.toLowerCase(), pswSignInAzure);
       setUser(loggedUserNow, pageSelf.pagePath);
+      setLoggingCydag(false);
     }
     catch (error) {
       //setAutoLoginStage(2);
@@ -69,41 +72,45 @@ export default function PageSignInAzure() {
       SnackBarError(error, `${pageSelf.pagePath}-loginPop`);
     }
   };
-  const logoutPop = async () => {
-    try {
-      //await instance.logoutPopup(); 
-      await instance.logoutRedirect();
-    }
-    catch (error) {
-      LogErrorUnmanaged(error, `${pageSelf.pagePath}-logoutPop`);
-    }
-  };
+  // const logoutPop = async () => {
+  //   try {
+  //     //await instance.logoutPopup(); 
+  //     await instance.logoutRedirect();
+  //   }
+  //   catch (error) {
+  //     LogErrorUnmanaged(error, `${pageSelf.pagePath}-logoutPop`);
+  //   }
+  // };
 
   // apenas para estabilizar o processo do msal, ao entrar na página
   React.useEffect(() => {
     //csd('signInAzure effect 1');
     if (!msalInitiating) return;
     if (inProgress !== 'none') return;
+    if (loggedUser != null) return;
     //csd('signInAzure effect 1 - anulando initiating');
     setMsalInitiating(false);
+    loginPop();
   }, [inProgress]); // accounts.length, 
 
   // após a inicialização do msal checa se o usuário já está logado e vai para home
   React.useEffect(() => {
-    //csd('signInAzure effect 2');
-    if (msalInitiating) return;
-    if (inProgress !== 'none') return;
+    //csd('signInAzure effect 2', {msalInitiating, inProgress});
+    //if (msalInitiating) return;
+    //if (inProgress !== 'none') return;
     if (loggedUser != null) {
-      const nextPagePathName = pagesApp.home.pagePath;
-      const nextPageQuery: any = undefined;
-      // if (router.query?.pageNeedAuthentication != null) {
-      //   nextPagePathName = router.query.pageNeedAuthentication as string;
-      //   nextPageQuery = _.omit(router.query, 'pageNeedAuthentication');
-      // }
+      let nextPagePathName = pagesApp.home.pagePath;
+      let nextPageQuery: any = undefined;
+      if (router.query?.pageNeedAuthentication != null) {
+        nextPagePathName = router.query.pageNeedAuthentication as string;
+        nextPageQuery = _.omit(router.query, 'pageNeedAuthentication');
+      }
       router.push({ pathname: nextPagePathName, query: nextPageQuery });
       //setTimeout(() => router.push({ pathname: nextPagePathName, query: nextPageQuery }), 0);
     }
-  }, [msalInitiating, inProgress, loggedUser?.email]);
+  }, [router.isReady, msalInitiating, inProgress, loggedUser?.email]);
+
+  if (loggingCydag) return (<Box>Entrando no sistema...</Box>);
 
   try {
 
@@ -117,11 +124,11 @@ export default function PageSignInAzure() {
               <BtnLine>
                 <Btn onClick={() => loginPop()}>Conectar</Btn>
               </BtnLine>
-              {accounts.length > 0 &&
+              {/* {accounts.length > 0 &&
                 <BtnLine>
                   <Btn onClick={() => logoutPop()}>Desconectar</Btn>
                 </BtnLine>
-              }
+              } */}
             </>
           }
         </Stack>

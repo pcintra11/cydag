@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ObjectId } from 'mongodb';
 //import _ from 'underscore';
 
 import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
@@ -25,6 +24,7 @@ import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatusMd, RevisaoValor 
 
 import { CmdApi_ValoresLocalidade as CmdApi, IChangedLine } from './types';
 import { amountParse } from '../../../../appCydag/util';
+import { configApp } from '../../../../appCydag/config';
 
 const apiSelf = apisApp.valoresLocalidade;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
@@ -78,7 +78,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           for (const changedLine of changedLines) {
             const dataEdit = changedLine.dataEdit;
             const valoresLocalidadeData = {
-              valMeses: dataEdit.valMeses.map((x) => amountParse(x)),
+              valMeses: dataEdit.valMeses.map((x) => amountParse(x, configApp.decimalsValsInput)),
             } as ValoresLocalidade;
             const someInf = valoresLocalidadeData.valMeses.reduce((prev, curr) => prev || curr != null, false);
             const key = {

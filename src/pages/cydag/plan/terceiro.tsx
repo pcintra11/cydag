@@ -455,7 +455,7 @@ export default function PageTerceiroCrud() {
           <GridCell textAlign='left'><Box>{BinSearchProp(mainStates.funcaoTerceirosArray, dataOriginal.funcaoTerceiros, 'descr', 'cod')}</Box></GridCell>
 
           {mesesFld.map((_, index) => <GridCell key={index} textAlign='right'>
-            {amountToStr(dataOriginal.valMeses[index])}
+            {amountToStr(dataOriginal.valMeses[index], configApp.decimalsValsInput)}
           </GridCell>)
           }
         </>);

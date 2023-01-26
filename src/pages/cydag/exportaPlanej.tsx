@@ -4,8 +4,8 @@ import _ from 'underscore';
 
 import { Stack } from '@mui/material';
 
-import { BinSearchItem, ErrorPlus, ObjUpdAllProps } from '../../libCommon/util';
-import { csd, dbgError } from '../../libCommon/dbg';
+import { BinSearchItem, CalcExecTime, ErrorPlus, ObjUpdAllProps } from '../../libCommon/util';
+import { csd, csl, dbgError } from '../../libCommon/dbg';
 import { IGenericObject } from '../../libCommon/types';
 import { PageDef } from '../../libCommon/endPoints';
 import { CallApiCliASync } from '../../fetcher/fetcherCli';
@@ -116,8 +116,11 @@ export default function PageExportPlanej() {
     const filter = NormalizePropsString(dataForm);
     if (filter.ano == null) return PopupMsg.error('Informe o Ano.');
     if (filter.revisao == null) return PopupMsg.error('Informe a Revisão.');
+    csl('conectando com o servidor');
+    const calcExecTime = new CalcExecTime();
     apis.getValores(filter)
       .then((apiReturn) => {
+        csl(`tempo total de resposta do servidor ${calcExecTime.lapMs()}ms`);
         const valsArray = (apiReturn.value.vals as IGenericObject[]).map((data) => ValoresPlanejadosDetalhes.deserialize(data));
         if (valsArray.length == 0) valsArray.push(new ValoresPlanejadosDetalhes().Fill({ centroCusto: 'nada encontrado' }));
         const valsExport = valsArray.map((valores) => {
@@ -154,6 +157,7 @@ export default function PageExportPlanej() {
         }
         SaveAsXlsx(fileName, sheets);
         setMainStatesCache({ downloadInProgress: false });
+        csl(`tempo total preparação client ${calcExecTime.lapMs()}ms`);
       })
       .catch((error) => {
         SnackBarError(error, `${pageSelf.pagePath}-getValores`);

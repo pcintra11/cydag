@@ -8,7 +8,7 @@ import { Box, Stack, useTheme } from '@mui/material';
 import { ObjUpdAllProps, ErrorPlus, CalcExecTime, ForceWait, mimeTypes } from '../../libCommon/util';
 import { IGenericObject } from '../../libCommon/types';
 import { PageDef } from '../../libCommon/endPoints';
-import { csd, dbgError } from '../../libCommon/dbg';
+import { csd, csl, dbgError } from '../../libCommon/dbg';
 
 import { IUploadMessage, UploadFriendlyError, UploadStatus, UploadStateClear, ToCsvDownload } from '../../libCommon/uploadCsv';
 
@@ -201,8 +201,11 @@ export default function PageProcessoOrcamentario() {
       });
   };
   const setConfigCCs = async (ano: string, data: any[]) => {
+    csl('conectando com o servidor');
+    const calcExecTime = new CalcExecTime();
     const apiReturn = await apis.crud({ cmd: CmdApi.uploadConfigCCs, ano, data });
     const uploadResult = { messages: apiReturn.value.messages as IUploadMessage[], linesOk: apiReturn.value.linesOk, linesError: apiReturn.value.linesError };
+    csl(`tempo total de resposta do servidor ${calcExecTime.elapsedMs()}ms`);
     return uploadResult;
     //setMainStatesCache({ phase: Phase.list, listing: { ...mainStates.listing, dataRows: dataRowsRefresh }, data: null, index: null });
   };

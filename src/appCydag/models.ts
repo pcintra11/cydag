@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
 
-import { MongooseSlot, AddIndex, CollectionDef } from '../base/db/functions';
+import { MongooseSlot, AddIndex, CollectionDef, databaseInterfaceSap } from '../base/db/functions';
 
 import { csd } from '../libCommon/dbg';
 
@@ -740,6 +740,7 @@ export const CtrlInterfaceModel = (() => {
 const modelNameValoresRealizadosInterfaceSap = 'interface_sap_valores_realizados';
 collectionsDef.push({
   name: modelNameValoresRealizadosInterfaceSap,
+  database: databaseInterfaceSap,
   indexes: [
     { fields: { ano: 1, centroCusto: 1, classeCusto: 1 }, options: { name: 'primaryKey', unique: true } },
   ],
@@ -747,7 +748,7 @@ collectionsDef.push({
 export interface ValoresRealizadosInterfaceSapMd extends mongoose.Document<ObjectId, any, ValoresRealizadosInterfaceSap>, ValoresRealizadosInterfaceSap { }
 export const ValoresRealizadosInterfaceSapModel = (() => {
   const modelName = modelNameValoresRealizadosInterfaceSap;
-  const mongoose = MongooseSlot().mongoose;
+  const mongoose = MongooseSlot(databaseInterfaceSap).mongoose;
   const schema = new mongoose.Schema({
     ano: { type: String, required: true },
     centroCusto: { type: String, required: true },

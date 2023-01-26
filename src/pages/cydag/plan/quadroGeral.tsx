@@ -567,7 +567,7 @@ export default function PageQuadroGeral() {
           dbgError(`nodePai ${idPaiSum} sem stateForceRefreshTot`);
           break;
         }
-        deltas.forEach(x => { nodePai.nodeContent.valMeses[x.sxMes] = RoundDecs(nodePai.nodeContent.valMeses[x.sxMes] + x.val, configApp.decimalsVal); });
+        deltas.forEach(x => { nodePai.nodeContent.valMeses[x.sxMes] = RoundDecs(nodePai.nodeContent.valMeses[x.sxMes] + x.val, configApp.decimalsValsCalc); });
         nodePai.stateForceRefreshTot({});
         idPaiSum = nodePai.idPai;
       }
@@ -633,11 +633,11 @@ export default function PageQuadroGeral() {
         //const { personalizationAttrs } = usePersonalization();
 
         if (node.nodeContent.valMesesStr == null)
-          node.nodeContent.valMesesStr = node.nodeContent.valMeses.map((x) => amountToStr(x));
+          node.nodeContent.valMesesStr = node.nodeContent.valMeses.map((x) => amountToStr(x, configApp.decimalsValsInput));
         const [, forceRefresh] = React.useState<any>({});
         const changeValMes = (sxMes: number, valStr) => {
           try {
-            amountParse(valStr);
+            amountParse(valStr, configApp.decimalsValsInput);
             globalCtrl.logTouchedCells(node.id, node.nodeContent.descrAcum, valMesFld(sxMes), false);
           }
           catch (error) {
@@ -651,7 +651,7 @@ export default function PageQuadroGeral() {
         };
         const blurValMes = (sxMes: number, valStr) => {
           try {
-            const val = amountParse(valStr);
+            const val = amountParse(valStr, configApp.decimalsValsInput);
             //if (!isNaN(val)) {
             chgValMeses('setMes', sxMes, val);
             atuValsEdit([{ sxMes, val }]);
@@ -674,7 +674,7 @@ export default function PageQuadroGeral() {
 
         const atuValsEdit = (alts: ISxMesVal[]) => {
           alts.forEach((x) => {
-            node.nodeContent.valMesesStr[x.sxMes] = amountToStr(x.val);
+            node.nodeContent.valMesesStr[x.sxMes] = amountToStr(x.val, configApp.decimalsValsInput);
             globalCtrl.logTouchedCells(node.id, node.nodeContent.descrAcum, valMesFld(x.sxMes), false);
           });
           forceRefresh({});
@@ -805,9 +805,9 @@ export default function PageQuadroGeral() {
             </Box> */}
             </GridCell>
           )}
-          <GridCell textAlign='right'>{amountToStr(valTotAno)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.valTotPlanejAnoAnt)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.valTotRealAnoAnt)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(valTotAno, configApp.decimalsValsInput)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.valTotPlanejAnoAnt, configApp.decimalsValsInput)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.valTotRealAnoAnt, configApp.decimalsValsInput)}</GridCell>
         </>);
       };
 
@@ -854,10 +854,10 @@ export default function PageQuadroGeral() {
         const propsColorDescr = node.nodeType == 'detClasseCusto' ? propsColorByTotLevel(themePlus, level) : propsColorLevel;
         return (<>
           <GridCell {...propsColorDescr}><Box pl={paddingLeft}>{descrUse}</Box></GridCell>
-          {mesesFld.map((_, index) => <GridCell key={index} textAlign='right' {...propsColorLevel}>{amountToStr(node.nodeContent.valMeses[index])}</GridCell>)}
-          <GridCell textAlign='right' {...propsColorLevel}>{amountToStr(valorTotAno)}</GridCell>
-          <GridCell textAlign='right' {...propsColorLevel}>{amountToStr(node.nodeContent.valTotPlanejAnoAnt)}</GridCell>
-          <GridCell textAlign='right' {...propsColorLevel}>{amountToStr(node.nodeContent.valTotRealAnoAnt)}</GridCell>
+          {mesesFld.map((_, index) => <GridCell key={index} textAlign='right' {...propsColorLevel}>{amountToStr(node.nodeContent.valMeses[index], configApp.decimalsValsInput)}</GridCell>)}
+          <GridCell textAlign='right' {...propsColorLevel}>{amountToStr(valorTotAno, configApp.decimalsValsInput)}</GridCell>
+          <GridCell textAlign='right' {...propsColorLevel}>{amountToStr(node.nodeContent.valTotPlanejAnoAnt, configApp.decimalsValsInput)}</GridCell>
+          <GridCell textAlign='right' {...propsColorLevel}>{amountToStr(node.nodeContent.valTotRealAnoAnt, configApp.decimalsValsInput)}</GridCell>
         </>);
       };
 

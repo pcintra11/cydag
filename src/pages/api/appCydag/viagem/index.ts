@@ -120,12 +120,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 ? {
                   localidadeDestino: viagemEdit.localidadeDestino,
                   funcId: viagemEdit.funcId,
-                  qtdViagens: amountParse(viagemEdit.qtdViagens),
-                  mediaPernoites: amountParse(viagemEdit.mediaPernoites),
+                  qtdViagens: amountParse(viagemEdit.qtdViagens, 0),
+                  mediaPernoites: amountParse(viagemEdit.mediaPernoites, 0),
                 }
                 : {
                   obs: viagemEdit.obs,
-                  valor: amountParse(viagemEdit.valor),
+                  valor: amountParse(viagemEdit.valor, configApp.decimalsValsInput),
                 };
               viagemData.tipoPlanejViagem = viagemEdit.tipoPlanejViagem;
               viagemData.lastUpdated = agora;

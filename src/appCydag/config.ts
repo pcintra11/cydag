@@ -7,7 +7,9 @@ export const configApp = {
   csvDelimiter: ';',
   csvStrForNull: '(vazio)',
   csvColumnCmd: 'cmd(incluir/alterar/excluir)',
-  decimalsVal: 0,
+  decimalsValsInput: 0,
+  decimalsValsCalc: 2,
+  decimalsValsCons: 0,
 };
 
 export enum UploadCsvCmd {

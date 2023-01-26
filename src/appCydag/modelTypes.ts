@@ -11,7 +11,7 @@ import { UserMd } from './models';
 import { LoggedUser } from './loggedUser';
 import { rolesApp, roleSimulateUserDyn } from './endPoints';
 import { configApp } from './config';
-import { amountParse, amountParseFrom2decs } from './util';
+import { amountParse, amountParseValsCalc } from './util';
 import { CategRegional, CategRegionalMd, InterfaceSapStatus, InterfaceSapCateg, OrigemClasseCusto, OrigemFunc, ProcessoOrcamentarioStatus, RevisaoValor, RevisaoValorMd, TipoColaborador, TipoColaboradorMd, TipoParticipPerOrcam, TipoParticipPerOrcamMd, TipoPlanejViagem, TipoSegmCentroCusto, TipoSegmCentroCustoMd } from './types';
 
 //#region ProcessoOrcamentario User
@@ -932,9 +932,9 @@ export class ValoresTransfer {
       new FldCsvDef('valMeses', {
         suppressColumn: true,
         def: (data: IGenericObject) => [
-          amountParse(data.m01), amountParse(data.m02), amountParse(data.m03), amountParse(data.m04),
-          amountParse(data.m05), amountParse(data.m06), amountParse(data.m07), amountParse(data.m08),
-          amountParse(data.m09), amountParse(data.m10), amountParse(data.m11), amountParse(data.m12),
+          amountParse(data.m01, configApp.decimalsValsInput), amountParse(data.m02, configApp.decimalsValsInput), amountParse(data.m03, configApp.decimalsValsInput), amountParse(data.m04, configApp.decimalsValsInput),
+          amountParse(data.m05, configApp.decimalsValsInput), amountParse(data.m06, configApp.decimalsValsInput), amountParse(data.m07, configApp.decimalsValsInput), amountParse(data.m08, configApp.decimalsValsInput),
+          amountParse(data.m09, configApp.decimalsValsInput), amountParse(data.m10, configApp.decimalsValsInput), amountParse(data.m11, configApp.decimalsValsInput), amountParse(data.m12, configApp.decimalsValsInput),
         ]
       }),
       new FldCsvDef('lastUpdated', { down: (data: ValoresTransfer) => DateToStrISO(data.lastUpdated), up: (data: IGenericObject) => DateFromStrISO(data.lastUpdated) || agora, def: () => new Date() }),
@@ -974,9 +974,9 @@ export class ValoresImputados {
         new FldCsvDef('valMeses', {
           suppressColumn: true,
           def: (data: IGenericObject) => [
-            amountParseFrom2decs(data.m01), amountParseFrom2decs(data.m02), amountParseFrom2decs(data.m03), amountParseFrom2decs(data.m04),
-            amountParseFrom2decs(data.m05), amountParseFrom2decs(data.m06), amountParseFrom2decs(data.m07), amountParseFrom2decs(data.m08),
-            amountParseFrom2decs(data.m09), amountParseFrom2decs(data.m10), amountParseFrom2decs(data.m11), amountParseFrom2decs(data.m12),
+            amountParse(data.m01, configApp.decimalsValsInput), amountParse(data.m02, configApp.decimalsValsInput), amountParse(data.m03, configApp.decimalsValsInput), amountParse(data.m04, configApp.decimalsValsInput),
+            amountParse(data.m05, configApp.decimalsValsInput), amountParse(data.m06, configApp.decimalsValsInput), amountParse(data.m07, configApp.decimalsValsInput), amountParse(data.m08, configApp.decimalsValsInput),
+            amountParse(data.m09, configApp.decimalsValsInput), amountParse(data.m10, configApp.decimalsValsInput), amountParse(data.m11, configApp.decimalsValsInput), amountParse(data.m12, configApp.decimalsValsInput),
           ]
         }),
         new FldCsvDef('lastUpdated', { down: (data: ValoresImputados) => DateToStrISO(data.lastUpdated), up: (data: IGenericObject) => DateFromStrISO(data.lastUpdated) || agora, def: () => new Date() }),
@@ -1024,9 +1024,9 @@ export class ValoresPlanejadosHistorico {
         new FldCsvDef('valMeses', {
           suppressColumn: true,
           def: (data: IGenericObject) => [
-            amountParseFrom2decs(data.m01), amountParseFrom2decs(data.m02), amountParseFrom2decs(data.m03), amountParseFrom2decs(data.m04),
-            amountParseFrom2decs(data.m05), amountParseFrom2decs(data.m06), amountParseFrom2decs(data.m07), amountParseFrom2decs(data.m08),
-            amountParseFrom2decs(data.m09), amountParseFrom2decs(data.m10), amountParseFrom2decs(data.m11), amountParseFrom2decs(data.m12),
+            amountParseValsCalc(data.m01), amountParseValsCalc(data.m02), amountParseValsCalc(data.m03), amountParseValsCalc(data.m04),
+            amountParseValsCalc(data.m05), amountParseValsCalc(data.m06), amountParseValsCalc(data.m07), amountParseValsCalc(data.m08),
+            amountParseValsCalc(data.m09), amountParseValsCalc(data.m10), amountParseValsCalc(data.m11), amountParseValsCalc(data.m12),
           ]
         }),
       ]);
@@ -1059,9 +1059,9 @@ export class ValoresRealizados {
         new FldCsvDef('valMeses', {
           suppressColumn: true,
           def: (data: IGenericObject) => [
-            amountParseFrom2decs(data.m01), amountParseFrom2decs(data.m02), amountParseFrom2decs(data.m03), amountParseFrom2decs(data.m04),
-            amountParseFrom2decs(data.m05), amountParseFrom2decs(data.m06), amountParseFrom2decs(data.m07), amountParseFrom2decs(data.m08),
-            amountParseFrom2decs(data.m09), amountParseFrom2decs(data.m10), amountParseFrom2decs(data.m11), amountParseFrom2decs(data.m12),
+            amountParseValsCalc(data.m01), amountParseValsCalc(data.m02), amountParseValsCalc(data.m03), amountParseValsCalc(data.m04),
+            amountParseValsCalc(data.m05), amountParseValsCalc(data.m06), amountParseValsCalc(data.m07), amountParseValsCalc(data.m08),
+            amountParseValsCalc(data.m09), amountParseValsCalc(data.m10), amountParseValsCalc(data.m11), amountParseValsCalc(data.m12),
           ]
         }),
       ]);
@@ -1141,11 +1141,18 @@ export class Funcionario {
       return Number(valor_messy);
     else {
       const salStr = UnscrambleNew(valor_messy, `${centroCusto}-${refer}`, true);
-      if (salStr == null) {
-        dbgError('valor_messy inválido', valor_messy, centroCusto, refer);
-        return 0;
+      let result = 0;
+      if (salStr == null)
+        dbgError('salario_messy inválido (criptografia)', valor_messy, centroCusto, refer);
+      else {
+        try {
+          result = StrToNumber(salStr);
+        }
+        catch (error) {
+          dbgError('salario desmascarado inválido (não numérico)', centroCusto, refer, salStr);
+        }
       }
-      return Number(salStr);
+      return result;
     }
   }
 

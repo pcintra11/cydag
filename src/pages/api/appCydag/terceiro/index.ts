@@ -1,5 +1,4 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ObjectId } from 'mongodb';
 import _ from 'underscore';
 
 import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
@@ -152,7 +151,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 nome: terceirosEdit.nome,
                 fornecedor: terceirosEdit.fornecedor,
                 funcaoTerceiros: terceirosEdit.funcaoTerceiros,
-                valMeses: terceirosEdit.valMeses.map((x) => amountParse(x)),
+                valMeses: terceirosEdit.valMeses.map((x) => amountParse(x, configApp.decimalsValsInput)),
                 lastUpdated: agora,
               } as Terceiro;
             }

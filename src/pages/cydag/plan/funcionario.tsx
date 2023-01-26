@@ -479,7 +479,7 @@ export default function PageFuncionarioCrud() {
             <GridCell alignSelf='end'><GridCellEdit mainCtrl={mainCtrl} fldCtrl={fldsCtrl.idVaga} /></GridCell>
             <GridCell alignSelf='end'><GridCellEdit mainCtrl={mainCtrl} fldCtrl={fldsCtrl.tipoColaborador} /></GridCell>
             <GridCell alignSelf='end'><GridCellEdit mainCtrl={mainCtrl} fldCtrl={fldsCtrl.funcao} /></GridCell>
-            <GridCell alignSelf='end'><Box>{amountToStr(dataOriginal.salarioLegado)}</Box></GridCell>
+            <GridCell alignSelf='end'><Box>{amountToStr(dataOriginal.salarioLegado, configApp.decimalsValsInput)}</Box></GridCell>
 
             <GridCell alignSelf='end' textAlign='center'>
               <GridCellEdit mainCtrl={mainCtrl} fldCtrl={fldsCtrl.ativo} />
@@ -514,21 +514,21 @@ export default function PageFuncionarioCrud() {
           <GridCell textAlign='left'><Box>{dataOriginal.idVaga}</Box></GridCell>
           <GridCell textAlign='left'><Box>{TipoColaboradorMd.descr(dataOriginal.tipoColaborador)}</Box></GridCell>
           <GridCell textAlign='left'><Box>{dataOriginal.funcao}</Box></GridCell>
-          <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.salarioLegado)}</Box></GridCell>
+          <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.salarioLegado, configApp.decimalsValsInput)}</Box></GridCell>
 
           <GridCell textAlign='center'><Box>{BooleanToSN(dataOriginal.ativo)}</Box></GridCell>
           <GridCell textAlign='center'><Box>{TipoParticipPerOrcamMd.descr(dataOriginal.tipoIni)}</Box></GridCell>
           <GridCell textAlign='right'><Box>{dataOriginal.mesIni}</Box></GridCell>
           <GridCell textAlign='center'><Box>{TipoParticipPerOrcamMd.descr(dataOriginal.tipoFim)}</Box></GridCell>
           <GridCell textAlign='right'><Box>{dataOriginal.mesFim}</Box></GridCell>
-          <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.salario)}</Box></GridCell>
+          <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.salario, configApp.decimalsValsInput)}</Box></GridCell>
           <GridCell textAlign='right'><Box>{dataOriginal.dependentes}</Box></GridCell>
-          <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.valeTransp)}</Box></GridCell>
+          <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.valeTransp, configApp.decimalsValsInput)}</Box></GridCell>
           {showPromo &&
             <>
               <GridCell textAlign='center'><Box>{dataOriginal.mesPromo}</Box></GridCell>
               <GridCell textAlign='center'><Box>{TipoColaboradorMd.descr(dataOriginal.tipoColaboradorPromo)}</Box></GridCell>
-              <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.salarioPromo)}</Box></GridCell>
+              <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.salarioPromo, configApp.decimalsValsInput)}</Box></GridCell>
             </>
           }
           {premissaDespRecorrArray.map((_, index) => <GridCell key={index} textAlign='center'>s</GridCell>)}

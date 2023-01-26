@@ -42,17 +42,17 @@ export const multiplyValMeses = (valMesesTrg: number[], mult: number[]) => {
 };
 
 export const sumRound = (val1: number, val2: number) => {
-  return RoundDecs(val1 + val2, configApp.decimalsVal);
+  return RoundDecs(val1 + val2, configApp.decimalsValsCalc);
 };
 export const multiplyRound = (val: number, mult: number) => {
-  return RoundDecs(val * mult, configApp.decimalsVal);
+  return RoundDecs(val * mult, configApp.decimalsValsCalc);
 };
 export const roundInterface = (val: number | null) => {
   if (val == null) return null;
-  else return RoundDecs(val, configApp.decimalsVal);
+  else return RoundDecs(val, configApp.decimalsValsCalc);
 };
 
-export const amountToStr = (val: number, decimals = configApp.decimalsVal) => {
+export const amountToStr = (val: number, decimals: number) => {
   return AmountPtBrFormat(val, decimals);
 };
 export const percToStr = (val: number | null, decimals = 1) => {
@@ -61,11 +61,11 @@ export const percToStr = (val: number | null, decimals = 1) => {
   return AmountPtBrFormat(val * 100, decimals) + '%';
 };
 
-export const amountParse = (valStr: string, decimals = configApp.decimalsVal) => {
+export const amountParse = (valStr: string, decimals: number) => { //  = configApp.decimalsCalc
   return AmountPtBrParse(valStr, decimals, true);
 };
-export const amountParseFrom2decs = (valStr: string) => {
-  return RoundDecs(AmountPtBrParse(valStr, 2, true), configApp.decimalsVal);
+export const amountParseValsCalc = (valStr: string) => {
+  return RoundDecs(AmountPtBrParse(valStr, 2, true), configApp.decimalsValsCalc);
 };
 
 export const anoAdd = (ano: string, add: number) => (Number(ano) + add).toString();
