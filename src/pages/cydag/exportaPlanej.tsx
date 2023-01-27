@@ -4,7 +4,7 @@ import _ from 'underscore';
 
 import { Stack } from '@mui/material';
 
-import { BinSearchItem, CalcExecTime, ErrorPlus, ObjUpdAllProps } from '../../libCommon/util';
+import { BinSearchItem, BinSearchProp, CalcExecTime, ErrorPlus, ObjUpdAllProps } from '../../libCommon/util';
 import { csd, csl, dbgError } from '../../libCommon/dbg';
 import { IGenericObject } from '../../libCommon/types';
 import { PageDef } from '../../libCommon/endPoints';
@@ -19,8 +19,8 @@ import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../.
 import { devFeature, IconButtonAppDownload, SelAno, SelEntity, SelRevisao } from '../../appCydag/components';
 import { apisApp, pagesApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
-import { CentroCusto, ClasseCusto, ProcessoOrcamentario } from '../../appCydag/modelTypes';
-import { OrigemClasseCustoMd, RevisaoValor, RevisaoValorMd, ValoresPlanejadosDetalhes } from '../../appCydag/types';
+import { CentroCusto, ClasseCusto } from '../../appCydag/modelTypes';
+import { CentroCustoConfigOption, IAnoCentroCustos, OrigemClasseCustoMd, RevisaoValor, RevisaoValorMd, ValoresPlanejadosDetalhes } from '../../appCydag/types';
 //import { CmdApi_Crud, IChangedLines } from '../api/appCydag/valoresContas/types';
 import { CmdApi_ProcessoOrcamentario } from '../api/appCydag/processoOrcamentario/types';
 import { CmdApi_ValoresContas } from '../api/appCydag/valoresContas/types';
@@ -51,9 +51,8 @@ const fldFrmExtra = {
 let mount; let mainStatesCache;
 const apis = { // cdm sempre aqui?? #!!!!!!
   // #!!!!! agrupar e executar em paralelo (await all)
-  getProcsOrc: () => CallApiCliASync(apisApp.processoOrcamentario.apiPath, globals.windowId, { cmd: CmdApi_ProcessoOrcamentario.list }),
+  getProcsOrcCCsAuth: () => CallApiCliASync(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.getProcsOrcCCsAuth }),
   getContas: () => CallApiCliASync(apisApp.classeCusto.apiPath, globals.windowId, { cmd: CmdApi_ClasseCusto.list, sortType: SortType_ClasseCusto.classeCusto }),
-  getCentrosCusto: () => CallApiCliASync(apisApp.centroCusto.apiPath, globals.windowId, { cmd: CmdApi_CentroCusto.list, getAll: true }),
   getValores: (filter: FrmFilter) => CallApiCliASync(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.exportPlanejValoresGet, filter }),
 };
 const pageSelf = pagesApp.exportaPlanej;
@@ -69,7 +68,8 @@ export default function PageExportPlanej() {
 
   interface MainStates {
     error?: Error | ErrorPlus; phase?: Phase;
-    processoOrcamentarioArray?: ProcessoOrcamentario[]; classeCustoArray?: ClasseCusto[]; centroCustoArray?: CentroCusto[];
+    anoCentroCustosArray?: IAnoCentroCustos[]; centroCustoOptions?: CentroCustoConfigOption[];
+    classeCustoArray?: ClasseCusto[];
     downloadInProgress?: boolean;
   }
 
@@ -81,15 +81,34 @@ export default function PageExportPlanej() {
 
   //#region db access
   const initialization = async () => {
-    const apiReturn1 = await apis.getProcsOrc();
-    const processoOrcamentarioArray = (apiReturn1.value.documents as IGenericObject[]).map((data) => ProcessoOrcamentario.deserialize(data));
+    const apiReturn1 = await apis.getProcsOrcCCsAuth();
+    const centroCustoArray = (apiReturn1.value.centroCustoArray as IGenericObject[]).map((data) => CentroCusto.deserialize(data));
+    const anoCentroCustosArray: IAnoCentroCustos[] = [];
+    apiReturn1.value.procsCentrosCustoConfigAllYears.forEach((x) => {
+      anoCentroCustosArray.push({
+        ano: x.ano,
+        centroCustoConfigOptions: x.centroCustoConfig.map((ccConfig) => ({ cod: ccConfig.centroCusto, descr: BinSearchProp(centroCustoArray, ccConfig.centroCusto, 'descr', 'cod'), ccConfig })),
+      });
+    });
     const apiReturn2 = await apis.getContas();
     const classeCustoArray = (apiReturn2.value.documents as IGenericObject[]).map((data) => ClasseCusto.deserialize(data));
-    const apiReturn3 = await apis.getCentrosCusto();
-    const centroCustoArray = (apiReturn3.value.documents as IGenericObject[]).map((data) => CentroCusto.deserialize(data));
-    return { processoOrcamentarioArray, classeCustoArray, centroCustoArray };
+    return { anoCentroCustosArray, classeCustoArray, centroCustoArray };
   };
   //#endregion
+
+  const mountOptionsCC = (ano: string) => {
+    let centroCustoOptions: CentroCustoConfigOption[] = [];
+    let centroCustoUnique = null as string;
+    if (ano != null) {
+      const anoCentroCustos = mainStatesCache.anoCentroCustosArray.find((x) => x.ano == ano);
+      centroCustoOptions = anoCentroCustos.centroCustoConfigOptions;
+      if (anoCentroCustos.centroCustoConfigOptions.length == 1)
+        centroCustoUnique = anoCentroCustos.centroCustoConfigOptions[0].cod;
+    }
+    setMainStatesCache({ centroCustoOptions });
+    if (centroCustoUnique != null)
+      frmFilter.setValue(fldFrmExtra.centroCustoArray, [centroCustoUnique]);
+  };
 
   React.useEffect(() => {
     mount = true;
@@ -98,10 +117,11 @@ export default function PageExportPlanej() {
     initialization()
       .then((result) => {
         if (!mount) return;
-        const { processoOrcamentarioArray, classeCustoArray, centroCustoArray } = result;
-        const ano = processoOrcamentarioArray.length != 0 ? processoOrcamentarioArray[0].ano : null;
+        const { anoCentroCustosArray, classeCustoArray } = result; // , centroCustoArray
+        const ano = anoCentroCustosArray.length != 0 ? anoCentroCustosArray[0].ano : null;
+        setMainStatesCache({ phase: Phase.ready, anoCentroCustosArray, classeCustoArray }); //, centroCustoArray
         frmFilter.setValue(ValoresPlanejadosDetalhes.F.ano, ano);
-        setMainStatesCache({ phase: Phase.ready, processoOrcamentarioArray, classeCustoArray, centroCustoArray });
+        mountOptionsCC(ano);
       })
       .catch((error) => {
         SnackBarError(error, `${pageSelf.pagePath}-initialization`);
@@ -165,7 +185,7 @@ export default function PageExportPlanej() {
       });
   };
 
-  const centroCustoOptions = mainStates.centroCustoArray == null ? null : mainStates.centroCustoArray.map((x) => new SelOption(x.cod, x.descr));
+  const centroCustoOptions = mainStates.centroCustoOptions == null ? null : mainStates.centroCustoOptions.map((x) => new SelOption(x.cod, x.descr));
   return (
     // <form onSubmit={frmFilter.handleSubmit(getValoresPlanejadosSubmit)}> #!!!!!! eliminar todos submit ?
     <Stack gap={1} height='100%'>
@@ -177,8 +197,8 @@ export default function PageExportPlanej() {
           placeHolder='Ano'
           options={[new SelOption('Ano', 'Ano', true), ...mainStates.processoOrcamentarioArray.map((x) => new SelOption(x.ano, x.ano))]}
         /> */}
-        <SelAno value={ano} onChange={(value) => frmFilter.setValue(ValoresPlanejadosDetalhes.F.ano, value)}
-          options={mainStates.processoOrcamentarioArray.map((x) => new SelOption(x.ano, x.ano))}
+        <SelAno value={ano} onChange={(value) => { frmFilter.setValue(ValoresPlanejadosDetalhes.F.ano, value); mountOptionsCC(value); }}
+          options={mainStates.anoCentroCustosArray.map((x) => new SelOption(x.ano, x.ano))}
         />
         <SelRevisao value={revisao} onChange={(newValue: RevisaoValor) => frmFilter.setValue(ValoresPlanejadosDetalhes.F.revisao, newValue)} />
         {centroCustoOptions != null &&

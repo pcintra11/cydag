@@ -370,7 +370,7 @@ export default function PageTerceiroCrud() {
         nome: { fld: 'nome', mandatory: true } as IGridEditFldCtrl,
         fornecedor: { fld: 'fornecedor', mandatory: true } as IGridEditFldCtrl,
         funcaoTerceiros: { fld: 'funcaoTerceiros', valueType: ValueType.options, options: mainStates.funcaoTerceirosArray.map((x) => new SelOption(x.cod, x.descr)), mandatory: true } as IGridEditFldCtrl,
-        valMeses: { fld: 'valMeses', valueType: ValueType.amount, arrayItens: mesesFld.length } as IGridEditFldCtrl,
+        valMeses: { fld: 'valMeses', valueType: ValueType.amount, decimals: configApp.decimalsValsInput, arrayItens: mesesFld.length } as IGridEditFldCtrl,
       };
       //#endregion
 

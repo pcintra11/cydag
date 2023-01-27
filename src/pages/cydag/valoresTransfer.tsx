@@ -270,7 +270,7 @@ export default function PageValoresTransfer() {
       };
       const mainCtrl: IGridEditMainCtrl = { dataOriginal: dataOriginal, fldNewValue, fontSizeGrid };
       const fldsCtrl = {
-        valMeses: { fld: 'valMeses', valueType: ValueType.amount, arrayItens: mesesFld.length } as IGridEditFldCtrl,
+        valMeses: { fld: 'valMeses', valueType: ValueType.amount, decimals: configApp.decimalsValsInput, arrayItens: mesesFld.length } as IGridEditFldCtrl,
       };
       //#endregion
 

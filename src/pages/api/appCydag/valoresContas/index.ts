@@ -90,6 +90,13 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         deleteIfOk = true;
       }
 
+      else if (parm.cmd == CmdApi.getProcsOrcCCsAuth) {
+        const procsCentrosCustoConfigAllYears = await procsCentroCustosConfigAuthAllYears(loggedUserReq, authCCQuadroCons);
+        const centroCustoArray = await ccsAuthArray(procsCentrosCustoConfigAllYears);
+        resumoApi.jsonData({ value: { procsCentrosCustoConfigAllYears, centroCustoArray } });
+        deleteIfOk = true;
+      }
+
       else if (parm.cmd == CmdApi.quadroImputItensGet ||
         parm.cmd == CmdApi.quadroImputItensSet) {
         const { ano, centroCusto, revisao } = parm.filter || {};
@@ -198,8 +205,24 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         const { ano, revisao, centroCustoArray, withDetails, showCalc } = parm.filter || {};
         const processoOrcamentario = await ProcessoOrcamentarioModel.findOne({ ano }).lean();
         if (processoOrcamentario == null) throw new ErrorPlus(`Processo Orçamentário para ${ano} não encontrado`);
-
-        const { vals, memoriaCalc } = await GetValsPlanejados(processoOrcamentario, revisao, centroCustoArray, true, false, withDetails, showCalc, ctrlApiExec);
+        let centroCustoArrayUse: string[] = null;
+        if (centroCustoArray.length > 0) {
+          for (const centroCusto of centroCustoArray) {
+            const processoOrcamentarioCentroCusto = await ProcessoOrcamentarioCentroCustoModel.findOne({ ano, centroCusto }).lean();
+            if (processoOrcamentarioCentroCusto == null) throw new ErrorPlus(`Centro de Custo ${centroCusto} não configurado para o Processo Orçamentário`);
+            CheckProcCentroCustosAuth(loggedUserReq, processoOrcamentarioCentroCusto, authCCQuadroCons);
+          }
+          centroCustoArrayUse = centroCustoArray;
+        }
+        else {
+          if (accessAllCCs(loggedUserReq, authCCQuadroCons))
+            centroCustoArrayUse = [];
+          else {
+            const procsCentrosCustoConfigAllYears = await procsCentroCustosConfigAuthAllYears(loggedUserReq, authCCQuadroCons, ano);
+            centroCustoArrayUse = procsCentrosCustoConfigAllYears[0].centroCustoConfig.map((x) => x.centroCusto);
+          }
+        }
+        const { vals, memoriaCalc } = await GetValsPlanejados(processoOrcamentario, revisao, centroCustoArrayUse, true, false, withDetails, showCalc, ctrlApiExec);
 
         resumoApi.jsonData({ value: { vals, memoriaCalc } });
         deleteIfOk = true;
@@ -209,14 +232,32 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         const { ano, centroCustoArray } = parm.filter || {};
         const processoOrcamentario = await ProcessoOrcamentarioModel.findOne({ ano }).lean();
         if (processoOrcamentario == null) throw new ErrorPlus(`Processo Orçamentário para ${ano} não encontrado`);
+        let centroCustoArrayUse: string[] = null;
+        if (centroCustoArray.length > 0) {
+          for (const centroCusto of centroCustoArray) {
+            const processoOrcamentarioCentroCusto = await ProcessoOrcamentarioCentroCustoModel.findOne({ ano, centroCusto }).lean();
+            if (processoOrcamentarioCentroCusto == null) throw new ErrorPlus(`Centro de Custo ${centroCusto} não configurado para o Processo Orçamentário`);
+            CheckProcCentroCustosAuth(loggedUserReq, processoOrcamentarioCentroCusto, authCCQuadroCons);
+          }
+          centroCustoArrayUse = centroCustoArray;
+        }
+        else {
+          if (accessAllCCs(loggedUserReq, authCCQuadroCons))
+            centroCustoArrayUse = [];
+          else {
+            const procsCentrosCustoConfigAllYears = await procsCentroCustosConfigAuthAllYears(loggedUserReq, authCCQuadroCons, ano);
+            centroCustoArrayUse = procsCentrosCustoConfigAllYears[0].centroCustoConfig.map((x) => x.centroCusto);
+          }
+        }
+
         const centroCustoConfigMdArray = await ProcessoOrcamentarioCentroCustoModel.find({ ano }).lean().sort({ centroCusto: 1 });
         const classeCustoMdArray = await ClasseCustoModel.find().lean().sort({ classeCusto: 1 });
         const unidadeNegocioMdArray = await UnidadeNegocioModel.find().lean().sort({ cod: 1 });
         const diretoriaMdArray = await DiretoriaModel.find().lean().sort({ cod: 1 });
         const gerenciaMdArray = await GerenciaModel.find().lean().sort({ cod: 1 });
 
-        const { vals: valsPlan } = await GetValsPlanejados(processoOrcamentario, RevisaoValor.atual, centroCustoArray, true, false, false, false, ctrlApiExec);
-        const valsReal = await GetValsRealizados(processoOrcamentario, centroCustoArray, true, false);
+        const { vals: valsPlan } = await GetValsPlanejados(processoOrcamentario, RevisaoValor.atual, centroCustoArrayUse, true, false, false, false, ctrlApiExec);
+        const valsReal = await GetValsRealizados(processoOrcamentario, centroCustoArrayUse, true, false);
 
         const ctrlCollect = new CtrlCollect<ValoresAnaliseRealPlan>(['centroCusto', 'classeCusto'],
           { fldsSum: [{ fld: 'valMesesPlan', arrayLen: mesesFld.length }, { fld: 'valMesesReal', arrayLen: mesesFld.length }] });

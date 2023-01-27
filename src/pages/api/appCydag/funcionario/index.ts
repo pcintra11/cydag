@@ -60,7 +60,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         //|| loggedUserReq.roles.includes(rolesApp.gestorContr) 
       );
 
-      const authCC: IAuthCC = {};
+      const authCC: IAuthCC = { incluiPerfilGestorContr: true };
 
       if (parm.cmd == CmdApi.crudInitialization) {
         const procsCentrosCustoConfigAllYears = await procsCentroCustosConfigAuthAllYears(loggedUserReq, authCC);

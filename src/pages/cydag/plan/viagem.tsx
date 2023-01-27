@@ -366,8 +366,8 @@ export default function PageViagem() {
       const fldsCtrl = {
         localidadeDestino: { fld: 'localidadeDestino', valueType: ValueType.options, options: localidadeDestinoOptions, mandatory: true } as IGridEditFldCtrl,
         funcId: { fld: 'funcId', valueType: ValueType.options, options: funcIdOptions } as IGridEditFldCtrl,
-        qtdViagens: { fld: 'qtdViagens', valueType: ValueType.amount, mandatory: true } as IGridEditFldCtrl,
-        mediaPernoites: { fld: 'mediaPernoites', valueType: ValueType.amount, mandatory: true } as IGridEditFldCtrl,
+        qtdViagens: { fld: 'qtdViagens', valueType: ValueType.number, mandatory: true } as IGridEditFldCtrl,
+        mediaPernoites: { fld: 'mediaPernoites', valueType: ValueType.number, mandatory: true } as IGridEditFldCtrl,
       };
       //#endregion
 
@@ -460,7 +460,7 @@ export default function PageViagem() {
       const mainCtrl: IGridEditMainCtrl = { dataOriginal: dataOriginal, fldNewValue, fontSizeGrid };
       const fldsCtrl = {
         obs: { fld: 'obs', valueType: ValueType.string, mandatory: true } as IGridEditFldCtrl,
-        valor: { fld: 'valor', valueType: ValueType.amount, mandatory: true } as IGridEditFldCtrl,
+        valor: { fld: 'valor', valueType: ValueType.amount, decimals: configApp.decimalsValsInput, mandatory: true } as IGridEditFldCtrl,
       };
       //#endregion
 

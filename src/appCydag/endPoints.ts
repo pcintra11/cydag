@@ -40,8 +40,6 @@ const rolesControledoria = [rolesApp.gestorContr, rolesApp.operContr];
 export const pagesApp = {
   processoOrcamentario: new PageDef(`${pathPages}/processoOrcamentario`, 'Controle do Processo Orçamentário', null, { onlyAuthenticated: true, roles: rolesControledoria }),
   cargaFuncionario: new PageDef(`${pathPages}/cargaFuncionario`, 'Carga de Funcionários', null, { onlyAuthenticated: true, roles: [rolesApp.cargaFunc] }),
-  exportaPlanej: new PageDef(`${pathPages}/exportaPlanej`, 'Exportação do Orçamento', null, { onlyAuthenticated: true, roles: rolesControledoria }),
-  exportaRealPlanej: new PageDef(`${pathPages}/exportaRealPlanej`, 'Exportação do Real / Orçado', null, { onlyAuthenticated: true, roles: rolesControledoria }),
   importReal: new PageDef(`${pathPages}/importReal`, 'Importação do Realizado', null, { onlyAuthenticated: true, roles: rolesControledoria }),
 
   user: new PageDef(`${pathPages}/md/user`, 'Usuários', null, { onlyAuthenticated: true, roles: rolesControledoria }),
@@ -81,6 +79,9 @@ export const pagesApp = {
   analiseAnualRxOCentroCusto: new PageDef(`${pathPages}/cons/analiseAnualCentroCusto`, 'Análise Anual RxO Centro de Custo', 'Anual RxO Centro de Custo', { onlyAuthenticated: true, roles: rolesQuadro }),
   analiseAnualRxOControladoria: new PageDef(`${pathPages}/cons/analiseAnualControladoria`, 'Análise Anual RxO Controladoria', 'Anual RxO Controladoria', { onlyAuthenticated: true, roles: rolesControledoria }),
   comparativoAnualControladoria: new PageDef(`${pathPages}/cons/comparativoAnualControladoria`, 'Comparativo Anual Controladoria', 'Comparativo Anual Controladoria', { onlyAuthenticated: true, roles: rolesControledoria }),
+
+  exportaPlanej: new PageDef(`${pathPages}/exportaPlanej`, 'Exportação do Orçamento', null, { onlyAuthenticated: true, roles: rolesQuadro }),
+  exportaRealPlanej: new PageDef(`${pathPages}/exportaRealPlanej`, 'Exportação do Real / Orçado', null, { onlyAuthenticated: true, roles: rolesQuadro }),
 
   // consTotHier: new PageDef(pageDummy.pagePath, 'Totais Orçados pela Hierarquia', null, { onlyAuthenticated: true, roles: [roleGestorContr], variant: `var-${++seqVariante}` }),
   // consDespsEquipe: new PageDef(pageDummy.pagePath, 'Despesas da Equipe', null, { onlyAuthenticated: true, roles: [rolePlanejDynCC], variant: `var-${++seqVariante}` }),

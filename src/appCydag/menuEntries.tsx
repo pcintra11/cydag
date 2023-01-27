@@ -35,8 +35,6 @@ const menuTotal: IMenuEntry[] = [ // aqui todas as transações, serão filtrada
     new SubMenu('Configuração', [
       pagesApp.classeCustoRestrita,
     ]),
-    pagesApp.exportaPlanej,
-    pagesApp.exportaRealPlanej,
     pagesApp.importReal,
   ]),
   pagesApp.cargaFuncionario,
@@ -70,6 +68,11 @@ const menuTotal: IMenuEntry[] = [ // aqui todas as transações, serão filtrada
     pagesApp.analiseAnualRxOCentroCusto,
     pagesApp.analiseAnualRxOControladoria,
     pagesApp.comparativoAnualControladoria,
+  ]), 
+
+  new SubMenu('Exportações', [
+    pagesApp.exportaPlanej,
+    pagesApp.exportaRealPlanej,
   ]), 
 
   pagesApp.userSimulate,

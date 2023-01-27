@@ -98,6 +98,7 @@ export interface IGridEditFldCtrl {
   fld: string;
   arrayItens?: number;
   valueType?: ValueType;
+  decimals?: number;
   options?: SelOption[];
   mandatory?: boolean;
   /**
@@ -106,11 +107,11 @@ export interface IGridEditFldCtrl {
   atuVal?: any
 } // (value: any) => void | ((value: any) => void)[]
 
-const valueOriginalForEdit = (dataOriginal: any, fld: string, index?: number, valueType?: ValueType) => {
+const valueOriginalForEdit = (dataOriginal: any, fld: string, index?: number, valueType?: ValueType, decimals?: number) => { //@@@@@@@@@
   let result: any;
   //const valorOrig = NavigateToProperty(dataOriginal, fld);
   const valorOrig = index == null ? dataOriginal[fld] : dataOriginal[fld][index];
-  if (valueType === ValueType.amount) result = amountToStr(valorOrig, 2);
+  if (valueType === ValueType.amount) result = amountToStr(valorOrig, decimals);
   else if (valueType === ValueType.number) result = amountToStr(valorOrig, 0);
   else if (valueType === ValueType.boolean) result = valorOrig;
   else result = valorOrig || '';
@@ -120,7 +121,7 @@ const valueOriginalForEdit = (dataOriginal: any, fld: string, index?: number, va
 export const GridCellEdit = ({ mainCtrl, fldCtrl, index, disabled }: { mainCtrl: IGridEditMainCtrl, fldCtrl: IGridEditFldCtrl, index?: number, disabled?: boolean }) => {
   // o valor editado é sempre string ou boolean, nunca numérico
   // o valor para envio ao db será undefined se for vazio ('')
-  const { fld, arrayItens, valueType, options, mandatory } = fldCtrl;
+  const { fld, arrayItens, valueType, decimals, options, mandatory } = fldCtrl; //@@@@@@@@@@@@@@@@@@
   const { dataOriginal, fldNewValue, fontSizeGrid } = mainCtrl;
   if (arrayItens != null) {
     if (index == null) throw new Error(`fld ${fld} É do tipo array e NÂO FOI passado o index`);
@@ -146,7 +147,7 @@ export const GridCellEdit = ({ mainCtrl, fldCtrl, index, disabled }: { mainCtrl:
         if (valToSend == '') valToSend = undefined;
         else {
           if (valueType === ValueType.amount)
-            amountParse(value, 2);
+            amountParse(value, decimals);
           else if (valueType === ValueType.number)
             amountParse(value, 0);
         }

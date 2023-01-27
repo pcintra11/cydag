@@ -16,7 +16,7 @@ import { CallApiCliASync } from '../../../fetcher/fetcherCli';
 import { globals } from '../../../libClient/clientGlobals';
 
 import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, SnackBarError, fontSizeGrid, fontSizeIconsInGrid } from '../../../components';
-import { GridCell, GridCellEdit, IFldChange, IGridEditFldCtrl, IGridEditMainCtrl } from '../../../components/grid';
+import { GridCell, GridCellEdit, IFldChange, IGridEditFldCtrl, IGridEditMainCtrl, ValueType } from '../../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 //import { GlobalState, useGlobalState } from '../../hooks/useGlobalState';
 
@@ -380,8 +380,6 @@ export default function PageFuncionarioCrud() {
     //     return val.trim().length < 5;
     //   };
 
-    enum ValueType { amount, number, boolean, options }
-
     const LineComp = ({ funcionarioClient, indexPreReserve, canEdit }: { funcionarioClient?: FuncionarioClient, indexPreReserve?: number, canEdit: boolean }) => {
       //csl(`render LinVals ${node.id}`);
       //const [, forceRefresh] = React.useState({});
@@ -432,12 +430,12 @@ export default function PageFuncionarioCrud() {
         mesIni: { fld: 'mesIni', valueType: ValueType.number, mandatory: true } as IGridEditFldCtrl,
         tipoFim: { fld: 'tipoFim', valueType: ValueType.options, options: [new SelOption('', 'sem'), ...TipoParticipPerOrcamMd.all.filter((x) => x.plus.fim).map((x) => new SelOption(x.cod, x.descr))] } as IGridEditFldCtrl,
         mesFim: { fld: 'mesFim', valueType: ValueType.number } as IGridEditFldCtrl,
-        salario: { fld: 'salario', valueType: ValueType.amount, mandatory: true } as IGridEditFldCtrl,
+        salario: { fld: 'salario', valueType: ValueType.amount, decimals: configApp.decimalsValsInput, mandatory: true } as IGridEditFldCtrl,
         dependentes: { fld: 'dependentes', valueType: ValueType.number } as IGridEditFldCtrl,
-        valeTransp: { fld: 'valeTransp', valueType: ValueType.amount } as IGridEditFldCtrl,
+        valeTransp: { fld: 'valeTransp', valueType: ValueType.amount, decimals: configApp.decimalsValsInput } as IGridEditFldCtrl,
         mesPromo: { fld: 'mesPromo', valueType: ValueType.number } as IGridEditFldCtrl,
         tipoColaboradorPromo: { fld: 'tipoColaboradorPromo', valueType: ValueType.options, options: [new SelOption('', 'sem'), ...TipoColaboradorMd.all.map((x) => new SelOption(x.cod, x.descr))] } as IGridEditFldCtrl,
-        salarioPromo: { fld: 'salarioPromo', valueType: ValueType.amount } as IGridEditFldCtrl,
+        salarioPromo: { fld: 'salarioPromo', valueType: ValueType.amount, decimals: configApp.decimalsValsInput } as IGridEditFldCtrl,
       };
       //#endregion
 
