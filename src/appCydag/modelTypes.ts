@@ -1138,7 +1138,7 @@ export class Funcionario {
     if (centroCusto == null || refer == null)
       throw new Error('centroCusto e refer devem ser informados');
     if (isAmbDev())
-      return Number(valor_messy);
+      return StrToNumber(valor_messy, configApp.decimalsSalario);
     else {
       const salStr = UnscrambleNew(valor_messy, `${centroCusto}-${refer}`, true);
       let result = 0;
@@ -1146,7 +1146,7 @@ export class Funcionario {
         dbgError('salario_messy inválido (criptografia)', valor_messy, centroCusto, refer);
       else {
         try {
-          result = StrToNumber(salStr);
+          result = StrToNumber(salStr, configApp.decimalsSalario);
         }
         catch (error) {
           dbgError('salario desmascarado inválido (não numérico)', centroCusto, refer, salStr);
@@ -1181,7 +1181,7 @@ export class Funcionario {
       new FldCsvDef('funcao'),
       new FldCsvDef('salario_messy', { mandatoryValue: true, fldDisp: 'salarioBase', down: () => null, up: (data: IGenericObject) => Funcionario.scrambleSalario(data.salarioBase, data.centroCusto, data.cpf) }),
       new FldCsvDef('dependentes', { mandatoryValue: false, up: (data: IGenericObject) => StrToNumber(data.dependentes) }),
-      new FldCsvDef('valeTransp', { mandatoryValue: false, up: (data: IGenericObject) => StrToNumber(data.valeTransp) }),
+      new FldCsvDef('valeTransp', { mandatoryValue: false, up: (data: IGenericObject) => StrToNumber(data.valeTransp, configApp.decimalsValsInput) }),
       new FldCsvDef('idVaga'),
       new FldCsvDef('idCentroCustoRh'),
       new FldCsvDef('tipoIni', { mandatoryValue: true, up: (data: IGenericObject) => Funcionario.tipoParticipPerOrcamUpload('ini', data.tipoIni) }),
@@ -1268,6 +1268,21 @@ export class Terceiro {
       dbgError('Erro em Terceiro.deserialize', error.message, values);
       return new Terceiro();
     }
+  }
+  static get fldsCsvDefUpload() {
+    const agora = new Date();
+    return FldsCsvAll(new Terceiro(), [
+      new FldCsvDef('valMeses', {
+        suppressColumn: true,
+        def: (data: IGenericObject) => [
+          amountParseValsCalc(data.m01), amountParseValsCalc(data.m02), amountParseValsCalc(data.m03), amountParseValsCalc(data.m04),
+          amountParseValsCalc(data.m05), amountParseValsCalc(data.m06), amountParseValsCalc(data.m07), amountParseValsCalc(data.m08),
+          amountParseValsCalc(data.m09), amountParseValsCalc(data.m10), amountParseValsCalc(data.m11), amountParseValsCalc(data.m12),
+        ]
+      }),
+      new FldCsvDef('created', { down: (data: Terceiro) => DateToStrISO(data.created), up: (data: IGenericObject) => DateFromStrISO(data.created) || agora, def: () => new Date() }),
+      new FldCsvDef('lastUpdated', { down: (data: Terceiro) => DateToStrISO(data.lastUpdated), up: (data: IGenericObject) => DateFromStrISO(data.lastUpdated) || agora, def: () => new Date() }),
+    ]);
   }
 }
 //#endregion

@@ -27,7 +27,7 @@ import { CmdApi_FuncAdm } from '../api/appCydag/funcsAdm/types';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 
 import { configApp } from '../../appCydag/config';
-import { AgrupPremissas, Diretoria, Gerencia, Empresa, CentroCusto, UnidadeNegocio, Localidade, FatorCusto, ClasseCusto, Premissa, ValoresPremissa, FuncaoTerceiro, Viagem, ValoresLocalidade, ValoresTransfer, ValoresRealizados, User, ValoresImputados, ValoresPlanejadosHistorico } from '../../appCydag/modelTypes';
+import { AgrupPremissas, Diretoria, Gerencia, Empresa, CentroCusto, UnidadeNegocio, Localidade, FatorCusto, ClasseCusto, Premissa, ValoresPremissa, FuncaoTerceiro, Viagem, ValoresLocalidade, ValoresTransfer, ValoresRealizados, User, ValoresImputados, ValoresPlanejadosHistorico, Terceiro } from '../../appCydag/modelTypes';
 import { ValoresAnaliseRealPlan } from '../../appCydag/types';
 
 let seqProc = 0;
@@ -67,6 +67,7 @@ const collectionsOthersConfig = {
   valoresTransfer: { name: 'ValoresTransfer', entity: ValoresTransfer, entityStructure: new ValoresTransfer(), fldsCsvDefUpload: ValoresTransfer.fldsCsvDefUpload } as CollectionConfig<ValoresTransfer>,
 
   viagens: { name: 'Viagem', entity: Viagem, entityStructure: new Viagem(), fldsCsvDefUpload: Viagem.fldsCsvDefUpload } as CollectionConfig<Viagem>,
+  terceiros: { name: 'Terceiro', entity: Terceiro, entityStructure: new Terceiro(), fldsCsvDefUpload: Terceiro.fldsCsvDefUpload } as CollectionConfig<Terceiro>,
 };
 
 let msgsAcum: string[] = [];

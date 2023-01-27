@@ -7,6 +7,7 @@ export const configApp = {
   csvDelimiter: ';',
   csvStrForNull: '(vazio)',
   csvColumnCmd: 'cmd(incluir/alterar/excluir)',
+  decimalsSalario: 2,
   decimalsValsInput: 0,
   decimalsValsCalc: 2,
   decimalsValsCons: 0,

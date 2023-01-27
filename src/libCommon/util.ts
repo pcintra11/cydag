@@ -1380,9 +1380,12 @@ export const SNToBoolean = (value: string) => {
     throw new Error('Valor inválido');
 };
 
-export const StrToNumber = (str: string) => {
-  const value = Number(str);
+export const StrToNumber = (str: string, decimals = 0) => {
+  const strUse = decimals == 0 ? str : str.replace(/,/, '');
+  let value = Number(strUse);
   if (isNaN(value)) throw new Error('Valor não é numérico');
+  if (decimals != 0)
+    value = RoundDecs(value, decimals);
   return value;
 };
 

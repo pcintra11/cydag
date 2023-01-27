@@ -29,7 +29,7 @@ import { CmdApi_UserAuth as CmdApi, pswSignInAzure } from './types';
 import { LoggedUser } from '../../../../appCydag/loggedUser';
 import { Crypt } from '../../../../libServer/crypt';
 
-const accountDeveloper = 'paulocintra@cyrela.com.br';
+export const accountDeveloper = 'paulocintra@cyrela.com.br';
 const apiSelf = apisApp.userAuth;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);

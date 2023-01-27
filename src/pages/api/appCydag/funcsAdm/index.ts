@@ -24,7 +24,7 @@ import { ApiLogFinish, ApiLogStart } from '../../../../libServer/apiLog';
 import { collectionsDef as collectionsDefApp, UserModel, CentroCustoModel, EmpresaModel, UnidadeNegocioModel, LocalidadeModel, ClasseCustoModel, FatorCustoModel, AgrupPremissasModel, DiretoriaModel, GerenciaModel, ValoresRealizadosModel, PremissaModel, ValoresPremissaModel, FuncaoTerceiroModel, ViagemModel, ValoresLocalidadeModel, ValoresTransferModel, FuncionarioModel, ProcessoOrcamentarioCentroCustoModel, TerceiroModel, ValoresImputadosModel, ValoresRealizadosInterfaceSapModel, ProcessoOrcamentarioModel, ValoresPlanejadosHistoricoModel } from '../../../../appCydag/models';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 import { apisApp } from '../../../../appCydag/endPoints';
-import { User, Empresa, Gerencia, Diretoria, AgrupPremissas, CentroCusto, Localidade, UnidadeNegocio, FatorCusto, ClasseCusto, Premissa, ValoresPremissa, FuncaoTerceiro, Viagem, ValoresLocalidade, ValoresTransfer, ValoresRealizados, Funcionario, FuncionarioRevisao, empresaCoringa, localidadeCoringa, ValoresImputados, ValoresPlanejadosHistorico } from '../../../../appCydag/modelTypes';
+import { User, Empresa, Gerencia, Diretoria, AgrupPremissas, CentroCusto, Localidade, UnidadeNegocio, FatorCusto, ClasseCusto, Premissa, ValoresPremissa, FuncaoTerceiro, Viagem, ValoresLocalidade, ValoresTransfer, ValoresRealizados, Funcionario, FuncionarioRevisao, empresaCoringa, localidadeCoringa, ValoresImputados, ValoresPlanejadosHistorico, Terceiro } from '../../../../appCydag/modelTypes';
 import { configApp } from '../../../../appCydag/config';
 
 import { CmdApi_FuncAdm } from './types';
@@ -32,6 +32,7 @@ import { CategRegional, OrigemFunc, ProcessoOrcamentarioStatus, RevisaoValor, Ti
 import { isAmbDevOrQas } from '../../../../libCommon/isAmb';
 import { premissaCod } from '../valoresContas/calcsCydag';
 import { anoAdd, mesesFld, multiplyValMeses, sumValMeses } from '../../../../appCydag/util';
+import { accountDeveloper } from '../user/auth';
 
 const apiSelf = apisApp.funcsAdm;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
@@ -450,7 +451,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
               }, { upsert: true });
               await ProcessoOrcamentarioCentroCustoModel.updateOne({ ano, centroCusto: item.centroCusto, }, {
                 ...item,
-                emailResponsavel: 'pcintra1@gmail.com',
+                emailResponsavel: accountDeveloper,
                 planejamentoEmAberto: true,
                 permiteNovosClb: true,
                 created: agora,
@@ -458,7 +459,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
               }, { upsert: true });
               await ProcessoOrcamentarioCentroCustoModel.updateOne({ ano: anoAnt, centroCusto: item.centroCusto, }, {
                 ...item,
-                emailResponsavel: 'pcintra1@gmail.com',
+                emailResponsavel: accountDeveloper,
                 planejamentoEmAberto: true,
                 permiteNovosClb: true,
                 created: agora,
@@ -509,7 +510,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             let cpfSeq = 0;
             const funcionarios_empr1_cc10 = [
               //if (promoAndDespRecorr) {
-              { centroCusto: empr1_cc10.centroCusto, origem: OrigemFunc.legado, refer: `CPF:${++cpfSeq}`, nome: 'Mônica clt', tipoColaborador: TipoColaborador.clt, funcao: 'psicóloga', salarioBase: 1000, dependentes: 1, valeTransp: 1000, idVaga: 'v1', idCentroCustoRh: 'rh1', tipoIni: TipoParticipPerOrcam.quadro, mesIni: 1, tipoFim: null, mesFim: null, ...valsPromoAndDespRecorrTest },
+              { centroCusto: empr1_cc10.centroCusto, origem: OrigemFunc.legado, refer: `CPF:${++cpfSeq}`, nome: 'Mônica clt', tipoColaborador: TipoColaborador.clt, funcao: 'psicóloga', salarioBase: 1000.23, dependentes: 1, valeTransp: 1000, idVaga: 'v1', idCentroCustoRh: 'rh1', tipoIni: TipoParticipPerOrcam.quadro, mesIni: 1, tipoFim: null, mesFim: null, ...valsPromoAndDespRecorrTest },
               { centroCusto: empr1_cc10.centroCusto, origem: OrigemFunc.legado, refer: `CPF:${++cpfSeq}`, nome: 'Carlos aprendiz', tipoColaborador: TipoColaborador.aprendiz, funcao: null, salarioBase: 1000, dependentes: null, valeTransp: null, idVaga: 'v2', idCentroCustoRh: null, tipoIni: TipoParticipPerOrcam.quadro, mesIni: 1, tipoFim: null, mesFim: null, despsRecorr: null },
               { centroCusto: empr1_cc10.centroCusto, origem: OrigemFunc.legado, refer: `CPF:${++cpfSeq}`, nome: 'jorge estag', tipoColaborador: TipoColaborador.estag, funcao: null, salarioBase: 1000, dependentes: null, valeTransp: null, idVaga: null, idCentroCustoRh: 'rh3', tipoIni: TipoParticipPerOrcam.quadro, mesIni: 1, tipoFim: null, mesFim: null, despsRecorr: null },
               { centroCusto: empr1_cc10.centroCusto, origem: OrigemFunc.legado, refer: `CPF:${++cpfSeq}`, nome: 'jose gestor pj', tipoColaborador: TipoColaborador.gestorpj, funcao: null, salarioBase: 1000, dependentes: null, valeTransp: null, idVaga: null, idCentroCustoRh: null, tipoIni: TipoParticipPerOrcam.quadro, mesIni: 1, tipoFim: null, mesFim: null, despsRecorr: null },
@@ -793,6 +794,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         else if (collection == 'ValoresLocalid') { model = ValoresLocalidadeModel; entity = ValoresLocalidade; fldsCsvDefUpload = ValoresLocalidade.fldsCsvDefUpload; }
         else if (collection == 'ValoresTransfer') { model = ValoresTransferModel; entity = ValoresTransfer; fldsCsvDefUpload = ValoresTransfer.fldsCsvDefUpload; }
 
+        else if (collection == 'Terceiro') { model = TerceiroModel; entity = Terceiro; fldsCsvDefUpload = Terceiro.fldsCsvDefUpload; }
         else if (collection == 'Viagem') { model = ViagemModel; entity = Viagem; fldsCsvDefUpload = Viagem.fldsCsvDefUpload; }
 
         else
