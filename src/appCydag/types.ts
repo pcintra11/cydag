@@ -265,6 +265,7 @@ export enum InterfaceSapCateg {
   importReal = 'importReal',
 }
 export enum InterfaceSapStatus {
+  queued = 'queued',
   failed = 'failed',
   running = 'running',
   success = 'success',

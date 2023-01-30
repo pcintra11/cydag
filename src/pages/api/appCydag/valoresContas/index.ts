@@ -276,7 +276,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
 
       else if (parm.cmd == CmdApi.importRealizadoStart) {
-        const ctrlInterfaceMdRunning = await CtrlInterfaceModel.findOne({ categ: InterfaceSapCateg.importReal, status: InterfaceSapStatus.running }).lean();
+        const ctrlInterfaceMdRunning = await CtrlInterfaceModel.findOne({ categ: InterfaceSapCateg.importReal, status: { $in: [InterfaceSapStatus.queued, InterfaceSapStatus.running] } }).lean();
         if (ctrlInterfaceMdRunning != null) throw new ErrorPlus(`Já há um processo em andamento, iniciado em ${DateDisp(ctrlInterfaceMdRunning.started, 'dmyhm')}`);
 
         const interfaceSapRealizado = EnvSvrInterfaceSapRealizadoConfig();
@@ -301,7 +301,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       else if (parm.cmd == CmdApi.importRealizadoCheck) {
 
         let ctrlInterfaceMd: CtrlInterface;
-        const ctrlInterfaceMdArray = await CtrlInterfaceModel.find({ categ: InterfaceSapCateg.importReal, status: InterfaceSapStatus.running }).lean();
+        const ctrlInterfaceMdArray = await CtrlInterfaceModel.find({ categ: InterfaceSapCateg.importReal, status: { $in: [InterfaceSapStatus.queued, InterfaceSapStatus.running] } }).lean();
         if (ctrlInterfaceMdArray.length > 1) throw new ErrorPlus('Controle de interface com mais de um processo no status de Running');
         if (ctrlInterfaceMdArray.length === 1) {
           ctrlInterfaceMd = ctrlInterfaceMdArray[0];

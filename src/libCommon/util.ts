@@ -1321,9 +1321,10 @@ function ScrambleXNew(cmd: 'do' | 'undo', inputText: string, withCrc: boolean, k
 // }
 
 const formatterPtBr = (decimals = 0) => (new Intl.NumberFormat('pt-BR', { style: 'decimal', minimumFractionDigits: decimals, maximumFractionDigits: decimals })).format;
-export const AmountPtBrFormat = (value?: number, decimals = 0) => {
+export const AmountPtBrFormat = (value?: number, decimals?: number) => {
+  const decimalsUse = decimals || 0;
   if (value == null) return '';
-  const formated = formatterPtBr(decimals)(value);
+  const formated = formatterPtBr(decimalsUse)(value);
   //console.log('amountFormatter', { value, formated });
   return formated;
 };

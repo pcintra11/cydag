@@ -90,6 +90,7 @@ export function Env(envName: EnvName, suffix?: string) {
         envName == 'supportPhone'))
       throw new Error(`Env(${envName}) não configurada`);
   } catch (error) {
+    ctrlRecursion.out();
     throw new Error(`Env(${envName}), value: ${value}: ${error.message}`);
   }
 
@@ -109,12 +110,13 @@ export function EnvSvrDatabase(database: string) {
   const ctrlRecursion = GetCtrlRecursion('EnvSvrDatabase');
   if (ctrlRecursion.inExceeded(database)) return;
   let value: string = null;
-  if (OnClient()) throw new Error(`EnvSvrDatabase(${database}) requisitada no client`);
   try {
+    if (OnClient()) throw new Error(`EnvSvrDatabase(${database}) requisitada no client`);
     //const envVar = envName.replace(/^(database)/,'SITE_DATABASE_');
     const envVar = `SITE_DATABASE_${database.toUpperCase()}`;
     value = process.env[envVar];
   } catch (error) {
+    ctrlRecursion.out();
     throw new Error(`EnvSvrDatabase(${database}), value: ${value}: ${error.message}`);
   }
   ctrlRecursion.out();
@@ -127,8 +129,9 @@ export function EnvSvr(envName: EnvNameSvr) {
   const ctrlRecursion = GetCtrlRecursion('EnvSvr');
   if (ctrlRecursion.inExceeded(envName)) return;
   let value: string = null;
-  if (OnClient()) throw new Error(`EnvSvr(${envName}) requisitada no client`);
   try {
+    if (OnClient())
+      throw new Error(`EnvSvr(${envName}) requisitada no client`);
     if (envName == 'plataform')
       value = process.env.SITE_PLATAFORM;
     else if (envName == 'googleClientKey')
@@ -138,6 +141,7 @@ export function EnvSvr(envName: EnvNameSvr) {
     if (value == null)
       throw new Error(`EnvSvr(${envName}) não configurada`);
   } catch (error) {
+    ctrlRecursion.out();
     throw new Error(`EnvSvr(${envName}), value: ${value}: ${error.message}`);
   }
   ctrlRecursion.out();

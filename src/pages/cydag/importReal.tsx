@@ -119,7 +119,7 @@ export default function PageImportReal() {
   return (
     <Stack gap={1} height='100%'>
       <BtnLine left>
-        {(mainStates.ctrlInterfaceMd != null && mainStates.ctrlInterfaceMd.status === InterfaceSapStatus.running)
+        {(mainStates.ctrlInterfaceMd != null && (mainStates.ctrlInterfaceMd.status === InterfaceSapStatus.queued || mainStates.ctrlInterfaceMd.status === InterfaceSapStatus.running))
           ? <Btn onClick={() => interfaceSap(CmdApi_ValoresContas.importRealizadoCheck)}>Checar status</Btn>
           : <Btn onClick={() => interfaceSap(CmdApi_ValoresContas.importRealizadoStart)}>Iniciar novo processo de extração</Btn>
         }
@@ -133,7 +133,7 @@ export default function PageImportReal() {
       }
       {(mainStates.importInProgress == false && mainStates.ctrlInterfaceMd != null) &&
         <>
-          {mainStates.ctrlInterfaceMd.status === InterfaceSapStatus.running
+          {(mainStates.ctrlInterfaceMd.status === InterfaceSapStatus.queued || mainStates.ctrlInterfaceMd.status === InterfaceSapStatus.running)
             ? <Box>Processo em andamento</Box>
             : <Box>Último Processo de Extração</Box>
           }
@@ -141,7 +141,7 @@ export default function PageImportReal() {
           <Stack direction='row' gap={2}>
             <Box>Inicio: {DateDisp(mainStates.ctrlInterfaceMd.started, 'dmyhm')}</Box>
             <Box>Status: {mainStates.ctrlInterfaceMd.status}</Box>
-            {mainStates.ctrlInterfaceMd.status === InterfaceSapStatus.running &&
+            {(mainStates.ctrlInterfaceMd.status === InterfaceSapStatus.queued || mainStates.ctrlInterfaceMd.status === InterfaceSapStatus.running) &&
               <Box>Última checagem: {DateDisp(mainStates.ctrlInterfaceMd.lastChecked, 'dmyhms')}</Box>
             }
           </Stack>

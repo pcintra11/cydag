@@ -23,7 +23,7 @@ export function GetAmb() {
   }
 }
 
-export const isAmbNone = () => (GetAmb() === Amb.none);
+export const isAmbNone = () => (GetAmb() === Amb.none || GetAmb() == null);
 export const isAmbDev = () => (GetAmb() === Amb.dev || GetAmb() === Amb.devCompiled);
 export const isAmbDevCompiled = () => (GetAmb() === Amb.devCompiled);
 export const isAmbQas = () => (GetAmb() === Amb.qas);
