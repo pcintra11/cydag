@@ -729,6 +729,7 @@ export const CtrlInterfaceModel = (() => {
     started: { type: Date, required: true },
     lastChecked: { type: Date, required: true },
     status: { type: String, enum: InterfaceSapStatus, required: true },
+    pending: { type: Boolean, required: true },
     info: { type: Object, required: false },
   });
   AddIndex(collectionsDef, modelName, schema);

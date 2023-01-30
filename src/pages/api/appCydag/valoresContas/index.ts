@@ -276,7 +276,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
 
       else if (parm.cmd == CmdApi.importRealizadoStart) {
-        const ctrlInterfaceMdRunning = await CtrlInterfaceModel.findOne({ categ: InterfaceSapCateg.importReal, status: { $in: [InterfaceSapStatus.queued, InterfaceSapStatus.running] } }).lean();
+        //const ctrlInterfaceMdRunning = await CtrlInterfaceModel.findOne({ categ: InterfaceSapCateg.importReal, status: { $in: [InterfaceSapStatus.queued, InterfaceSapStatus.running] } }).lean();
+        const ctrlInterfaceMdRunning = await CtrlInterfaceModel.findOne({ categ: InterfaceSapCateg.importReal, pending: true }).lean();
         if (ctrlInterfaceMdRunning != null) throw new ErrorPlus(`Já há um processo em andamento, iniciado em ${DateDisp(ctrlInterfaceMdRunning.started, 'dmyhm')}`);
 
         const interfaceSapRealizado = EnvSvrInterfaceSapRealizadoConfig();
@@ -291,6 +292,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           started: agora,
           lastChecked: agora,
           status: apiReturn.state,
+          pending: true,
           info,
         });
 
@@ -301,7 +303,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       else if (parm.cmd == CmdApi.importRealizadoCheck) {
 
         let ctrlInterfaceMd: CtrlInterface;
-        const ctrlInterfaceMdArray = await CtrlInterfaceModel.find({ categ: InterfaceSapCateg.importReal, status: { $in: [InterfaceSapStatus.queued, InterfaceSapStatus.running] } }).lean();
+        //const ctrlInterfaceMdArray = await CtrlInterfaceModel.find({ categ: InterfaceSapCateg.importReal, status: { $in: [InterfaceSapStatus.queued, InterfaceSapStatus.running] } }).lean();
+        const ctrlInterfaceMdArray = await CtrlInterfaceModel.find({ categ: InterfaceSapCateg.importReal, pending: true }).lean();
         if (ctrlInterfaceMdArray.length > 1) throw new ErrorPlus('Controle de interface com mais de um processo no status de Running');
         if (ctrlInterfaceMdArray.length === 1) {
           ctrlInterfaceMd = ctrlInterfaceMdArray[0];
@@ -365,8 +368,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           }
           else if (apiReturn.state === InterfaceSapStatus.failed)
             await NotifyAdmASync('interfaceSapRealizado-carga', `dag_run_id ${ctrlInterfaceMd.dag_run_id}`, ctrlApiExec, apiReturn);
-
-          ctrlInterfaceMd = await CtrlInterfaceModel.findOneAndUpdate({ _id: ctrlInterfaceMd._id }, { status: apiReturn.state, info, lastChecked: agora }, { new: true }).lean();
+          const pending = !(apiReturn.state === InterfaceSapStatus.success || apiReturn.state === InterfaceSapStatus.failed);
+          ctrlInterfaceMd = await CtrlInterfaceModel.findOneAndUpdate({ _id: ctrlInterfaceMd._id }, { status: apiReturn.state, pending, info, lastChecked: agora }, { new: true }).lean();
         }
         else
           ctrlInterfaceMd = await CtrlInterfaceModel.findOne().lean().sort({ started: -1 }).limit(1);

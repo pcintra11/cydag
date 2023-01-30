@@ -1295,6 +1295,7 @@ export class CtrlInterface {
   started: Date;
   lastChecked: Date;
   status: InterfaceSapStatus;
+  pending: boolean;
   info?: any; // ano, ultimo mes com valor, nr de registros
   Fill?(values: IGenericObject) { FillClass(this, values); return this; }
   static deserialize(values: IGenericObject) {
