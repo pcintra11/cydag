@@ -43,7 +43,7 @@ enum NodeType {
 }
 
 class NodeContent {
-  cod: string | null; //#!!!!!!!!!!
+  cod: string | null;
   descr: string;
   vals: ColValsAnaliseAnual;
   constructor(cod: string | null, descr: string, vals: ColValsAnaliseAnual) {

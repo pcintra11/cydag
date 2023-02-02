@@ -1,8 +1,7 @@
 import * as yup from 'yup';
 
-import { msgValidRequired } from '../../../../libCommon/validationsYup';
-
 import { Localidade } from '../../../../appCydag/modelTypes';
+import { validationsYupApp } from '../../../../appCydag/validationsYup';
 
 enum CmdApi_Localidade {
   list = 'list',
@@ -19,19 +18,7 @@ export {
   Localidade as Entity_Crud,
 };
 
-const codYup = yup
-  .string()
-  .required(msgValidRequired)
-  .trim()
-  .uppercase()
-  .matches(/^(([A-Z]){2})$/, 'Deve ter 2 posições com letras');
-
-const descrYup = yup
-  .string()
-  .trim()
-  .required(msgValidRequired);
-
 export const crudValidations = yup.object().shape({
-  cod: codYup,
-  descr: descrYup,
+  cod: validationsYupApp.localidade,
+  descr: validationsYupApp.descrGenerico,
 });

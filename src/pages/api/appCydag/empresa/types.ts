@@ -1,8 +1,7 @@
 import * as yup from 'yup';
 
-import { msgValidRequired } from '../../../../libCommon/validationsYup';
-
 import { Empresa } from '../../../../appCydag/modelTypes';
+import { validationsYupApp } from '../../../../appCydag/validationsYup';
 
 enum CmdApi_Empresa {
   list = 'list',
@@ -19,21 +18,7 @@ export {
   Empresa as Entity_Crud,
 };
 
-const codYup = yup
-  .string()
-  .required(msgValidRequired)
-  .trim()
-  .uppercase()
-  .matches(/^C(([0-9]){4})$/, 'Deve estar no formato Cnnnn');
-
-const descrYup = yup
-  .string()
-  .trim()
-  .required(msgValidRequired);
-  // .min(20, 'deve ter no mínimo 20 caracteres')
-  // .max(50, 'deve ter no máximo 50 caracteres');
-
 export const crudValidations = yup.object().shape({
-  cod: codYup,
-  descr: descrYup,
+  cod: validationsYupApp.empresa,
+  descr: validationsYupApp.descrGenerico,
 });

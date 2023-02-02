@@ -1071,119 +1071,119 @@ function ScrambleKeySum(key?: string) {
   return keySum;
 }
 
-export function Scramble(normalText: string, key: string = null, withCrc = false) { //@!!!!! eliminar !
-  return ScrambleX('do', normalText, withCrc, key);
-}
-export function Unscramble(scrambledText: string, key: string = null, withCrc = false) {
-  return ScrambleX('undo', scrambledText, withCrc, key);
-}
-/**
- * Para uma string troca os caracteres dentro de uma sequencia controlada (letras, numeros e especiais)
- * O resultado terá apenas os caracteres dessa sequência controlada
- * @param cmd do | undo
- * @param inputText 
- * @param withCrc inclui controle de CRC?
- * @param key chave para diferenciar o resultado
- * @returns 
- */
-function ScrambleX(cmd: 'do' | 'undo', inputText: string, withCrc: boolean, key: string = null) {
-  const lettersMin = 'abcdefghijklmnopqrstuvwxyz';
-  const lettersMai = lettersMin.toUpperCase();
-  const numbers = '0123456789';
-  const specials = '@#$%&*-_+=(){}[]<>,.:;?/|';
+// export function Scramble(normalText: string, key: string = null, withCrc = false) { //@!!!!! eliminar !
+//   return ScrambleX('do', normalText, withCrc, key);
+// }
+// export function Unscramble(scrambledText: string, key: string = null, withCrc = false) {
+//   return ScrambleX('undo', scrambledText, withCrc, key);
+// }
+// /**
+//  * Para uma string troca os caracteres dentro de uma sequencia controlada (letras, numeros e especiais)
+//  * O resultado terá apenas os caracteres dessa sequência controlada
+//  * @param cmd do | undo
+//  * @param inputText 
+//  * @param withCrc inclui controle de CRC?
+//  * @param key chave para diferenciar o resultado
+//  * @returns 
+//  */
+// function ScrambleX(cmd: 'do' | 'undo', inputText: string, withCrc: boolean, key: string = null) {
+//   const lettersMin = 'abcdefghijklmnopqrstuvwxyz';
+//   const lettersMai = lettersMin.toUpperCase();
+//   const numbers = '0123456789';
+//   const specials = '@#$%&*-_+=(){}[]<>,.:;?/|';
 
-  const minShift = 2;
-  const maxShift = 6; // não pode exceder o tamanho dos componentes que serão segmentados abaixo (substring)
-  const keySum = ScrambleKeySum(key);
-  const shift = minShift + (keySum % ((maxShift - minShift) + 1));
+//   const minShift = 2;
+//   const maxShift = 6; // não pode exceder o tamanho dos componentes que serão segmentados abaixo (substring)
+//   const keySum = ScrambleKeySum(key);
+//   const shift = minShift + (keySum % ((maxShift - minShift) + 1));
 
-  const crcMaxLen = 3;
+//   const crcMaxLen = 3;
 
-  if (inputText == null)
-    return null;
+//   if (inputText == null)
+//     return null;
 
-  const calcCrc = (value: string, maxLen: number) => {
-    let crcSum = 0;
-    for (let indexChar = 0; indexChar < value.length; indexChar++) {
-      const inputChar = value[indexChar];
-      const indexInput = charsForScramble.indexOf(inputChar);
-      crcSum += ((indexInput + 1) * 3) + ((indexChar + 1) * 7);
-    }
-    let crcStr = crcSum.toString().padStart(maxLen, '0');
-    crcStr = crcStr.substring(crcStr.length - maxLen, crcStr.length);
-    return crcStr;
-  };
-
-
-  // o caracter na posição do shift não será alterado (excluido da conversão)
-  // embaralha a ordem das sequencias lógicas pra dificultar a detecção 
-  const charsForScramble =
-    lettersMin.substring(0, shift) +
-    specials.substring(0, shift) +
-    lettersMai.substring(0, shift) +
-    numbers.substring(0, shift) +
-    lettersMin.substring(shift + 1) +  // pula um
-    numbers.substring(shift + 1) +     // pula um
-    lettersMai.substring(shift + 2) +  // pula dois
-    specials.substring(shift);
-
-  let textIn;
-  if (withCrc && cmd === 'do') {
-    const crcCalc = calcCrc(inputText, crcMaxLen);
-    textIn = crcCalc + inputText;
-  }
-  else
-    textIn = inputText;
-
-  // scramble / unscramble textIn -> textOut
-  let textOut = '';
-  for (let indexChar = 0; indexChar < textIn.length; indexChar++) {
-    const inputChar = textIn[indexChar];
-    const indexInput = charsForScramble.indexOf(inputChar);
-    if (indexInput == -1)
-      textOut += inputChar;
-    else {
-      let indexOutput = indexInput;
-      if (cmd == 'do') {
-        indexOutput += (shift + indexChar);
-        if (indexOutput >= charsForScramble.length)
-          indexOutput -= charsForScramble.length; // ciclico
-      }
-      else {
-        indexOutput -= (shift + indexChar);
-        if (indexOutput < 0)
-          indexOutput += charsForScramble.length;
-      }
-      const outputChar = charsForScramble[indexOutput];
-      textOut += outputChar;
-    }
-  }
-
-  let result;
-  if (withCrc && cmd === 'undo') {
-    if (textOut.length <= crcMaxLen)
-      result = null;
-    else {
-      const crcCalc = calcCrc(textOut.substring(crcMaxLen), crcMaxLen);
-      const crcInScramble = textOut.substring(0, crcMaxLen);
-      if (crcInScramble != crcCalc)
-        result = null;
-      else
-        result = textOut.substring(crcMaxLen);
-    }
-  }
-  else
-    result = textOut;
-
-  //console.log({ cmd, shift, inputText, outputText, outputTextUse });
-  return result;
-}
+//   const calcCrc = (value: string, maxLen: number) => {
+//     let crcSum = 0;
+//     for (let indexChar = 0; indexChar < value.length; indexChar++) {
+//       const inputChar = value[indexChar];
+//       const indexInput = charsForScramble.indexOf(inputChar);
+//       crcSum += ((indexInput + 1) * 3) + ((indexChar + 1) * 7);
+//     }
+//     let crcStr = crcSum.toString().padStart(maxLen, '0');
+//     crcStr = crcStr.substring(crcStr.length - maxLen, crcStr.length);
+//     return crcStr;
+//   };
 
 
-export function ScrambleNew(normalText: string, key: string = null, withCrc = false) {
+//   // o caracter na posição do shift não será alterado (excluido da conversão)
+//   // embaralha a ordem das sequencias lógicas pra dificultar a detecção 
+//   const charsForScramble =
+//     lettersMin.substring(0, shift) +
+//     specials.substring(0, shift) +
+//     lettersMai.substring(0, shift) +
+//     numbers.substring(0, shift) +
+//     lettersMin.substring(shift + 1) +  // pula um
+//     numbers.substring(shift + 1) +     // pula um
+//     lettersMai.substring(shift + 2) +  // pula dois
+//     specials.substring(shift);
+
+//   let textIn;
+//   if (withCrc && cmd === 'do') {
+//     const crcCalc = calcCrc(inputText, crcMaxLen);
+//     textIn = crcCalc + inputText;
+//   }
+//   else
+//     textIn = inputText;
+
+//   // scramble / unscramble textIn -> textOut
+//   let textOut = '';
+//   for (let indexChar = 0; indexChar < textIn.length; indexChar++) {
+//     const inputChar = textIn[indexChar];
+//     const indexInput = charsForScramble.indexOf(inputChar);
+//     if (indexInput == -1)
+//       textOut += inputChar;
+//     else {
+//       let indexOutput = indexInput;
+//       if (cmd == 'do') {
+//         indexOutput += (shift + indexChar);
+//         if (indexOutput >= charsForScramble.length)
+//           indexOutput -= charsForScramble.length; // ciclico
+//       }
+//       else {
+//         indexOutput -= (shift + indexChar);
+//         if (indexOutput < 0)
+//           indexOutput += charsForScramble.length;
+//       }
+//       const outputChar = charsForScramble[indexOutput];
+//       textOut += outputChar;
+//     }
+//   }
+
+//   let result;
+//   if (withCrc && cmd === 'undo') {
+//     if (textOut.length <= crcMaxLen)
+//       result = null;
+//     else {
+//       const crcCalc = calcCrc(textOut.substring(crcMaxLen), crcMaxLen);
+//       const crcInScramble = textOut.substring(0, crcMaxLen);
+//       if (crcInScramble != crcCalc)
+//         result = null;
+//       else
+//         result = textOut.substring(crcMaxLen);
+//     }
+//   }
+//   else
+//     result = textOut;
+
+//   //console.log({ cmd, shift, inputText, outputText, outputTextUse });
+//   return result;
+// }
+
+
+export function Scramble(normalText: string, key: string = null, withCrc = false) {
   return ScrambleXNew('do', normalText, withCrc, key);
 }
-export function UnscrambleNew(scrambledText: string, key: string = null, withCrc = false) {
+export function Unscramble(scrambledText: string, key: string = null, withCrc = false) {
   return ScrambleXNew('undo', scrambledText, withCrc, key);
 }
 function ScrambleXNew(cmd: 'do' | 'undo', inputText: string, withCrc: boolean, key?: string) {

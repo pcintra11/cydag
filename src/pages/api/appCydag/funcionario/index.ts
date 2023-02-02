@@ -266,7 +266,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                   lastKey = key;
               }
 
-              // aqui checar se o salário é válido #!!!!!!!!!!!!
+              // aqui checar se o salário é válido #!!!!!!!
 
               const masterDataChecks = [
                 { fld: 'centroCusto', md: documentsCentroCustoProc, fldMd: 'centroCusto', msg: 'não configurado para o ano' },

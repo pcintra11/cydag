@@ -19,7 +19,7 @@ import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../.
 import { IconButtonAppDownload, SelAno, SelEntity } from '../../appCydag/components';
 import { apisApp, pagesApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
-import { CentroCusto, ClasseCusto, Diretoria, Gerencia, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto, UnidadeNegocio } from '../../appCydag/modelTypes';
+import { CentroCusto, ClasseCusto, Diretoria, Gerencia, ProcessoOrcamentarioCentroCusto, UnidadeNegocio } from '../../appCydag/modelTypes';
 import { CentroCustoConfigOption, IAnoCentroCustos, ValoresAnaliseRealPlan, ValoresPlanejadosDetalhes } from '../../appCydag/types';
 //import { CmdApi_Crud, IChangedLines } from '../api/appCydag/valoresContas/types';
 import { CmdApi_ProcessoOrcamentario } from '../api/appCydag/processoOrcamentario/types';

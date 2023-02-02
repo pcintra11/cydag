@@ -1,8 +1,9 @@
 import * as yup from 'yup';
 
-import { msgValidRequired, validationsYup } from '../../../../libCommon/validationsYup';
+import { validationsYup } from '../../../../libCommon/validationsYup';
 
 import { User } from '../../../../appCydag/modelTypes';
+import { validationsYupApp } from '../../../../appCydag/validationsYup';
 
 enum CmdApiCrud {
   list = 'list',
@@ -38,32 +39,19 @@ export {
   User as Entity_Crud,
 };
 
-const nomeYup = yup
-  .string()
-  .trim()
-  .required(msgValidRequired);
-  // .min(10, 'deve ter no mínimo 10 caracteres')
-  // .max(50, 'deve ter no máximo 50 caracteres');
-
 export const crudValidations = yup.object().shape({ // sempre em types @!!!!!!
   email: validationsYup.email,
-  nome: nomeYup,
+  nome: validationsYupApp.nomeUser,
 });
 
-const fld_psw_min = 3;
-const pswYup = yup
-  .string()
-  .trim()
-  //.required(msgValidRequired) //#!!!!!!!
-  .min(fld_psw_min, `Senha deve ter ao menos ${fld_psw_min} caracteres`);
 
 export const signInValidations = yup.object().shape({
   email: validationsYup.email,
-  psw: pswYup,
+  psw: validationsYupApp.psw,
 });
 
-export const resetPswValidations = yup.object().shape({ // #!!!!!!!!!! deve ir para o types da API?
+export const resetPswValidations = yup.object().shape({
   email: validationsYup.email,
-  psw: pswYup,
-  pswConfirm: pswYup,
+  psw: validationsYupApp.psw,
+  pswConfirm: validationsYupApp.psw,
 });

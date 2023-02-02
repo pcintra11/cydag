@@ -318,7 +318,7 @@ export default function PageFuncionarioCrud() {
 
     const propsColorsHdr = propsColorHeader(themePlus);
     const HeaderComp = () => {
-      const permiteNovos = dataStructure.processoOrcamentarioCentroCusto.permiteNovosClb;
+      const permiteNovos = dataStructure.processoOrcamentarioCentroCusto.permiteNovosClb && dataStructure.canEdit;
       return (
         <>
           <GridCell textAlign='center' columnSpan={8} rowSpan={2} {...propsColorsHdr}><Box>Informações Gerais</Box></GridCell>
@@ -566,7 +566,7 @@ export default function PageFuncionarioCrud() {
         </BtnLine>
       );
     };
-
+    
     return (
       <>
         <InfoComp />

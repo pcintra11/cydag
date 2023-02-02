@@ -4,7 +4,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import mongoose from 'mongoose';
 
 import { ApiAsyncLogModel, ApiSyncLogModel, SendMailLogModel } from '../../../../base/db/models';
-import { ConnectDbASync, CloseDbASync, CheckModelsIndexesASync, EnsureModelsIndexesASync, databaseInterfaceSap } from '../../../../base/db/functions';
+import { ConnectDbASync, CloseDbASync, CheckModelsIndexesASync, EnsureModelsIndexesASync } from '../../../../base/db/functions';
 import { collectionsDef as collectionsDefBase } from '../../../../base/db/models';
 
 import { AddToDate, compareForBinSearch, CtrlCollect, DispAbrev, ErrorPlus, StrRight } from '../../../../libCommon/util';
@@ -21,7 +21,7 @@ import { AlertTimeExecApiASync } from '../../../../libServer/alertTimeExecApi';
 import { ResolvePromisesExecUntilResponse } from '../../../../libServer/opersASync';
 import { ApiLogFinish, ApiLogStart } from '../../../../libServer/apiLog';
 
-import { collectionsDef as collectionsDefApp, UserModel, CentroCustoModel, EmpresaModel, UnidadeNegocioModel, LocalidadeModel, ClasseCustoModel, FatorCustoModel, AgrupPremissasModel, DiretoriaModel, GerenciaModel, ValoresRealizadosModel, PremissaModel, ValoresPremissaModel, FuncaoTerceiroModel, ViagemModel, ValoresLocalidadeModel, ValoresTransferModel, FuncionarioModel, ProcessoOrcamentarioCentroCustoModel, TerceiroModel, ValoresImputadosModel, ValoresRealizadosInterfaceSapModel, ProcessoOrcamentarioModel, ValoresPlanejadosHistoricoModel } from '../../../../appCydag/models';
+import { collectionsDef as collectionsDefApp, UserModel, CentroCustoModel, EmpresaModel, UnidadeNegocioModel, LocalidadeModel, ClasseCustoModel, FatorCustoModel, AgrupPremissasModel, DiretoriaModel, GerenciaModel, ValoresRealizadosModel, PremissaModel, ValoresPremissaModel, FuncaoTerceiroModel, ViagemModel, ValoresLocalidadeModel, ValoresTransferModel, FuncionarioModel, ProcessoOrcamentarioCentroCustoModel, TerceiroModel, ValoresImputadosModel, ValoresRealizadosInterfaceSapModel, ProcessoOrcamentarioModel, ValoresPlanejadosHistoricoModel, databaseInterfaceSap } from '../../../../appCydag/models';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 import { apisApp } from '../../../../appCydag/endPoints';
 import { User, Empresa, Gerencia, Diretoria, AgrupPremissas, CentroCusto, Localidade, UnidadeNegocio, FatorCusto, ClasseCusto, Premissa, ValoresPremissa, FuncaoTerceiro, Viagem, ValoresLocalidade, ValoresTransfer, ValoresRealizados, Funcionario, FuncionarioRevisao, empresaCoringa, localidadeCoringa, ValoresImputados, ValoresPlanejadosHistorico, Terceiro } from '../../../../appCydag/modelTypes';

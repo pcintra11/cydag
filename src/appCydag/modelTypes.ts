@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 
 import { csd, dbgError } from '../libCommon/dbg';
-import { AmountPtBrParse, BinSearchProp, DateDisp, DateFromStrISO, DateToStrISO, ErrorPlus, FillClass, RandomNumber, ScrambleNew, UnscrambleNew } from '../libCommon/util';
+import { AmountPtBrParse, BinSearchProp, DateDisp, DateFromStrISO, DateToStrISO, ErrorPlus, FillClass, RandomNumber, Scramble, Unscramble } from '../libCommon/util';
 import { IGenericObject } from '../libCommon/types';
 import { FldCsvDef, FldsCsvAll } from '../libCommon/uploadCsv';
 import { BooleanToSN, SNToBoolean, SearchTermsForDbSavePtBr, StrToNumber } from '../libCommon/util';
@@ -1130,7 +1130,7 @@ export class Funcionario {
     if (isAmbDev())
       return salario.toString();
     else
-      return ScrambleNew(''.padStart(RandomNumber(1, 20), '0') + salario.toString(), `${centroCusto}-${refer}`, true);
+      return Scramble(''.padStart(RandomNumber(1, 20), '0') + salario.toString(), `${centroCusto}-${refer}`, true);
   }
   static unscrambleSalario(valor_messy: string, centroCusto: string, refer: string) {
     if (valor_messy == null)
@@ -1140,7 +1140,7 @@ export class Funcionario {
     if (isAmbDev())
       return StrToNumber(valor_messy, configApp.decimalsSalario);
     else {
-      const salStr = UnscrambleNew(valor_messy, `${centroCusto}-${refer}`, true);
+      const salStr = Unscramble(valor_messy, `${centroCusto}-${refer}`, true);
       let result = 0;
       if (salStr == null)
         dbgError('salario_messy inválido (criptografia)', valor_messy, centroCusto, refer);
@@ -1179,7 +1179,7 @@ export class Funcionario {
       new FldCsvDef('nome', { mandatoryValue: true }),
       new FldCsvDef('tipoColaborador', { mandatoryValue: true, down: (data: Funcionario) => data.tipoColaborador.toString(), up: (data: IGenericObject) => TipoColaboradorMd.codeFromStr(data.tipoColaborador) }),
       new FldCsvDef('funcao'),
-      new FldCsvDef('salario_messy', { mandatoryValue: true, fldDisp: 'salarioBase', down: () => null, up: (data: IGenericObject) => Funcionario.scrambleSalario(data.salarioBase, data.centroCusto, data.cpf) }),
+      new FldCsvDef('salario_messy', { mandatoryValue: true, fldDisp: 'salarioBase', down: () => null, up: (data: IGenericObject) => Funcionario.scrambleSalario(amountParse(data.salarioBase, configApp.decimalsSalario), data.centroCusto, data.cpf) }),
       new FldCsvDef('dependentes', { mandatoryValue: false, up: (data: IGenericObject) => StrToNumber(data.dependentes) }),
       new FldCsvDef('valeTransp', { mandatoryValue: false, up: (data: IGenericObject) => StrToNumber(data.valeTransp, configApp.decimalsValsInput) }),
       new FldCsvDef('idVaga'),

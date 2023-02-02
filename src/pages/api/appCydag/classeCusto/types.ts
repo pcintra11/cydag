@@ -1,8 +1,9 @@
 import * as yup from 'yup';
 
-import { msgValidRequired, validationsYup } from '../../../../libCommon/validationsYup';
+import { validationsYup } from '../../../../libCommon/validationsYup';
 
 import { ClasseCusto } from '../../../../appCydag/modelTypes';
+import { validationsYupApp } from '../../../../appCydag/validationsYup';
 
 enum SortType_ClasseCusto {
   classeCusto = 'classeCusto',
@@ -25,21 +26,8 @@ export {
   SortType_ClasseCusto,
 };
 
-const classeCustoYup = yup
-  .string()
-  .required(msgValidRequired)
-  .trim()
-  //.uppercase()
-  //.matches(/^((([A-Z])|([0-9])){1,20})$/, 'Deve ter até 20 posições com letras ou números e sem acentos');  
-  .matches(/^(([0-9]){10,10})$/, 'Deve ter 10 posições com números');
-
-const descrYup = yup
-  .string()
-  .trim()
-  .required(msgValidRequired);
-
 export const crudValidations = yup.object().shape({
-  classeCusto: classeCustoYup,
-  descr: descrYup,
+  classeCusto: validationsYupApp.classeCusto,
+  descr: validationsYupApp.descrGenerico,
   seqApresent: validationsYup.numberReqPositive,
 });

@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
 
-import { MongooseSlot, AddIndex, CollectionDef, databaseInterfaceSap } from '../base/db/functions';
+import { MongooseSlot, AddIndex, CollectionDef } from '../base/db/functions';
 
 import { csd } from '../libCommon/dbg';
 
@@ -9,6 +9,8 @@ import { AgrupPremissas, Diretoria, CentroCusto, ClasseCusto, ClasseCustoRestrit
 import { CategRegional, InterfaceSapStatus, InterfaceSapCateg, OrigemClasseCusto, OrigemFunc, ProcessoOrcamentarioStatus, RevisaoValor, TipoColaborador, TipoPlanejViagem, TipoSegmCentroCusto } from './types';
 
 //const dbgContext = 'models';
+
+export const databaseInterfaceSap = 'interfaceSap';
 
 export const collectionsDef: CollectionDef[] = [];
 

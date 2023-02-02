@@ -39,8 +39,6 @@ export type ThemeColors = 'primary' | 'secondary' | 'success' | 'error';
 //     return 'red'; // @@@!!
 // }
 
-//import { number } from 'yup';
-
 export const fontSizeGrid = '10px';
 export const fontSizeIconsInGrid = '14px';
 

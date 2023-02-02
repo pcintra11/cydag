@@ -74,7 +74,6 @@ export const MongooseSlot = (database?: string) => {
 //#endregion
 
 const databaseApp = 'app';
-export const databaseInterfaceSap = 'interfaceSap';
 
 function InfoDb(database: string) {
   //const db = MongooseSlot(database).connection.get(keyLoad);
