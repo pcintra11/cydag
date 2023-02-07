@@ -8,7 +8,7 @@ import { _AppLogRedir } from '../_app';
 import { ErrorPlus, IsErrorManaged, ObjUpdAllProps } from '../../libCommon/util';
 
 import { FakeLink, PopupMsg } from '../../components';
-import { ButtonMy, BtnLine, WaitingObs } from '../../components';
+import { Btn, BtnLine, WaitingObs } from '../../components';
 import { AbortProc, LogErrorUnmanaged } from '../../components';
 //import { LinkHelpEmail } from '../../components';
 import { FrmError, FrmInput, FrmSetError } from '../../components';
@@ -17,7 +17,7 @@ import { FrmDefaultValues, NormalizePropsString, useFrm } from '../../hooks/useM
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 import { UserEmailLinkASync, UserResetPswASync, UserSignOut } from '../../appCydag/userResourcesCli';
 import { pagesApp } from '../../appCydag/endPoints';
-import { CmdApi_UserOthers, resetPswValidations, UserLinkType } from '../api/appCydag/user/types';
+import { resetPswValidations, UserLinkType } from '../api/appCydag/user/types';
 
 enum Phase {
   initiating = 'initiating',
@@ -142,7 +142,7 @@ export default function PageResetPsw() {
             <FrmInput label='Senha' frm={frmResetPsw} name={f.psw} type='password' {...disabledIfInitiating} />
             <FrmInput label='Confirmação da Senha' frm={frmResetPsw} name={f.pswConfirm} type='password' {...disabledIfInitiating} />
             <BtnLine left>
-              <ButtonMy submit {...disabledIfInitiating}>Confirma</ButtonMy>
+              <Btn submit {...disabledIfInitiating}>Confirma</Btn>
             </BtnLine>
             {mainStates.showHelp &&
               <Stack gap={1}>

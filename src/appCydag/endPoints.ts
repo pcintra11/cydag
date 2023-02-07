@@ -68,7 +68,7 @@ export const pagesApp = {
   userSimulate: new PageDef(`${pathPages}/userSimulate`, 'Simulação de Usuário', null, { onlyAuthenticated: true, roles: [rolesApp.gestorContr, roleSimulateUserDyn] }),
   userResetPsw: new PageDef(`${pathPages}/resetPsw`, 'Reset de Senha'),
 
-  funcionario: new PageDef(`${pathPages}/plan/funcionario`, 'Composição da Equipe', null, { onlyAuthenticated: true, roles: [rolesApp.dyn_responsCC] }),
+  funcionario: new PageDef(`${pathPages}/plan/funcionario`, 'Composição da Equipe', null, { onlyAuthenticated: true, roles: [rolesApp.dyn_responsCC, rolesApp.gestorContr] }),
   terceiro: new PageDef(`${pathPages}/plan/terceiro`, 'Terceirizados', null, { onlyAuthenticated: true, roles: rolesQuadro }),
   //despCorr: new PageDef(pageDummy.pagePath, 'Despesas Recorentes', null, { onlyAuthenticated: true, roles: [rolesApp.dyn_planejCC, rolesApp.dyn_responsCC, rolesApp.dyn_consTodosCCs, rolesApp.gestorContr, rolesApp.operContr], variant: `var-${++seqVariante}` }),
   viagem: new PageDef(`${pathPages}/plan/viagem`, 'Viagens', null, { onlyAuthenticated: true, roles: rolesQuadro }),

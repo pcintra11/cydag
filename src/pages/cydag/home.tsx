@@ -28,7 +28,7 @@ export default function PageHome() {
 
   const folderManuais = '/appCydag/manuais'; // em public
   const files = {
-    manualOrcam: 'Manual_Orçamento_CYDAG_2022.pdf',
+    manualOrcam: 'Manual_Orçamento_CYDAG_2023.pdf',
     classesMateriais: 'Lista_de_Classes_ x_Materiais_CYDAG.pdf',
     manualConsulta: 'Manual_CYDAG_Consulta.pdf',
   };
@@ -66,7 +66,7 @@ export default function PageHome() {
             </p>
 
             <a href={`${folderManuais}/${files.manualOrcam}`} target='_blank' rel='noreferrer'>
-              <Box>Manual de Orçamento 2022</Box>
+              <Box>Manual de Consulta 2023</Box>
             </a>
 
             <a href={`${folderManuais}/${files.classesMateriais}`} target='_blank' rel='noreferrer'>

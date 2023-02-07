@@ -1,14 +1,31 @@
 import * as yup from 'yup';
 
-export const msgValidRequired = 'informação obrigatória';
+export const msgValidRequired = 'preenchimento obrigatório';
 export const msgValidPositive = 'deve ser positivo';
 export const msgValidInteger = 'deve ser inteiro';
 export const msgValidNumber = 'deve ser um número';
 export const msgValidNotZero = 'não pode ser zero';
 
-const stringReq = yup
+const stringReq = ({ minChars, maxChars, qtdChars, contentType }: { minChars?: number, maxChars?: number, qtdChars?: number, contentType?: 'onlyNumber' | 'id' } = {}) => {
+  let result = yup
+    .string()
+    .trim()
+    .required(msgValidRequired);
+  if (qtdChars != null) {
+    result = result.length(qtdChars, `deve ter ${qtdChars} caracteres`);
+  }
+  else {
+    if (minChars != null) result = result.min(minChars, `deve ter no mínimo ${minChars} caracteres`);
+    if (maxChars != null) result = result.max(maxChars, `deve ter no máximo ${maxChars} caracteres`);
+  }
+  if (contentType === 'onlyNumber') result = result.matches(new RegExp(/^[0-9]*$/, 'g'), 'deve ter apenas números');
+  if (contentType === 'id') result = result.matches(new RegExp(/^([a-z])([a-z]|[0-9]|_)*$/, 'g'), 'deve ter apenas letras, números e o carácter "_" e iniciar por uma letra');
+  return result;
+};
+const stringOpc = yup
   .string()
-  .required(msgValidRequired);
+  .trim();
+
 
 const email = yup
   .string()
@@ -17,28 +34,13 @@ const email = yup
   .lowercase()
   .email('email inválido');
 
-const stringReq3to30 = yup // nome de pessoa
-  .string()
-  .required(msgValidRequired)
-  .min(3, 'deve ter no mínimo 3 caracteres')
-  .max(30, 'deve ter no máximo 30 caracteres');
-const stringReq10to50 = yup // titulo de negocio
-  .string()
-  .required(msgValidRequired)
-  .min(10, 'deve ter no mínimo 10 caracteres')
-  .max(50, 'deve ter no máximo 50 caracteres');
-const stringReq20to400 = yup
-  .string()
-  .required(msgValidRequired)
-  .min(20, 'deve ter no mínimo 20 caracteres')
-  .max(400, 'deve ter no máximo 400 caracteres');
 
 const stringWord3CharOrEmpty = yup
   .string()
   .trim()
   .matches(/(^$|([a-z]){3,})/, 'Deve ter ao menos uma palavra com 3 caracteres');
 
-const numberReqPositive = yup
+const numberReqPositive = yup // criar versão 'optional' verificar na documentação @!!!!!!!!!!
   .number()  // o valor final sempre será null ou do tipo number (obs: qdo não é required sempre dá erro no caso de nulo)
   .positive(msgValidPositive)
   .integer(msgValidInteger)
@@ -46,10 +48,17 @@ const numberReqPositive = yup
   .typeError(msgValidNumber)
   .notOneOf([0], msgValidNotZero);
 
-const numberInString = yup
-  .string()
-  .trim()
-  .matches(new RegExp(/^[0-9]*$/, 'g'), 'número inválido');
+// const numberOpc = (props?: any) => { 
+//   return yup
+//     .number()
+//     .nullable(true)
+//     .transform((_, val) => val === Number(val) ? val : null)
+//     .positive(msgValidPositive)
+//     .integer(msgValidInteger)
+//     //.required(msgValidRequired)
+//     //.typeError(msgValidNumber)
+//     .notOneOf([0], msgValidNotZero);
+// };
 
 const zipCodeYup = yup
   .string()
@@ -64,12 +73,9 @@ const phoneNumber = yup
 
 export const validationsYup = {
   stringReq,
-  stringReq3to30,
-  stringReq10to50,
-  stringReq20to400,
+  stringOpc,
   stringWord3CharOrEmpty,
   numberReqPositive,
-  numberInString,
   email,
   zipCodeYup,
   phoneNumber,

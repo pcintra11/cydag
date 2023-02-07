@@ -1180,13 +1180,13 @@ function ScrambleKeySum(key?: string) {
 // }
 
 
-export function Scramble(normalText: string, key: string = null, withCrc = false) {
-  return ScrambleXNew('do', normalText, withCrc, key);
+export function Scramble(normalText: string, key: string = undefined, withCrc = false) {
+  return ScrambleX('do', normalText, withCrc, key);
 }
-export function Unscramble(scrambledText: string, key: string = null, withCrc = false) {
-  return ScrambleXNew('undo', scrambledText, withCrc, key);
+export function Unscramble(scrambledText: string, key: string = undefined, withCrc = false) {
+  return ScrambleX('undo', scrambledText, withCrc, key);
 }
-function ScrambleXNew(cmd: 'do' | 'undo', inputText: string, withCrc: boolean, key?: string) {
+function ScrambleX(cmd: 'do' | 'undo', inputText: string, withCrc: boolean, key?: string) {
   const lettersLowerCase = 'abcdefghijklmnopqrstuvwxyz';
   const lettersUpperCase = lettersLowerCase.toUpperCase();
   const numbers = '0123456789';
