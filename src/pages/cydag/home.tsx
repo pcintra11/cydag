@@ -66,7 +66,7 @@ export default function PageHome() {
             </p>
 
             <a href={`${folderManuais}/${files.manualOrcam}`} target='_blank' rel='noreferrer'>
-              <Box>Manual de Consulta 2023</Box>
+              <Box>Manual de Orçamento 2023</Box>
             </a>
 
             <a href={`${folderManuais}/${files.classesMateriais}`} target='_blank' rel='noreferrer'>
