@@ -93,55 +93,53 @@ export function sxMaker(props: ISxMakerProps) {
 //   );
 // }
 
-interface IButtonProps { // extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  children: React.ReactNode;
-  color?: ThemeColors;
-  onClick?: () => void; // @@@!! usar o type correto
-  disabled?: boolean;
-  submit?: boolean;
-  href?: string;
-  endIcon?: React.ReactNode;
+// interface IButtonProps { // extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+//   children: React.ReactNode;
+//   color?: ThemeColors;
+//   onClick?: () => void; // @@@!! usar o type correto
+//   disabled?: boolean;
+//   submit?: boolean;
 
-  contained?: boolean;
-  outlined?: boolean;
-  text?: boolean;
+//   contained?: boolean;
+//   outlined?: boolean;
+//   text?: boolean;
 
-  small?: boolean;
-  medium?: boolean;
-  large?: boolean;
-}
-export function ButtonMy(props: IButtonProps) {
-  const { children, submit, contained, outlined, text, small, medium, large, disabled, ...propsForward } = props;
+//   small?: boolean;
+//   medium?: boolean;
+//   large?: boolean;
+// }
+// export function ButtonMy(props: IButtonProps) {
+//   const { children, submit, contained, outlined, text, small, medium, large, disabled, ...propsForward } = props;
 
-  const propsPlus: IGenericObject = {}; //@!!!!!!
+//   const propsPlus: IGenericObject = {}; //@!!!!!!
 
-  if (submit)
-    propsPlus.type = 'submit';
-  else
-    propsPlus.type = 'button';
+//   if (submit)
+//     propsPlus.type = 'submit';
+//   else
+//     propsPlus.type = 'button';
 
-  if (contained)
-    propsPlus.variant = 'contained';
-  else if (outlined)
-    propsPlus.variant = 'outlined';
-  else if (text)
-    propsPlus.variant = 'text';
-  else
-    propsPlus.variant = 'contained';
+//   if (contained)
+//     propsPlus.variant = 'contained';
+//   else if (outlined)
+//     propsPlus.variant = 'outlined';
+//   else if (text)
+//     propsPlus.variant = 'text';
+//   else
+//     propsPlus.variant = 'contained';
 
-  if (small)
-    propsPlus.size = 'small';  // @@@ usar sx (system)
-  else if (medium)
-    propsPlus.size = 'medium';
-  else if (large)
-    propsPlus.size = 'large';
+//   if (small)
+//     propsPlus.size = 'small';  // @@@ usar sx (system)
+//   else if (medium)
+//     propsPlus.size = 'medium';
+//   else if (large)
+//     propsPlus.size = 'large';
 
-  return (
-    <Button_mui disabled={disabled} {...propsForward} {...propsPlus}>
-      {children}
-    </Button_mui>
-  );
-}
+//   return (
+//     <Button_mui disabled={disabled} {...propsForward} {...propsPlus}>
+//       {children}
+//     </Button_mui>
+//   );
+// }
 
 interface IBtnProps {
   children: React.ReactNode;
@@ -149,12 +147,17 @@ interface IBtnProps {
   disabled?: boolean;
   submit?: boolean;
   color?: 'error' | 'primary';
+  contained?: boolean;
+  outlined?: boolean;
+  text?: boolean;
   small?: boolean;
   medium?: boolean;
   large?: boolean;
   sx?: SxProps;
+  executing?: boolean;
+  //endIcon?: React.ReactNode;
 }
-export const Btn = ({ children, submit, small, medium, large, ...propsForward }: IBtnProps) => {
+export const Btn = ({ children, submit, contained, outlined, text, small, medium, large, executing, ...propsForward }: IBtnProps) => {
   const propsPlus: IGenericObject = {};
   if (submit)
     propsPlus.type = 'submit';
@@ -166,9 +169,21 @@ export const Btn = ({ children, submit, small, medium, large, ...propsForward }:
     propsPlus.size = 'medium';
   else if (large)
     propsPlus.size = 'large';
+  if (executing)
+    propsPlus.disabled = true;
   const themePlus = useTheme();
+
+  if (contained)
+    propsPlus.variant = 'contained';
+  else if (outlined)
+    propsPlus.variant = 'outlined';
+  else if (text)
+    propsPlus.variant = 'text';
+  else
+    propsPlus.variant = themePlus.themePlusConfig?.buttomVariant;
+
   return (
-    <Button_mui variant={themePlus.themePlusConfig?.buttomVariant} {...propsForward} {...propsPlus}>{children}</Button_mui>
+    <Button_mui {...propsForward} {...propsPlus}>{children}</Button_mui>
   );
 };
 
@@ -357,10 +372,12 @@ interface IconButtonProps {
   disabled?: boolean;
   submit?: boolean;
   padding?: number;
+  executing?: boolean; // @!!!!!!!!!
 }
 export function IconButtonMy(props: IconButtonProps) { // implementar no componente do icon o 'onclick' opcional @@!!!!!!
   const { children, submit, onClick, disabled, padding } = props;
-  const propsBtn: IGenericObject = { onClick, disabled }; // @@@@!!!!!!
+  const disabledUse = props.executing ? true : disabled; // @!!!!!!!!! mudar a cor no filho?
+  const propsBtn: IGenericObject = { onClick, disabled: disabledUse }; // @@@@!!!!!!
   if (submit)
     propsBtn.type = 'submit';
   else
@@ -597,7 +614,7 @@ interface IAutocompleteMyProps {
   disableClearable?: boolean,
   multiple?: boolean,
   limitTags?: number;
-  options: SelOption[],
+  options: SelOption[] | string[],
   label?: string,
   placeholder?: string,
   fontSize?: string | number; // apenas para o campo de resultado, não interfere no combo aberto
@@ -613,6 +630,8 @@ export const AutocompleteMy = ({ width, value, onChange, getOptionLabel, isOptio
     <Autocomplete_mui
       sx={{ width: widthUse, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}
       freeSolo={freeSolo}
+      autoSelect
+      blurOnSelect
       disabled={disabled}
       value={value}
       disableClearable={disableClearable}
@@ -627,7 +646,6 @@ export const AutocompleteMy = ({ width, value, onChange, getOptionLabel, isOptio
       getOptionLabel={getOptionLabel}
       isOptionEqualToValue={isOptionEqualToValue}
       getOptionDisabled={getOptionDisabled}
-     
     />
   );
 };

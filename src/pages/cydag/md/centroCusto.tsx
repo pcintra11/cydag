@@ -19,7 +19,7 @@ import { ColGridConfig, TableGrid } from '../../../components';
 import { FrmDefaultValues, FrmSetValues, NormalizePropsString, useFrm } from '../../../hooks/useMyForm';
 
 import { configApp } from '../../../appCydag/config';
-import { BtnCrud, IconButtonApp, IconButtonAppSearch } from '../../../appCydag/components';
+import { BtnCrud, IconButtonAppCrud, IconButtonAppSearch } from '../../../appCydag/components';
 import { pagesApp, apisApp } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
 
@@ -73,7 +73,6 @@ export default function PageCentroCustoCrud() {
       setMainStatesCache({ filter });
       await ForceWait(calcExecTimeSearch.elapsedMs(), configApp.forceWaitMinimumMs);
       setMainStatesCache({ listing: { searching: false, dataRows: documents, partialResults: apiReturn.value.partialResults } });
-      //if (documents.length == 0) SnackBar.info('Nada encontrado');
     } catch (error) {
       SnackBarError(error, `${pageSelf.pagePath}-onSubmit`);
     }
@@ -155,12 +154,12 @@ export default function PageCentroCustoCrud() {
       const colsGridConfig = [
         new ColGridConfig(
           <Stack direction='row' alignItems='center' gap={1} justifyContent='center'>
-            <IconButtonApp icon='create' onClick={() => setPhase(Phase.insert)} />
+            <IconButtonAppCrud icon='create' onClick={() => setPhase(Phase.insert)} />
           </Stack>,
           ({ index }: { index: number }) => (
             <Stack direction='row' alignItems='center' gap={1}>
-              <IconButtonApp icon='edit' onClick={() => setPhase(Phase.update, index)} />
-              <IconButtonApp icon='delete' onClick={() => setPhase(Phase.delete, index)} />
+              <IconButtonAppCrud icon='edit' onClick={() => setPhase(Phase.update, index)} />
+              <IconButtonAppCrud icon='delete' onClick={() => setPhase(Phase.delete, index)} />
             </Stack>
           )
         ),

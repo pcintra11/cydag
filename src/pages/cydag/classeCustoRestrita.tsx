@@ -20,7 +20,7 @@ import { ColGridConfig, TableGrid } from '../../components';
 import { FrmDefaultValues, FrmSetValues, NormalizePropsString, useFrm, useWatchMy } from '../../hooks/useMyForm';
 
 import { configApp } from '../../appCydag/config';
-import { BtnCrud, IconButtonApp, IconButtonAppSearch } from '../../appCydag/components';
+import { BtnCrud, IconButtonAppCrud, IconButtonAppSearch } from '../../appCydag/components';
 import { pagesApp, apisApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 
@@ -197,12 +197,12 @@ export default function PageClasseCustoRestritaCrud() {
       const colsGridConfig = [
         new ColGridConfig(
           <Stack direction='row' alignItems='center' gap={1} justifyContent='center'>
-            <IconButtonApp icon='create' onClick={() => setPhase(Phase.insert)} />
+            <IconButtonAppCrud icon='create' onClick={() => setPhase(Phase.insert)} />
           </Stack>,
           ({ dummy, index }: { dummy: Entity_Crud, index: number }) => (
             <Stack direction='row' alignItems='center' gap={1}>
-              <IconButtonApp icon='edit' onClick={() => setPhase(Phase.update, index)} />
-              <IconButtonApp icon='delete' onClick={() => setPhase(Phase.delete, index)} />
+              <IconButtonAppCrud icon='edit' onClick={() => setPhase(Phase.update, index)} />
+              <IconButtonAppCrud icon='delete' onClick={() => setPhase(Phase.delete, index)} />
             </Stack>
           )
         ),

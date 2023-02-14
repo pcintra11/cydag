@@ -21,7 +21,7 @@ import { ColGridConfig, TableGrid } from '../../../components';
 import { FrmDefaultValues, FrmSetValues, NormalizePropsString, useFrm } from '../../../hooks/useMyForm';
 
 import { configApp } from '../../../appCydag/config';
-import { BtnCrud, IconButtonApp, IconButtonAppDownload, IconButtonAppSearch } from '../../../appCydag/components';
+import { BtnCrud, IconButtonAppCrud, IconButtonAppDownload, IconButtonAppSearch } from '../../../appCydag/components';
 import { pagesApp, apisApp, rolesApp } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
 
@@ -89,7 +89,6 @@ export default function PageUserCrud() {
       setMainStatesCache({ filter });
       await ForceWait(calcExecTimeSearch.elapsedMs(), configApp.forceWaitMinimumMs);
       setMainStatesCache({ listing: { searching: false, dataRows: documents, partialResults: apiReturn.value.partialResults } });
-      //if (documents.length == 0) SnackBar.info('Nada encontrado');
     } catch (error) {
       SnackBarError(error, `${pageSelf.pagePath}-onSubmit`);
     }
@@ -214,12 +213,12 @@ export default function PageUserCrud() {
       const colsGridConfig = [
         new ColGridConfig(
           <Stack direction='row' alignItems='center' gap={1} justifyContent='center'>
-            <IconButtonApp icon='create' onClick={() => setPhase(Phase.insert)} />
+            <IconButtonAppCrud icon='create' onClick={() => setPhase(Phase.insert)} />
           </Stack>,
           ({ data, index }: { data: Entity_Crud, index: number }) => (
             <Stack direction='row' alignItems='center' gap={1}>
-              <IconButtonApp icon='edit' onClick={() => setPhase(Phase.update, index)} />
-              <IconButtonApp icon='delete' onClick={() => setPhase(Phase.delete, index)} disabled={data.email == loggedUser.email} />
+              <IconButtonAppCrud icon='edit' onClick={() => setPhase(Phase.update, index)} />
+              <IconButtonAppCrud icon='delete' onClick={() => setPhase(Phase.delete, index)} disabled={data.email == loggedUser.email} />
             </Stack>
           )
         ),

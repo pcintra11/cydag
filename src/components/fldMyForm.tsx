@@ -311,7 +311,7 @@ interface FrmCheckboxProps {
 export const FrmCheckbox = ({
   frm,
   name,
-  label,
+  label, // @!!!!!!!!! wrap 
   disabled,
   hide,
   onChange: onChangeParm,

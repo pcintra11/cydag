@@ -57,7 +57,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           const regExpr = SearchTermsForFindPtBr(searchTerms);
           filterDb.searchTerms = { $regex: `${regExpr}` };
         }
-        const recordsToGet = parm.getAll == true ? 99999 : configApp.maximumSearchResult + 1;
+        const recordsToGet = parm.getAll == true ? 99999 : configApp.maximumSearchResult;
         const documentsDb = await UserModel.find(filterDb,
           {
             email: 1,
@@ -65,7 +65,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             ativo: 1,
             roles: 1
           })
-          .lean().sort({ email: 1 }).limit(recordsToGet);
+          .lean().sort({ email: 1 }).limit(recordsToGet + 1);
         let partialResults = false;
         if (documentsDb.length > recordsToGet) {
           documentsDb.pop();

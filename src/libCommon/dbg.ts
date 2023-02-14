@@ -63,7 +63,7 @@ export interface ConfigDbg { level?: number; levelScope?: ScopeDbg; context?: st
 
 // sem destaque
 // 'context' tem um tratamento especial, uma largura minima para que fique bem visivel no log
-export function dbg(config: ConfigDbg, ...params) {
+export function dbg(config: ConfigDbg, ...params) { //@!!!!!!! fora na maioria das chamadas
   dbgProc(config, ...params);
 }
 export function dbgTest() {

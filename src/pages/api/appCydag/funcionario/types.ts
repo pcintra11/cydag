@@ -8,6 +8,8 @@ enum CmdApi_Funcionario {
   itensGet = 'itensGet',
   itensSet = 'itensSet',
   upload = 'upload',
+  exportFuncionarios = 'exportFuncionarios',
+  getProcsOrcCCsAuthFuncionarios = 'getProcsOrcCCsAuthFuncionarios',
 }
 export {
   CmdApi_Funcionario,
@@ -24,6 +26,7 @@ export enum LineState {
 }
 
 export class FuncionarioClient {
+  centroCusto?: string;
   origem?: OrigemFunc;
   refer?: string;
   nome?: string;

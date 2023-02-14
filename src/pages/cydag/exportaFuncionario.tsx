@@ -4,8 +4,8 @@ import _ from 'underscore';
 
 import { Stack } from '@mui/material';
 
-import { BinSearchItem, BinSearchProp, CalcExecTime, ErrorPlus, ObjUpdAllProps } from '../../libCommon/util';
-import { csd, csl, dbgError } from '../../libCommon/dbg';
+import { BinSearchItem, BinSearchProp, BooleanToSN, CalcExecTime, ErrorPlus, ObjUpdAllProps } from '../../libCommon/util';
+import { csd, dbgError } from '../../libCommon/dbg';
 import { IGenericObject } from '../../libCommon/types';
 import { PageDef } from '../../libCommon/endPoints';
 import { CallApiCliASync } from '../../fetcher/fetcherCli';
@@ -19,13 +19,9 @@ import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../.
 import { IconButtonAppDownload, SelAno, SelEntity } from '../../appCydag/components';
 import { apisApp, pagesApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
-import { CentroCusto, ClasseCusto, Diretoria, Gerencia, ProcessoOrcamentarioCentroCusto, UnidadeNegocio } from '../../appCydag/modelTypes';
-import { CentroCustoConfigOption, IAnoCentroCustos, ValoresAnaliseRealPlan, ValoresPlanejadosDetalhes } from '../../appCydag/types';
-//import { CmdApi_Crud, IChangedLines } from '../api/appCydag/valoresContas/types';
-import { CmdApi_ValoresContas } from '../api/appCydag/valoresContas/types';
-import { mesesFld } from '../../appCydag/util';
-import { CmdApi_ClasseCusto, SortType_ClasseCusto } from '../api/appCydag/classeCusto/types';
-import { classeCustoPessoalArray } from '../../appCydag/config';
+import { CentroCusto, Diretoria, Funcionario, Gerencia, ProcessoOrcamentarioCentroCusto, UnidadeNegocio } from '../../appCydag/modelTypes';
+import { CentroCustoConfigOption, IAnoCentroCustos, OrigemFuncMd, TipoColaboradorMd, TipoParticipPerOrcamMd } from '../../appCydag/types';
+import { CmdApi_Funcionario, FuncionarioClient } from '../api/appCydag/funcionario/types';
 
 //#region ok
 enum Phase {
@@ -44,16 +40,15 @@ const fldFrmExtra = {
 
 let mount; let mainStatesCache;
 const apis = {
-  getProcsOrcCCsAuth: () => CallApiCliASync(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.getProcsOrcCCsAuthQuadroCons }),
-  getContas: () => CallApiCliASync(apisApp.classeCusto.apiPath, globals.windowId, { cmd: CmdApi_ClasseCusto.list, sortType: SortType_ClasseCusto.classeCusto }),
-  getItens: (filter: FrmFilter) => CallApiCliASync(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.exportRealPlanValoresGet, filter }),
+  getProcsOrcCCsAuth: () => CallApiCliASync(apisApp.funcionario.apiPath, globals.windowId, { cmd: CmdApi_Funcionario.getProcsOrcCCsAuthFuncionarios }),
+  getItens: (filter: FrmFilter) => CallApiCliASync(apisApp.funcionario.apiPath, globals.windowId, { cmd: CmdApi_Funcionario.exportFuncionarios, filter }),
 };
-const pageSelf = pagesApp.exportaRealPlanej;
+const pageSelf = pagesApp.exportaFuncionario;
 export default function PageExportPlanej() {
   const frmFilter = useFrm<FrmFilter>({
-    defaultValues: FrmDefaultValues(new FrmFilter(), { centroCustoArray: [] }, [ValoresPlanejadosDetalhes.F.ano, fldFrmExtra.centroCustoArray]),
+    defaultValues: FrmDefaultValues(new FrmFilter(), { centroCustoArray: [] }, [Funcionario.F.ano, fldFrmExtra.centroCustoArray]),
   });
-  const ano = useWatchMy({ control: frmFilter.control, name: ValoresPlanejadosDetalhes.F.ano });
+  const ano = useWatchMy({ control: frmFilter.control, name: Funcionario.F.ano });
   const centroCustoArray = useWatchMy({ control: frmFilter.control, name: fldFrmExtra.centroCustoArray });
 
   interface MainStates {
@@ -107,7 +102,7 @@ export default function PageExportPlanej() {
         const { anoCentroCustosArray, centroCustoArray } = result;
         const ano = anoCentroCustosArray.length != 0 ? anoCentroCustosArray[0].ano : null;
         setMainStatesCache({ phase: Phase.ready, anoCentroCustosArray, centroCustoArray });
-        frmFilter.setValue(ValoresPlanejadosDetalhes.F.ano, ano);
+        frmFilter.setValue(Funcionario.F.ano, ano);
         mountOptionsCC(ano);
       })
       .catch((error) => {
@@ -122,17 +117,13 @@ export default function PageExportPlanej() {
     setMainStatesCache({ downloadInProgress: true });
     const filter = NormalizePropsString(dataForm);
     if (filter.ano == null) return PopupMsg.error('Informe o Ano.');
-    csl('conectando com o servidor');
-    const calcExecTime = new CalcExecTime();
     apis.getItens(filter)
       .then((apiReturn) => {
-        csl(`tempo total de resposta do servidor ${calcExecTime.lapMs()}ms`);
         const centroCustoConfigMdArray = (apiReturn.value.centroCustoConfigMdArray as IGenericObject[]).map((data) => ProcessoOrcamentarioCentroCusto.deserialize(data));
         const unidadeNegocioMdArray = (apiReturn.value.unidadeNegocioMdArray as IGenericObject[]).map((data) => UnidadeNegocio.deserialize(data));
         const diretoriaMdArray = (apiReturn.value.diretoriaMdArray as IGenericObject[]).map((data) => Diretoria.deserialize(data));
         const gerenciaMdArray = (apiReturn.value.gerenciaMdArray as IGenericObject[]).map((data) => Gerencia.deserialize(data));
-        const classeCustoMdArray = (apiReturn.value.classeCustoMdArray as IGenericObject[]).map((data) => ClasseCusto.deserialize(data));
-        const itemArray = (apiReturn.value.vals as IGenericObject[]).map((data) => ValoresAnaliseRealPlan.deserialize(data));
+        const itemArray = (apiReturn.value.funcionariosClient as IGenericObject[]).map((data) => FuncionarioClient.deserialize(data));
         let itensExport;
         if (itemArray.length == 0)
           itensExport = [{ resultadoDaSelecao: 'nada encontrado' }];
@@ -148,31 +139,40 @@ export default function PageExportPlanej() {
               dataCC.gerenciaMd = BinSearchItem(gerenciaMdArray, dataCC.centroCustoConfigMd?.gerencia, 'cod', false);
               lastCC = valores.centroCusto;
             }
-            const classeCusto = BinSearchItem(classeCustoMdArray, valores.classeCusto, 'classeCusto', true);
-            const descrClasseCusto = classeCusto.descr;
-            const categ = classeCustoPessoalArray.includes(valores.classeCusto) ? 'pessoas' : 'despesas';
+
             return {
               centroCusto: valores.centroCusto,
               descrCentroCusto: dataCC.centroCustoMd?.descr,
-              classeCusto: valores.classeCusto,
-              descrClasseCusto,
-              categ,
               unidadeNegocio: dataCC.centroCustoConfigMd?.unidadeNegocio,
               descrUnidadeNegocio: dataCC.unidadeNegocioMd?.descr,
               diretoria: dataCC.centroCustoConfigMd?.diretoria,
               descrDiretoria: dataCC.diretoriaMd?.descr,
               gerencia: dataCC.centroCustoConfigMd?.gerencia,
               descrGerencia: dataCC.gerenciaMd?.descr,
-              ...mesesFld.reduce((prev, curr, index) => ({ ...prev, [`${curr} real`]: valores.valMesesReal[index], [`${curr} plan`]: valores.valMesesPlan[index] }), {}),
+
+              origem: OrigemFuncMd.descr(valores.origem),
+              refer: valores.refer,
+              nome: valores.nome,
+              idVaga: valores.idVaga,
+              tipoColaborador: TipoColaboradorMd.descr(valores.tipoColaborador),
+              funcao: valores.funcao,
+              salarioLegado: valores.salarioLegado,
+              ativo: BooleanToSN(valores.ativo),
+              tipoIni: TipoParticipPerOrcamMd.descr(valores.tipoIni),
+              mesIni: valores.mesIni,
+              tipoFim: TipoParticipPerOrcamMd.descr(valores.tipoFim),
+              mesFim: valores.mesFim,
+              salario: valores.salario,
+              dependentes: valores.dependentes,
+              valeTransp: valores.valeTransp,
             };
           });
         }
-        const fileName = `download_valores_realXplan_${filter.ano}`;
+        const fileName = `download_funcionarios_${filter.ano}`;
         const sheets: { sheetName: string, data: any }[] = [];
         sheets.push({ sheetName: 'dados', data: itensExport });
         SaveAsXlsx(fileName, sheets);
         setMainStatesCache({ downloadInProgress: false });
-        csl(`tempo total preparação client ${calcExecTime.lapMs()}ms`);
       })
       .catch((error) => {
         SnackBarError(error, `${pageSelf.pagePath}-getItens`);
@@ -184,7 +184,7 @@ export default function PageExportPlanej() {
   return (
     <Stack gap={1} height='100%'>
       <Stack direction='row' alignItems='center' gap={1}>
-        <SelAno value={ano} onChange={(value) => { frmFilter.setValue(ValoresPlanejadosDetalhes.F.ano, value); mountOptionsCC(value); }}
+        <SelAno value={ano} onChange={(value) => { frmFilter.setValue(Funcionario.F.ano, value); mountOptionsCC(value); }}
           options={mainStates.anoCentroCustosArray.map((x) => new SelOption(x.ano, x.ano))}
         />
         {centroCustoOptions != null &&

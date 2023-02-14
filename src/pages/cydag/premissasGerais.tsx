@@ -21,7 +21,7 @@ import { GridCell } from '../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../hooks/useMyForm';
 //import { GlobalState, useGlobalState } from '../../hooks/useGlobalState';
 
-import { IconApp, IconButtonApp, IconButtonAppSearch, propsColorHeader, propsColorByTotLevel, SelRevisao, SelEntity, SelAno } from '../../appCydag/components';
+import { IconApp, IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, propsColorByTotLevel, SelRevisao, SelEntity, SelAno } from '../../appCydag/components';
 import { apisApp, pagesApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 import { mesesFld, mesesHdr, genValMeses, amountToStr, amountParse } from '../../appCydag/util';
@@ -351,7 +351,7 @@ export default function PagePremissasGerais() {
       frmFilter.setValue(ValoresPremissa.F.ano, ano);
     }, []);
 
-    const getValoresSubmit = async (dataForm: FrmFilter) => {
+    const getItensSubmit = async (dataForm: FrmFilter) => {
       const filter = NormalizePropsString(dataForm, [ValoresPremissa.F.ano, ValoresPremissa.F.revisao, ValoresPremissa.F.agrupPremissas, ValoresPremissa.F.empresa]);
       if (filter.ano == null) return PopupMsg.error('Informe o Ano.');
       if (filter.revisao == null) return PopupMsg.error('Informe a Revisão.');
@@ -361,7 +361,7 @@ export default function PagePremissasGerais() {
     const agrupPremissasOptions = [new AgrupPremissas().Fill(agrupPremissasCoringa), ...mainStates.agrupPremissasArray].map((x) => new SelOption(x.cod, x.descr));
     const empresaOptions = [new Empresa().Fill(empresaCoringa), ...mainStates.empresaArray].map((x) => new SelOption(x.cod, x.descr));
     return (
-      <form onSubmit={frmFilter.handleSubmit(getValoresSubmit)}>
+      <form onSubmit={frmFilter.handleSubmit(getItensSubmit)}>
         <Stack direction='row' alignItems='center' gap={1}>
           {/* <SelectMy width='80px'
             value={ano || ''}
@@ -542,8 +542,8 @@ export default function PagePremissasGerais() {
 
         const descrUse =
           <Stack direction='row' alignItems='center' gap={1}>
-            <IconButtonApp icon='clear' onClick={() => chgValMeses('clear')} fontSize={fontSizeIconsInGrid} />
-            <IconButtonApp icon='redo' onClick={() => chgValMeses('repeat')} fontSize={fontSizeIconsInGrid} />
+            <IconButtonAppCrud icon='clear' onClick={() => chgValMeses('clear')} fontSize={fontSizeIconsInGrid} />
+            <IconButtonAppCrud icon='redo' onClick={() => chgValMeses('repeat')} fontSize={fontSizeIconsInGrid} />
             <Box style={cssTextNoWrapEllipsis}>{node.nodeContent.descr}</Box>
           </Stack>;
 

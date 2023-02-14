@@ -19,7 +19,7 @@ import { GridCell, GridCellEdit, IFldChange, IGridEditFldCtrl, IGridEditMainCtrl
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../hooks/useMyForm';
 //import { GlobalState, useGlobalState } from '../../hooks/useGlobalState';
 
-import { IconButtonApp, IconButtonAppSearch, propsColorHeader, SelAno, SelEntity, SelRevisao } from '../../appCydag/components';
+import { IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, SelAno, SelEntity, SelRevisao } from '../../appCydag/components';
 import { apisApp, pagesApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 import { mesesFld, mesesHdr, genValMeses, amountToStr } from '../../appCydag/util';
@@ -174,7 +174,7 @@ export default function PageValoresTransfer() {
       frmFilter.setValue(ValoresTransfer.F.ano, ano);
     }, []);
 
-    const getValoresSubmit = async (dataForm: FrmFilter) => {
+    const getItensSubmit = async (dataForm: FrmFilter) => {
       const filter = NormalizePropsString(dataForm, [ValoresTransfer.F.ano, ValoresTransfer.F.revisao, ValoresTransfer.F.localidadeOrigem]);
       if (filter.ano == null) return PopupMsg.error('Informe o Ano.');
       if (filter.revisao == null) return PopupMsg.error('Informe a Revisão.');
@@ -184,7 +184,7 @@ export default function PageValoresTransfer() {
 
     const localidadeOrigemOptions = mainStates.localidadeArray.map((x) => new SelOption(x.cod, x.descr));
     return (
-      <form onSubmit={frmFilter.handleSubmit(getValoresSubmit)}>
+      <form onSubmit={frmFilter.handleSubmit(getItensSubmit)}>
         <Stack direction='row' alignItems='center' gap={1}>
           {/* <SelectMy width='80px'
             value={ano || ''}
@@ -299,8 +299,8 @@ export default function PageValoresTransfer() {
       if (canEdit) {
         const descrUse =
           <Stack direction='row' alignItems='center' gap={1}>
-            <IconButtonApp icon='clear' onClick={() => chgValMeses('clear')} fontSize={fontSizeIconsInGrid} />
-            <IconButtonApp icon='redo' onClick={() => chgValMeses('repeat')} fontSize={fontSizeIconsInGrid} />
+            <IconButtonAppCrud icon='clear' onClick={() => chgValMeses('clear')} fontSize={fontSizeIconsInGrid} />
+            <IconButtonAppCrud icon='redo' onClick={() => chgValMeses('repeat')} fontSize={fontSizeIconsInGrid} />
             <Box style={cssTextNoWrapEllipsis}>{localidade.descr}</Box>
           </Stack>;
 

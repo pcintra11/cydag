@@ -20,8 +20,8 @@ import { SaveAsXlsx } from '../../libClient/saveAsClient';
 
 import { Btn, BtnLine, DialogMy, PopupMsg, SnackBarError, VisualBlock, WaitingObs } from '../../components';
 import { AbortProc, LogErrorUnmanaged } from '../../components';
+import { DropAreaUpload } from '../../components/dropArea';
 
-import { DropAreaUpload } from '../../appCydag/components';
 import { apisApp, pagesApp } from '../../appCydag/endPoints';
 import { CmdApi_FuncAdm } from '../api/appCydag/funcsAdm/types';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
@@ -291,7 +291,7 @@ export default function PageFuncsAdm() {
                   </Box>
                 </Stack>
                 {mainStates.downloading == true && <WaitingObs text='Preparando para baixar' />}
-                <DropAreaUpload dropZone={dropZone} />
+                <DropAreaUpload dropZone={dropZone} bgcolor={themePlus.themePlusConfig?.colorBackDroparea} />
 
                 {mainStates.uploadStatus == UploadStatus.reseting && <WaitingObs text='Resetando' />}
                 {mainStates.uploadStatus == UploadStatus.loading && <WaitingObs text={`Carregando ${mainStates.file.name}`} />}

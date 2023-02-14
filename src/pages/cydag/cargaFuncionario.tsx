@@ -22,6 +22,7 @@ import { FrmDefaultValues, useFrm, useWatchMy } from '../../hooks/useMyForm';
 import { FakeLink, SelOption, SnackBarError, PopupMsg, SwitchMy } from '../../components';
 import { WaitingObs } from '../../components';
 import { AbortProc, LogErrorUnmanaged } from '../../components';
+import { DropAreaUpload } from '../../components/dropArea';
 
 import { configApp } from '../../appCydag/config';
 import { pagesApp, apisApp } from '../../appCydag/endPoints';
@@ -30,7 +31,7 @@ import { Funcionario, ProcessoOrcamentario } from '../../appCydag/modelTypes';
 import { ProcessoOrcamentarioStatus, TipoColaboradorMd, TipoParticipPerOrcamMd } from '../../appCydag/types';
 import { CmdApi_ProcessoOrcamentario } from '../api/appCydag/processoOrcamentario/types';
 import { CmdApi_Funcionario } from '../api/appCydag/funcionario/types';
-import { DropAreaUpload, SelAno } from '../../appCydag/components';
+import { SelAno } from '../../appCydag/components';
 
 enum Phase {
   initiating = 'initiating',
@@ -184,7 +185,7 @@ export default function PageCargaFuncionario() {
           {ano != null &&
             <>
               {/* infoAdic='Atenção: os dados anteriores serão removidos antes da carga' */}
-              <DropAreaUpload dropZone={dropZone} />
+              <DropAreaUpload dropZone={dropZone} bgcolor={themePlus.themePlusConfig?.colorBackDroparea} />
               <SwitchMy checked={mainStates.deleteAllBefore} label='Remove os dados antes de carregar (desative se for uma carga incremental)' onChange={(ev) => setMainStatesCache({ deleteAllBefore: ev.target.checked })} />
             </>
           }

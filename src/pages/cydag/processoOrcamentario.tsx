@@ -21,9 +21,10 @@ import { Btn, BtnLine, WaitingObs } from '../../components';
 import { AbortProc, LogErrorUnmanaged } from '../../components';
 import { FrmInput } from '../../components';
 import { ColGridConfig, TableGrid } from '../../components';
+import { DropAreaUpload } from '../../components/dropArea';
 
 import { configApp } from '../../appCydag/config';
-import { DropAreaUpload, IconButtonApp } from '../../appCydag/components';
+import { IconButtonAppCrud } from '../../appCydag/components';
 import { pagesApp, apisApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 import { AgrupPremissas, Diretoria, CentroCusto, Gerencia, Localidade, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto, UnidadeNegocio, User } from '../../appCydag/modelTypes';
@@ -324,7 +325,7 @@ export default function PageProcessoOrcamentario() {
         new ColGridConfig(
           allowInsert
             ? <Stack direction='row' alignItems='center' gap={1} justifyContent='center'>
-              <IconButtonApp icon='create' onClick={() => insert()} />
+              <IconButtonAppCrud icon='create' onClick={() => insert()} />
             </Stack>
             : '',
           ({ data, index }: { data: Entity, index: number }) => {
@@ -404,7 +405,7 @@ export default function PageProcessoOrcamentario() {
             </FakeLink>
             {mainStates.downloading == true && <WaitingObs text='Preparando para baixar' />}
 
-            <DropAreaUpload dropZone={dropZone} />
+            <DropAreaUpload dropZone={dropZone} bgcolor={themePlus.themePlusConfig?.colorBackDroparea} />
 
             {mainStates.uploadStatus == UploadStatus.loading && <WaitingObs text='Carregando' />}
             {mainStates.uploadStatus == UploadStatus.done &&

@@ -14,7 +14,7 @@ enum CmdApi_ValoresContas {
 
   exportPlanejValoresGet = 'exportPlanejValoresGet',
   exportRealPlanValoresGet = 'exportRealPlanValoresGet',
-  getProcsOrcCCsAuth = 'getProcsOrcCCsAuth',
+  getProcsOrcCCsAuthQuadroCons = 'getProcsOrcCCsAuthQuadroCons',
 
   analiseAnualCentroCustoInitialization = 'analiseAnualCentroCustoInitialization',
   analiseAnualControladoriaInitialization = 'analiseAnualControladoriaInitialization',

@@ -22,11 +22,9 @@ import { useLoggedUser } from '../../appCydag/useLoggedUser';
 import { CentroCusto, ClasseCusto } from '../../appCydag/modelTypes';
 import { CentroCustoConfigOption, IAnoCentroCustos, OrigemClasseCustoMd, RevisaoValor, RevisaoValorMd, ValoresPlanejadosDetalhes } from '../../appCydag/types';
 //import { CmdApi_Crud, IChangedLines } from '../api/appCydag/valoresContas/types';
-import { CmdApi_ProcessoOrcamentario } from '../api/appCydag/processoOrcamentario/types';
 import { CmdApi_ValoresContas } from '../api/appCydag/valoresContas/types';
 import { mesesFld } from '../../appCydag/util';
 import { CmdApi_ClasseCusto, SortType_ClasseCusto } from '../api/appCydag/classeCusto/types';
-import { CmdApi_CentroCusto } from '../api/appCydag/centroCusto/types';
 
 //#region ok
 enum Phase {
@@ -51,9 +49,9 @@ const fldFrmExtra = {
 let mount; let mainStatesCache;
 const apis = { // cdm sempre aqui?? #!!!!!!
   // #!!!!! agrupar e executar em paralelo (await all)
-  getProcsOrcCCsAuth: () => CallApiCliASync(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.getProcsOrcCCsAuth }),
+  getProcsOrcCCsAuth: () => CallApiCliASync(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.getProcsOrcCCsAuthQuadroCons }),
   getContas: () => CallApiCliASync(apisApp.classeCusto.apiPath, globals.windowId, { cmd: CmdApi_ClasseCusto.list, sortType: SortType_ClasseCusto.classeCusto }),
-  getValores: (filter: FrmFilter) => CallApiCliASync(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.exportPlanejValoresGet, filter }),
+  getItens: (filter: FrmFilter) => CallApiCliASync(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.exportPlanejValoresGet, filter }),
 };
 const pageSelf = pagesApp.exportaPlanej;
 export default function PageExportPlanej() {
@@ -138,38 +136,42 @@ export default function PageExportPlanej() {
     if (filter.revisao == null) return PopupMsg.error('Informe a Revisão.');
     csl('conectando com o servidor');
     const calcExecTime = new CalcExecTime();
-    apis.getValores(filter)
+    apis.getItens(filter)
       .then((apiReturn) => {
         csl(`tempo total de resposta do servidor ${calcExecTime.lapMs()}ms`);
-        const valsArray = (apiReturn.value.vals as IGenericObject[]).map((data) => ValoresPlanejadosDetalhes.deserialize(data));
-        if (valsArray.length == 0) valsArray.push(new ValoresPlanejadosDetalhes().Fill({ centroCusto: 'nada encontrado' }));
-        const valsExport = valsArray.map((valores) => {
-          //const tot = mesesFld.reduce((prev, curr) => prev + valores[curr], 0);
-          let descrClasseCusto = null, origemValor = null;
-          if (valores.classeCusto != null) {
-            const classeCusto = BinSearchItem(mainStates.classeCustoArray, valores.classeCusto, 'classeCusto', true);
-            origemValor = OrigemClasseCustoMd.descr(classeCusto.origem);
-            descrClasseCusto = classeCusto.descr;
-          }
-          const tot = valores.valMeses.reduce((prev, curr) => curr != null ? prev + curr : prev, 0);
-          const fldsKey1 = ['centroCusto', 'classeCusto'];
-          const fldsKey2 = filter.withDetails ? ['idDetalhe', 'descr'] : [];
-          return {
-            ..._.pick(valores, fldsKey1),
-            descrClasseCusto,
-            origemValor,
-            ..._.pick(valores, fldsKey2),
-            //...mesesFld.reduce((prev, curr) => ({ ...prev, [curr]: valores[curr] }), {}),
-            ...mesesFld.reduce((prev, curr, index) => ({ ...prev, [curr]: valores.valMeses[index] }), {}),
-            tot,
-          };
-        });
+        const itemArray = (apiReturn.value.vals as IGenericObject[]).map((data) => ValoresPlanejadosDetalhes.deserialize(data));
+        let itensExport;
+        if (itemArray.length == 0)
+          itensExport = [{ resultadoDaSelecao: 'nada encontrado' }];
+        else {
+          itensExport = itemArray.map((valores) => {
+            //const tot = mesesFld.reduce((prev, curr) => prev + valores[curr], 0);
+            let descrClasseCusto = null, origemValor = null;
+            if (valores.classeCusto != null) {
+              const classeCusto = BinSearchItem(mainStates.classeCustoArray, valores.classeCusto, 'classeCusto', true);
+              origemValor = OrigemClasseCustoMd.descr(classeCusto.origem);
+              descrClasseCusto = classeCusto.descr;
+            }
+            const tot = valores.valMeses.reduce((prev, curr) => curr != null ? prev + curr : prev, 0);
+            const fldsKey1 = ['centroCusto', 'classeCusto'];
+            const fldsKey2 = filter.withDetails ? ['idDetalhe', 'descr'] : [];
+            return {
+              ..._.pick(valores, fldsKey1),
+              descrClasseCusto,
+              origemValor,
+              ..._.pick(valores, fldsKey2),
+              //...mesesFld.reduce((prev, curr) => ({ ...prev, [curr]: valores[curr] }), {}),
+              ...mesesFld.reduce((prev, curr, index) => ({ ...prev, [curr]: valores.valMeses[index] }), {}),
+              tot,
+            };
+          });
+        }
         const fileName = `download_valores_planejados_${filter.ano}` +
           (filter.revisao !== RevisaoValor.atual ? `_${RevisaoValorMd.descr(filter.revisao).toLowerCase()}` : '') +
           (filter.withDetails ? '_dets' : '') +
           (filter.showCalc ? '_showCalcs' : '');
         const sheets: { sheetName: string, data: any }[] = [];
-        sheets.push({ sheetName: 'dados', data: valsExport });
+        sheets.push({ sheetName: 'dados', data: itensExport });
         if (filter.showCalc) {
           const memoriaCalc = JSON.stringify(apiReturn.value.memoriaCalc, null, 2).split('\n').map((line) => ({ calc: line }));
           if (memoriaCalc.length == 0) memoriaCalc.push({ calc: 'sem detalhes' });
@@ -180,7 +182,7 @@ export default function PageExportPlanej() {
         csl(`tempo total preparação client ${calcExecTime.lapMs()}ms`);
       })
       .catch((error) => {
-        SnackBarError(error, `${pageSelf.pagePath}-getValores`);
+        SnackBarError(error, `${pageSelf.pagePath}-getItens`);
         setMainStatesCache({ downloadInProgress: false });
       });
   };

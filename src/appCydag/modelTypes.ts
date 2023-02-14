@@ -1137,13 +1137,25 @@ export class Funcionario {
       return null;
     if (centroCusto == null || refer == null)
       throw new Error('centroCusto e refer devem ser informados');
-    if (isAmbDev())
-      return StrToNumber(valor_messy, configApp.decimalsSalario);
+    if (isAmbDev()) {
+      let result = 0;
+      if (valor_messy == null)
+        dbgError('salario_messy inválido (sem criptografia)', centroCusto, refer, valor_messy);
+      else {
+        try {
+          result = StrToNumber(valor_messy, configApp.decimalsSalario);
+        }
+        catch (error) {
+          dbgError('salario inválido (não numérico)', centroCusto, refer, valor_messy);
+        }
+      }
+      return result;
+    }
     else {
       const salStr = Unscramble(valor_messy, `${centroCusto}-${refer}`, true);
       let result = 0;
       if (salStr == null)
-        dbgError('salario_messy inválido (criptografia)', valor_messy, centroCusto, refer);
+        dbgError('salario_messy inválido (criptografia)', centroCusto, refer, valor_messy);
       else {
         try {
           result = StrToNumber(salStr, configApp.decimalsSalario);

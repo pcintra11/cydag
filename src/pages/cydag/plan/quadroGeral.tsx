@@ -20,7 +20,7 @@ import { GridCell } from '../../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 //import { GlobalState, useGlobalState } from '../../hooks/useGlobalState';
 
-import { IconApp, IconButtonApp, IconButtonAppSearch, propsColorHeader, propsColorByTotLevel, SelRevisao, SelEntity, SelAno } from '../../../appCydag/components';
+import { IconApp, IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, propsColorByTotLevel, SelRevisao, SelEntity, SelAno } from '../../../appCydag/components';
 import { apisApp, pagesApp, quadroPage } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
 import { anoAdd, mesesFld, mesesHdr, genValMeses, sumRound, sumValMeses, amountParse, amountToStr } from '../../../appCydag/util';
@@ -771,8 +771,8 @@ export default function PageQuadroGeral() {
 
         const descrUse =
           <Stack direction='row' alignItems='center' gap={1}>
-            <IconButtonApp icon='clear' onClick={() => chgValMeses('clear')} fontSize={fontSizeIconsInGrid} />
-            <IconButtonApp icon='redo' onClick={() => chgValMeses('repeat')} fontSize={fontSizeIconsInGrid} />
+            <IconButtonAppCrud icon='clear' onClick={() => chgValMeses('clear')} fontSize={fontSizeIconsInGrid} />
+            <IconButtonAppCrud icon='redo' onClick={() => chgValMeses('repeat')} fontSize={fontSizeIconsInGrid} />
             {node.nodeType == 'detClasseCusto'
               ? <Input value={node.nodeContent.descr}
                 error={globalCtrl.cellError(node.id, 'descr')}

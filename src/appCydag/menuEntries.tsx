@@ -73,6 +73,7 @@ const menuTotal: IMenuEntry[] = [ // aqui todas as transações, serão filtrada
   new SubMenu('Exportações', [
     pagesApp.exportaPlanej,
     pagesApp.exportaRealPlanej,
+    pagesApp.exportaFuncionario,
   ]), 
 
   pagesApp.userSimulate,

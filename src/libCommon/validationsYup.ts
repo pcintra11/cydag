@@ -6,11 +6,12 @@ export const msgValidInteger = 'deve ser inteiro';
 export const msgValidNumber = 'deve ser um número';
 export const msgValidNotZero = 'não pode ser zero';
 
-const stringReq = ({ minChars, maxChars, qtdChars, contentType }: { minChars?: number, maxChars?: number, qtdChars?: number, contentType?: 'onlyNumber' | 'id' } = {}) => {
+const stringFn = ({ minChars, maxChars, qtdChars, contentType, required }: { minChars?: number, maxChars?: number, qtdChars?: number, contentType?: 'onlyNumber' | 'id', required?: boolean } = {}) => {
   let result = yup
     .string()
-    .trim()
-    .required(msgValidRequired);
+    .trim();
+  if (required)
+    result = result.required(msgValidRequired);
   if (qtdChars != null) {
     result = result.length(qtdChars, `deve ter ${qtdChars} caracteres`);
   }
@@ -22,10 +23,6 @@ const stringReq = ({ minChars, maxChars, qtdChars, contentType }: { minChars?: n
   if (contentType === 'id') result = result.matches(new RegExp(/^([a-z])([a-z]|[0-9]|_)*$/, 'g'), 'deve ter apenas letras, números e o carácter "_" e iniciar por uma letra');
   return result;
 };
-const stringOpc = yup
-  .string()
-  .trim();
-
 
 const email = yup
   .string()
@@ -60,7 +57,7 @@ const numberReqPositive = yup // criar versão 'optional' verificar na documenta
 //     .notOneOf([0], msgValidNotZero);
 // };
 
-const zipCodeYup = yup
+const zipCode = yup
   .string()
   .required(msgValidRequired)
   .matches(/^\d{8}$/, 'deve ter oito dígitos');
@@ -72,12 +69,11 @@ const phoneNumber = yup
   .matches(/^\d{11}$/, 'deve ter onze dígitos');
 
 export const validationsYup = {
-  stringReq,
-  stringOpc,
+  stringFn,
   stringWord3CharOrEmpty,
   numberReqPositive,
   email,
-  zipCodeYup,
+  zipCode,
   phoneNumber,
 };
 

@@ -64,7 +64,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         else if (sortType == SortType_ClasseCusto.classeCusto)
           sortFlds = { classeCusto: 1 };
 
-        const recordsToGet = parm.getAll == true ? 99999 : configApp.maximumSearchResult + 1;
+        const recordsToGet = parm.getAll == true ? 99999 : configApp.maximumSearchResult;
         const documentsDb = await Model_Crud.find(filterDb,
           {
             classeCusto: 1,

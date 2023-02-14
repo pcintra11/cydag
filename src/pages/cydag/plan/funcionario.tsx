@@ -20,7 +20,7 @@ import { GridCell, GridCellEdit, IFldChange, IGridEditFldCtrl, IGridEditMainCtrl
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 //import { GlobalState, useGlobalState } from '../../hooks/useGlobalState';
 
-import { IconButtonApp, IconButtonAppSearch, propsColorHeader, SelAno, SelEntity, SelRevisao } from '../../../appCydag/components';
+import { IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, SelAno, SelEntity, SelRevisao } from '../../../appCydag/components';
 import { apisApp, pagesApp } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
 import { amountToStr } from '../../../appCydag/util';
@@ -337,7 +337,7 @@ export default function PageFuncionarioCrud() {
           <GridCell sticky textAlign='center' {...propsColorsHdr}>
             {permiteNovos
               ? <Stack direction='row' alignItems='center' gap={1} justifyContent='center'>
-                <IconButtonApp icon='create' colorSx={propsColorsHdr.color} onClick={() => newLine()} />
+                <IconButtonAppCrud icon='create' colorSx={propsColorsHdr.color} onClick={() => newLine()} />
               </Stack>
               : <></>
             }
@@ -443,8 +443,8 @@ export default function PageFuncionarioCrud() {
       if (canEdit) {
         if (lineState == LineState.original) {
           iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
-            <IconButtonApp icon='edit' onClick={() => changeLineState(LineState.updated)} fontSize={fontSizeIconsInGrid} />
-            <IconButtonApp icon='delete' onClick={() => changeLineState(LineState.deleted)} fontSize={fontSizeIconsInGrid} />
+            <IconButtonAppCrud icon='edit' onClick={() => changeLineState(LineState.updated)} fontSize={fontSizeIconsInGrid} />
+            <IconButtonAppCrud icon='delete' onClick={() => changeLineState(LineState.deleted)} fontSize={fontSizeIconsInGrid} />
           </Stack>;
         }
         else if (lineState == LineState.deleted)
@@ -455,11 +455,11 @@ export default function PageFuncionarioCrud() {
           iconsCmd = <Box>cancel.</Box>;
         else if (lineState == LineState.updated)
           iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
-            <IconButtonApp icon='delete' onClick={() => changeLineState(LineState.deleted)} fontSize={fontSizeIconsInGrid} />
+            <IconButtonAppCrud icon='delete' onClick={() => changeLineState(LineState.deleted)} fontSize={fontSizeIconsInGrid} />
           </Stack>;
         else if (lineState == LineState.inserted)
           iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
-            <IconButtonApp icon='delete' onClick={() => changeLineState(LineState.aborted)} fontSize={fontSizeIconsInGrid} />
+            <IconButtonAppCrud icon='delete' onClick={() => changeLineState(LineState.aborted)} fontSize={fontSizeIconsInGrid} />
           </Stack>;
       }
 

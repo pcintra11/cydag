@@ -18,7 +18,7 @@ import { GridCellEdit, GridCell, IFldChange, IGridEditFldCtrl, IGridEditMainCtrl
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 //import { GlobalState, useGlobalState } from '../../hooks/useGlobalState';
 
-import { IconButtonApp, IconButtonAppSearch, propsColorHeader, SelAno, SelEntity, SelRevisao } from '../../../appCydag/components';
+import { IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, SelAno, SelEntity, SelRevisao } from '../../../appCydag/components';
 import { apisApp, pagesApp } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
 import { amountToStr, mesesFld, mesesHdr } from '../../../appCydag/util';
@@ -307,7 +307,7 @@ export default function PageTerceiroCrud() {
         <>
           <GridCell sticky textAlign='center' {...propsColorsHdr}>
             <Stack direction='row' alignItems='center' gap={1} justifyContent='center'>
-              <IconButtonApp icon='create' colorSx={propsColorsHdr.color} onClick={() => newLine()} />
+              <IconButtonAppCrud icon='create' colorSx={propsColorsHdr.color} onClick={() => newLine()} />
             </Stack>
           </GridCell>
           <GridCell sticky textAlign='left' {...propsColorsHdr}><Box>Refer</Box></GridCell>
@@ -405,8 +405,8 @@ export default function PageTerceiroCrud() {
       if (canEdit) {
         if (lineState == LineState.original) {
           iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
-            <IconButtonApp icon='edit' onClick={() => changeLineState(LineState.updated)} fontSize={fontSizeIconsInGrid} />
-            <IconButtonApp icon='delete' onClick={() => changeLineState(LineState.deleted)} fontSize={fontSizeIconsInGrid} />
+            <IconButtonAppCrud icon='edit' onClick={() => changeLineState(LineState.updated)} fontSize={fontSizeIconsInGrid} />
+            <IconButtonAppCrud icon='delete' onClick={() => changeLineState(LineState.deleted)} fontSize={fontSizeIconsInGrid} />
           </Stack>;
         }
         else if (lineState == LineState.deleted)
@@ -415,15 +415,15 @@ export default function PageTerceiroCrud() {
           iconsCmd = <Box>cancel.</Box>;
         else if (lineState == LineState.updated)
           iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
-            <IconButtonApp icon='delete' onClick={() => changeLineState(LineState.deleted)} fontSize={fontSizeIconsInGrid} />
-            <IconButtonApp icon='clear' onClick={() => chgValMeses('clear')} fontSize={fontSizeIconsInGrid} />
-            <IconButtonApp icon='redo' onClick={() => chgValMeses('repeat')} fontSize={fontSizeIconsInGrid} />
+            <IconButtonAppCrud icon='delete' onClick={() => changeLineState(LineState.deleted)} fontSize={fontSizeIconsInGrid} />
+            <IconButtonAppCrud icon='clear' onClick={() => chgValMeses('clear')} fontSize={fontSizeIconsInGrid} />
+            <IconButtonAppCrud icon='redo' onClick={() => chgValMeses('repeat')} fontSize={fontSizeIconsInGrid} />
           </Stack>;
         else if (lineState == LineState.inserted)
           iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
-            <IconButtonApp icon='delete' onClick={() => changeLineState(LineState.aborted)} fontSize={fontSizeIconsInGrid} />
-            <IconButtonApp icon='clear' onClick={() => chgValMeses('clear')} fontSize={fontSizeIconsInGrid} />
-            <IconButtonApp icon='redo' title='Replicar valores' onClick={() => chgValMeses('repeat')} fontSize={fontSizeIconsInGrid} />
+            <IconButtonAppCrud icon='delete' onClick={() => changeLineState(LineState.aborted)} fontSize={fontSizeIconsInGrid} />
+            <IconButtonAppCrud icon='clear' onClick={() => chgValMeses('clear')} fontSize={fontSizeIconsInGrid} />
+            <IconButtonAppCrud icon='redo' title='Replicar valores' onClick={() => chgValMeses('repeat')} fontSize={fontSizeIconsInGrid} />
           </Stack>;
       }
 

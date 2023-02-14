@@ -22,13 +22,13 @@ import { OperInProcessoOrcamentario, OrigemFunc, ProcessoOrcamentarioStatusMd, R
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 
 import { apisApp, rolesApp } from '../../../../appCydag/endPoints';
-import { UserModel } from '../../../../appCydag/models';
+import { DiretoriaModel, GerenciaModel, UnidadeNegocioModel, UserModel } from '../../../../appCydag/models';
 import { configApp } from '../../../../appCydag/config';
 
 import { PremissaModel, ProcessoOrcamentarioCentroCustoModel, ProcessoOrcamentarioModel, FuncionarioModel } from '../../../../appCydag/models';
 
 import { CmdApi_Funcionario as CmdApi, IChangedLine, FuncionarioClient, LineState, DataEdit } from './types';
-import { ccsAuthArray, CheckProcCentroCustosAuth, IAuthCC, procsCentroCustosConfigAuthAllYears } from '../../../../appCydag/utilServer';
+import { accessAllCCs, ccsAuthArray, CheckProcCentroCustosAuth, IAuthCC, procsCentroCustosConfigAuthAllYears } from '../../../../appCydag/utilServer';
 import { amountParse } from '../../../../appCydag/util';
 
 const apiSelf = apisApp.funcionario;
@@ -84,12 +84,13 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
           const funcionariosClient = funcionarios.map((funcionario) => {
             const funcionarioRevisao = funcionario[Funcionario.funcionarioRevisao(revisao)];
+            const salarioLegado = Funcionario.unscrambleSalario(funcionario.salario_messy, funcionario.centroCusto, funcionario.refer);
             const salario = Funcionario.unscrambleSalario(funcionarioRevisao.salario_messy, funcionario.centroCusto, funcionario.refer);
             const salarioPromo = Funcionario.unscrambleSalario(funcionarioRevisao.salarioPromo_messy, funcionario.centroCusto, funcionario.refer);
             const result = new FuncionarioClient().Fill({
               ...funcionario,
               ...funcionarioRevisao,
-              salarioLegado: Funcionario.unscrambleSalario(funcionario.salario_messy, funcionario.centroCusto, funcionario.refer),
+              salarioLegado,
               salario,
               salarioPromo,
             });
@@ -204,7 +205,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           resumoApi.jsonData({});
         }
       }
-
 
       else if (parm.cmd == CmdApi.upload) {
         CheckRoleAllowed([rolesApp.cargaFunc], [...userDb.roles, ...userDb.rolesControlled]);
@@ -340,6 +340,70 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         }
 
         resumoApi.jsonData({ value: { messages, linesOk, linesError } });
+        deleteIfOk = true;
+      }
+
+      else if (parm.cmd == CmdApi.getProcsOrcCCsAuthFuncionarios) {
+        const procsCentrosCustoConfigAllYears = await procsCentroCustosConfigAuthAllYears(loggedUserReq, authCC);
+        const centroCustoArray = await ccsAuthArray(procsCentrosCustoConfigAllYears);
+        resumoApi.jsonData({ value: { procsCentrosCustoConfigAllYears, centroCustoArray } });
+        deleteIfOk = true;
+      }
+
+      else if (parm.cmd == CmdApi.exportFuncionarios) {
+        const { ano, centroCustoArray } = parm.filter || {};
+        const revisao = RevisaoValor.atual;
+        const processoOrcamentario = await ProcessoOrcamentarioModel.findOne({ ano }).lean();
+        if (processoOrcamentario == null) throw new ErrorPlus(`Processo Orçamentário para ${ano} não encontrado`);
+
+        let centroCustoArrayUse: string[] = null;
+        if (centroCustoArray.length > 0) {
+          for (const centroCusto of centroCustoArray) {
+            const processoOrcamentarioCentroCusto = await ProcessoOrcamentarioCentroCustoModel.findOne({ ano, centroCusto }).lean();
+            if (processoOrcamentarioCentroCusto == null) throw new ErrorPlus(`Centro de Custo ${centroCusto} não configurado para o Processo Orçamentário`);
+            CheckProcCentroCustosAuth(loggedUserReq, processoOrcamentarioCentroCusto, authCC);
+          }
+          centroCustoArrayUse = centroCustoArray;
+        }
+        else {
+          if (accessAllCCs(loggedUserReq, authCC))
+            centroCustoArrayUse = [];
+          else {
+            const procsCentrosCustoConfigAllYears = await procsCentroCustosConfigAuthAllYears(loggedUserReq, authCC, ano);
+            centroCustoArrayUse = procsCentrosCustoConfigAllYears[0].centroCustoConfig.map((x) => x.centroCusto);
+          }
+        }
+
+        const centroCustoConfigMdArray = await ProcessoOrcamentarioCentroCustoModel.find({ ano }).lean().sort({ centroCusto: 1 });
+        const unidadeNegocioMdArray = await UnidadeNegocioModel.find().lean().sort({ cod: 1 });
+        const diretoriaMdArray = await DiretoriaModel.find().lean().sort({ cod: 1 });
+        const gerenciaMdArray = await GerenciaModel.find().lean().sort({ cod: 1 });
+
+        const filterCC = centroCustoArray.length > 0 ? { centroCusto: { $in: centroCustoArrayUse } } : {};
+        const filterDb: any = { ano, ...filterCC };
+        const funcionarios = await FuncionarioModel.find(filterDb).lean().sort({ centroCusto: 1, origem: 1, refer: 1 });
+
+        const funcionariosClient = funcionarios.map((funcionario) => {
+          const funcionarioRevisao = funcionario[Funcionario.funcionarioRevisao(revisao)];
+          const salarioLegado = Funcionario.unscrambleSalario(funcionario.salario_messy, funcionario.centroCusto, funcionario.refer);
+          const salario = Funcionario.unscrambleSalario(funcionarioRevisao.salario_messy, funcionario.centroCusto, funcionario.refer);
+          const salarioPromo = Funcionario.unscrambleSalario(funcionarioRevisao.salarioPromo_messy, funcionario.centroCusto, funcionario.refer);
+          const result = new FuncionarioClient().Fill({
+            ...funcionario,
+            ...funcionarioRevisao,
+            salarioLegado,
+            salario,
+            salarioPromo,
+          });
+          return result;
+        });
+
+        resumoApi.jsonData({
+          value: {
+            funcionariosClient, centroCustoConfigMdArray,
+            unidadeNegocioMdArray, diretoriaMdArray, gerenciaMdArray
+          }
+        });
         deleteIfOk = true;
       }
 

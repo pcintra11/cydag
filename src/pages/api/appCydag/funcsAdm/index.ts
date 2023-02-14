@@ -175,7 +175,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
         const empr1 = { empresa: '_TST1', descr: 'Empresa 1 (teste)' };
         const empr2 = { empresa: '_TST2', descr: 'Empresa 2 (teste)' };
-        const emprsTeste = [empr1, empr2];
+        const emprArray = [empr1, empr2];
 
         const agrup1 = { agrupPremissas: '_AGRUP1', descr: 'Agrupamento 1 (teste - sudeste)' };
         const agrup2 = { agrupPremissas: '_AGRUP2', descr: 'Agrupamento 2 (teste - sul)' };
@@ -250,7 +250,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             }, { upsert: true });
           }
 
-          for (const item of emprsTeste) {
+          for (const item of emprArray) {
             await EmpresaModel.updateOne({ cod: item.empresa }, {
               descr: item.descr,
               created: agora,
@@ -539,7 +539,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             const funcDataIncl = funcionariosAdd.map((x) => {
               const item = new Funcionario().Fill({
                 ...x, created: agora, lastUpdated: agora,
-                salario_messy: Funcionario.scrambleSalario(x.salarioBase, x.centroCusto, x.refer),
+                salario_messy: x.origem === OrigemFunc.legado ? Funcionario.scrambleSalario(x.salarioBase, x.centroCusto, x.refer) : undefined,
                 revisaoAtual: new FuncionarioRevisao().Fill({
                   ...x, ativo: true,
                   salario_messy: Funcionario.scrambleSalario(x.salarioBase, x.centroCusto, x.refer),

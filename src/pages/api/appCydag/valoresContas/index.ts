@@ -22,7 +22,7 @@ import { EnvSvrInterfaceSapRealizadoConfig } from '../../../../appCydag/envs';
 import { apisApp, quadroPage, rolesApp } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 import { ViagemModel, TerceiroModel, UserModel, ValoresLocalidadeModel, ValoresTransferModel, UnidadeNegocioModel, ValoresRealizadosInterfaceSapModel, DiretoriaModel, CtrlInterfaceModel, ValoresPlanejadosHistoricoModel, GerenciaModel, databaseInterfaceSap } from '../../../../appCydag/models';
-import { agrupPremissasCoringa, empresaCoringa, Premissa, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto, ValoresRealizados, ValoresPremissa, UnidadeNegocio, CtrlInterface } from '../../../../appCydag/modelTypes';
+import { agrupPremissasCoringa, empresaCoringa, Premissa, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto, ValoresRealizados, ValoresPremissa, UnidadeNegocio, CtrlInterface, ValoresRealizadosInterfaceSap } from '../../../../appCydag/modelTypes';
 import { InterfaceSapStatus, InterfaceSapCateg, OperInProcessoOrcamentario, OrigemClasseCusto, ProcessoOrcamentarioStatus, ProcessoOrcamentarioStatusMd, RevisaoValor, TipoSegmCentroCusto, ValoresAnaliseAnual, ValoresComparativoAnual, ValoresPlanejadosDetalhes, ValoresTotCentroCustoClasseCusto, ValoresAnaliseRealPlan } from '../../../../appCydag/types';
 
 import { ClasseCustoModel, ClasseCustoRestritaModel, FatorCustoModel, FuncionarioModel, PremissaModel, ProcessoOrcamentarioCentroCustoModel, ProcessoOrcamentarioModel, ValoresImputadosModel, ValoresPlanejadosCalcModel, ValoresPremissaModel, ValoresRealizadosModel } from '../../../../appCydag/models';
@@ -90,7 +90,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         deleteIfOk = true;
       }
 
-      else if (parm.cmd == CmdApi.getProcsOrcCCsAuth) {
+      else if (parm.cmd == CmdApi.getProcsOrcCCsAuthQuadroCons) {
         const procsCentrosCustoConfigAllYears = await procsCentroCustosConfigAuthAllYears(loggedUserReq, authCCQuadroCons);
         const centroCustoArray = await ccsAuthArray(procsCentrosCustoConfigAllYears);
         resumoApi.jsonData({ value: { procsCentrosCustoConfigAllYears, centroCustoArray } });
@@ -322,22 +322,32 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
               const classeCustoArray = await ClasseCustoModel.find({ ano }, { _id: 0, classeCusto: 1 }).lean().sort({ classeCusto: 1 });
               const centroCustoNotFoundArray = [];
               const classeCustoNotFoundArray = [];
-              let lastCentroCusto = null;
+              const valsOk: ValoresRealizadosInterfaceSap[] = [];
+              let lastCentroCusto: string = null; let lastCentroCustoOk = false;
               for (let index = 0; index < valsInterface.length; index++) {
-                const val = valsInterface[index];
-                if (val.ano != ano) {
-                  errosImport.push(`foram encontrados dois anos no fluxo de carga: ${ano} e ${val.ano}`);
+                const item = valsInterface[index];
+                if (item.ano != ano) {
+                  errosImport.push(`foram encontrados dois anos no fluxo de carga: ${ano} e ${item.ano}`);
                   break;
                 }
-                if (val.centroCusto != lastCentroCusto) {
-                  if (!BinSearchIndex(centroCustoConfigArray, val.centroCusto, 'centroCusto').found)
-                    centroCustoNotFoundArray.push(val.centroCusto);
-                  lastCentroCusto = val.centroCusto;
+                if (item.centroCusto != lastCentroCusto) {
+                  if (!BinSearchIndex(centroCustoConfigArray, item.centroCusto, 'centroCusto').found) {
+                    centroCustoNotFoundArray.push(item.centroCusto);
+                    lastCentroCustoOk = false;
+                  }
+                  else
+                    lastCentroCustoOk = true;
+                  lastCentroCusto = item.centroCusto;
                 }
-                if (!BinSearchIndex(classeCustoArray, val.classeCusto, 'classeCusto').found) {
-                  if (!classeCustoNotFoundArray.includes(val.classeCusto))
-                    classeCustoNotFoundArray.push(val.classeCusto);
+                let tudoOk = lastCentroCustoOk;
+                if (!BinSearchIndex(classeCustoArray, item.classeCusto, 'classeCusto').found) {
+                  if (!classeCustoNotFoundArray.includes(item.classeCusto)) {
+                    classeCustoNotFoundArray.push(item.classeCusto);
+                    tudoOk = false;
+                  }
                 }
+                if (tudoOk)
+                  valsOk.push(item);
               }
               if (centroCustoNotFoundArray.length > 0)
                 errosImport.push(`Centros de Custo não configurados para o Processo Orçamentário de ${ano}: ${centroCustoNotFoundArray.join(', ')}`);
@@ -345,10 +355,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 classeCustoNotFoundArray.sort((x, y) => compareForBinSearch(x, y));
                 errosImport.push(`Classes de Custo não cadastradas: ${classeCustoNotFoundArray.join(', ')}`);
               }
-              if (errosImport.length == 0) {
+              if (valsOk.length !== 0) {
+                //if (errosImport.length == 0) {
                 const resultDel = await ValoresRealizadosModel.deleteMany({ ano } as ProcessoOrcamentario);
                 //resultProc.push(`Valores anteriores removidos: ${resultDel.deletedCount}`);
-                const resultIncl = await ValoresRealizadosModel.insertMany(valsInterface.map((x) => ({
+                const resultIncl = await ValoresRealizadosModel.insertMany(valsOk.map((x) => ({
                   ..._.pick(x, ['ano', 'centroCusto', 'classeCusto']),
                   valMeses: [
                     roundInterface(x.m01), roundInterface(x.m02), roundInterface(x.m03), roundInterface(x.m04),
@@ -356,15 +367,15 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                     roundInterface(x.m09), roundInterface(x.m10), roundInterface(x.m11), roundInterface(x.m12)]
                 })));
                 inseridos = resultIncl.length;
-                await ValoresRealizadosInterfaceSapModel.deleteMany({});
+                //await ValoresRealizadosInterfaceSapModel.deleteMany({});
               }
             }
             else
               errosImport.push('Nenhum registro SAP');
-
             info.registrosSap = valsInterface.length;
             info.inseridos = inseridos;
             info.errosImport = errosImport;
+            await ValoresRealizadosInterfaceSapModel.deleteMany({});
           }
           else if (apiReturn.state === InterfaceSapStatus.failed)
             await NotifyAdmASync('interfaceSapRealizado-carga', `dag_run_id ${ctrlInterfaceMd.dag_run_id}`, ctrlApiExec, apiReturn);

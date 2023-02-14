@@ -54,7 +54,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           const regExpr = SearchTermsForFindPtBr(searchTerms);
           filterDb.searchTerms = { $regex: `${regExpr}` };
         }
-        const recordsToGet = parm.getAll == true ? 99999 : configApp.maximumSearchResult + 1;
+        const recordsToGet = parm.getAll == true ? 99999 : configApp.maximumSearchResult;
         const documentsDb = await Model_Crud.find(filterDb,
           { cod: 1, descr: 1 })
           .lean().sort({ cod: 1 }).limit(recordsToGet + 1);

@@ -1,7 +1,5 @@
-import { DropzoneState } from 'react-dropzone';
-
 //import { CircularProgress, SxProps } from '@mui/material';
-import { Box, Stack, SxProps, useTheme } from '@mui/material';
+import { SxProps } from '@mui/material';
 
 //#region icons
 import DownloadIcon from '@mui/icons-material/Download';
@@ -15,7 +13,6 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import RedoIcon from '@mui/icons-material/Redo';
 import ClearIcon from '@mui/icons-material/Clear';
 import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
-
 // import ThumbUp from '@mui/icons-material/ThumbUp';
 // import ThumbUpOutlined from '@mui/icons-material/ThumbUpOutlined';
 // import ThumbDown from '@mui/icons-material/ThumbDown';
@@ -28,7 +25,7 @@ import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 
 import { IGenericObject } from '../libCommon/types';
 import { AutocompleteMy, Btn, IconButtonMy, SelectMy, SelOption, ThemeColors } from '../components';
-import { csd, dbgError } from '../libCommon/dbg';
+import { dbgError } from '../libCommon/dbg';
 import { isAmbDev } from '../libCommon/isAmb';
 
 import { globals } from '../libClient/clientGlobals';
@@ -89,7 +86,7 @@ export const IconApp = ({ icon, fontSize, color, colorSx }: IconAppProps) => {
 //   return (<IconApp icon={icon} color='primary' fontSize='1rem' />);
 // }
 
-interface IconButtonCrudProps {
+interface IconButtonAppCrudProps {
   icon: IconsAllowed;
   title?: string;
   fontSize?: number | string;
@@ -98,7 +95,10 @@ interface IconButtonCrudProps {
   onClick: () => void;
   disabled?: boolean;
 }
-export const IconButtonApp = ({ icon, fontSize, color, colorSx, onClick, disabled }: IconButtonCrudProps) => {
+/**
+ * Icons associados a registros determinados (alguma ação NO registro)
+ */
+export const IconButtonAppCrud = ({ icon, fontSize, color, colorSx, onClick, disabled }: IconButtonAppCrudProps) => {
   const fontSizeUse = fontSize || '1rem';
   return (
     // <Tooltip title={'title'} placement='top' onClose={() => csd('close')}>
@@ -168,22 +168,6 @@ export const BtnCrud = ({ action, onClick }: BtnCrudProps) => {
   else props.onClick = onClick;
   return (
     <Btn {...props}>{buttonText}</Btn>
-  );
-};
-
-export const DropAreaUpload = ({ dropZone, infoAdic }: { dropZone: DropzoneState, infoAdic?: string }) => {
-  const themePlus = useTheme();
-  return (
-    <Box {...dropZone.getRootProps({ className: 'dropzone' })} height='60px' bgcolor={themePlus.themePlusConfig?.colorBackDroparea} display='flex' >
-      {/* overflow='hidden'  */}
-      <Stack gap={0.8} alignItems='center' m='auto'>
-        <input {...dropZone.getInputProps()} />
-        <Box whiteSpace='nowrap' overflow='hidden'>Arraste para cá o arquivo de upload ou clique para buscá-lo</Box>
-        {infoAdic != null &&
-          <Box whiteSpace='nowrap' overflow='hidden'>{infoAdic}</Box>
-        }
-      </Stack>
-    </Box>
   );
 };
 
