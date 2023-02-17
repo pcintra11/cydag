@@ -3,6 +3,8 @@ import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 
+import { csd } from '../libCommon/dbg';
+
 // const frm = useFrm({
 //   schema: userSchema.profileUpdate,
 //   defaultValues: {
@@ -28,41 +30,39 @@ export function useFrm<FormData = any>({ schema, defaultValues, mode }:
  * Assinala todos os campos com o valor informado ou ''
  * Para as props em propsPreserveNull troca de undefined para null
  * Obs: Todos que são inputados por select devem preservar o null!
- * @param frmInitValues (para relacionar todos os campos e assinalar com ao menos o '' ou null)
- * @param values (valores a assinalar)
+ * @param frmInitValues para relacionar todos os campos e assinalar com ao menos o '' ou null
+ * @param values valores a assinalar
+ * @param propsPreserveNull - propriedades onde o valor null será preservado (não vai substituir por '')
  */
-// export function FrmDefaultValues2<T>(frmInitValues: T, values?: any, propsPreserveNull?: string[]): T {
-//   for (const prop in frmInitValues) {
-//     let valueSet;
-//     const valueInit = frmInitValues[prop];
-//     if (valueInit == null)
-//       valueSet = '';
-//     if (values != null) { //@!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//       let valueSet = values != null ? values[prop] : null;
-//       if (valueSet == null) {
-//         if (valueInit == null &&
-//           (propsPreserveNull == null || !propsPreserveNull.includes(prop)))
-//           valueSet = '';
-//         else if (valueSet === undefined)
-//           valueSet = null;
-//       }
-//     }
-//     frmInitValues[prop] = valueSet;
-//   }
-//   return frmInitValues;
-// }
-export function FrmDefaultValues<T>(frmStructure: T, values?: any, propsPreserveNull?: string[]): T {
-  for (const prop in frmStructure) {
-    let valueSet = values != null ? values[prop] : null;
-    if (valueSet == null &&
-      (propsPreserveNull == null || !propsPreserveNull.includes(prop)))
-      valueSet = '';
-    else if (valueSet === undefined)
-      valueSet = null;
-    frmStructure[prop] = valueSet;
+export function FrmDefaultValues<T>(frmInitValues: T, values?: any, propsPreserveNull?: string[]): T {
+  for (const prop in frmInitValues) {
+    let valueSet;
+    const valueInit = frmInitValues[prop];
+    if (valueInit == null) {
+      if (propsPreserveNull == null || !propsPreserveNull.includes(prop))
+        valueSet = '';
+      else if (valueInit == undefined)
+        valueSet = null;
+    }
+    if (values != null &&
+      values[prop] != null)
+      valueSet = values[prop];
+    frmInitValues[prop] = valueSet;
   }
-  return frmStructure;
+  return frmInitValues;
 }
+// export function FrmDefaultValuesOld<T>(frmStructure: T, values?: any, propsPreserveNull?: string[]): T {
+//   for (const prop in frmStructure) {
+//     let valueSet = values != null ? values[prop] : null;
+//     if (valueSet == null &&
+//       (propsPreserveNull == null || !propsPreserveNull.includes(prop)))
+//       valueSet = '';
+//     else if (valueSet === undefined)
+//       valueSet = null;
+//     frmStructure[prop] = valueSet;
+//   }
+//   return frmStructure;
+// }
 
 export function FrmSetValues(frm, values) { //@@!!!!! type !!
   for (const name in values)

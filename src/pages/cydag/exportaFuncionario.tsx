@@ -5,7 +5,7 @@ import _ from 'underscore';
 import { Stack } from '@mui/material';
 
 import { BinSearchItem, BinSearchProp, BooleanToSN, CalcExecTime, ErrorPlus, ObjUpdAllProps } from '../../libCommon/util';
-import { csd, dbgError } from '../../libCommon/dbg';
+import { csd, csl, dbgError } from '../../libCommon/dbg';
 import { IGenericObject } from '../../libCommon/types';
 import { PageDef } from '../../libCommon/endPoints';
 import { CallApiCliASync } from '../../fetcher/fetcherCli';
@@ -117,8 +117,11 @@ export default function PageExportPlanej() {
     setMainStatesCache({ downloadInProgress: true });
     const filter = NormalizePropsString(dataForm);
     if (filter.ano == null) return PopupMsg.error('Informe o Ano.');
+    csl('conectando com o servidor');
+    const calcExecTime = new CalcExecTime();
     apis.getItens(filter)
       .then((apiReturn) => {
+        csl(`tempo total de resposta do servidor ${calcExecTime.lapMs()}ms`);
         const centroCustoConfigMdArray = (apiReturn.value.centroCustoConfigMdArray as IGenericObject[]).map((data) => ProcessoOrcamentarioCentroCusto.deserialize(data));
         const unidadeNegocioMdArray = (apiReturn.value.unidadeNegocioMdArray as IGenericObject[]).map((data) => UnidadeNegocio.deserialize(data));
         const diretoriaMdArray = (apiReturn.value.diretoriaMdArray as IGenericObject[]).map((data) => Diretoria.deserialize(data));
@@ -173,6 +176,7 @@ export default function PageExportPlanej() {
         sheets.push({ sheetName: 'dados', data: itensExport });
         SaveAsXlsx(fileName, sheets);
         setMainStatesCache({ downloadInProgress: false });
+        csl(`tempo total preparação client ${calcExecTime.lapMs()}ms`);
       })
       .catch((error) => {
         SnackBarError(error, `${pageSelf.pagePath}-getItens`);

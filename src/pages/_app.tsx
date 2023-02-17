@@ -97,14 +97,17 @@ const pagesPossible = () => {
 
 //let renderCount = 0;
 let mount; let mainStatesCache;
+class MainStates {
+  error?: Error | ErrorPlus;
+  blockContentReason?: string;
+  themeVariants?: ThemeVariants;
+  nivelLogA?: number; nivelLogD?: number; nivelLogE?: number; nivelLogT?: number; nivelLogX?: number;
+  menuType?: MenuType;
+  logRedir?: ILogRedir;
+}
 export default function _app({ Component, pageProps }: AppProps) {
   // 'Component' é o export default da pagina
   // pageProps => is an object with the initial props that were preloaded for your page by one of our data fetching methods, otherwise it's an empty object.
-  interface MainStates {
-    error?: Error | ErrorPlus; blockContentReason?: string; themeVariants?: ThemeVariants;
-    nivelLogA?: number; nivelLogD?: number; nivelLogE?: number; nivelLogT?: number; nivelLogX?: number;
-    menuType?: MenuType; logRedir?: ILogRedir;
-  }
   const [mainStates, setMainStates] = React.useState<MainStates>({
     themeVariants: themeVariants,
     nivelLogA: NivelLog(ScopeDbg.a), nivelLogD: NivelLog(ScopeDbg.d), nivelLogE: NivelLog(ScopeDbg.e), nivelLogT: NivelLog(ScopeDbg.t), nivelLogX: NivelLog(ScopeDbg.x),

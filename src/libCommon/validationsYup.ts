@@ -37,7 +37,7 @@ const stringWord3CharOrEmpty = yup
   .trim()
   .matches(/(^$|([a-z]){3,})/, 'Deve ter ao menos uma palavra com 3 caracteres');
 
-const numberReqPositive = yup // criar versão 'optional' verificar na documentação @!!!!!!!!!!
+const numberReqPositive = yup // criar versão 'optional' verificar na documentação @!!!!!!!!
   .number()  // o valor final sempre será null ou do tipo number (obs: qdo não é required sempre dá erro no caso de nulo)
   .positive(msgValidPositive)
   .integer(msgValidInteger)

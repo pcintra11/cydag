@@ -30,7 +30,7 @@ export default function PageInspect(props: PageProps) { //
     ipv6?: string;
   }
   const [mainStates, setMainStates] = React.useState<MainStates>({});
-  mainStatesCache = { ...mainStates }; const setMainStatesCache = (newValues: MainStates) => { if (!mount) return; ObjUpdAllProps(mainStatesCache, newValues); setMainStates({ ...mainStatesCache }); };
+  mainStatesCache = { ...mainStates }; const setMainStatesCache = (newValues: MainStates) => { if (!mount) return; ObjUpdAllProps<MainStates>(mainStatesCache, newValues); setMainStates({ ...mainStatesCache }); };
   //const { loggedUser } = useLoggedUser(false);
 
   // let modoProps;

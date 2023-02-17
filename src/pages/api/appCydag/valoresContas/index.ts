@@ -341,10 +341,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 }
                 let tudoOk = lastCentroCustoOk;
                 if (!BinSearchIndex(classeCustoArray, item.classeCusto, 'classeCusto').found) {
-                  if (!classeCustoNotFoundArray.includes(item.classeCusto)) {
+                  if (!classeCustoNotFoundArray.includes(item.classeCusto))
                     classeCustoNotFoundArray.push(item.classeCusto);
-                    tudoOk = false;
-                  }
+                  tudoOk = false;
                 }
                 if (tudoOk)
                   valsOk.push(item);
