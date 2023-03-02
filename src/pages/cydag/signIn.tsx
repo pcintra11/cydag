@@ -41,8 +41,7 @@ export default function PageSignIn() {
   const [mainStates, setMainStates] = React.useState<MainStates>({ phase: Phase.initiating });
   mainStatesCache = { ...mainStates }; const setMainStatesCache = (newValues: MainStates) => { if (!mount) return; ObjUpdAllProps(mainStatesCache, newValues); setMainStates({ ...mainStatesCache }); };
 
-  const { logRedirSetGet } = React.useContext(_AppLogRedir);
-
+  const { chgUserAndRouteStart } = React.useContext(_AppLogRedir);
   const router = useRouter();
   const { loggedUser, isLoadingUser } = useLoggedUser({ id: pageSelf.pagePath });
   //const agora = new Date();
@@ -96,8 +95,8 @@ export default function PageSignIn() {
         nextPagePathName = router.query.pageNeedAuthentication as string;
         nextPageQuery = _.omit(router.query, 'pageNeedAuthentication');
       }
-      logRedirSetGet({ loggedUser: loggedUserNow, pathname: nextPagePathName, query: nextPageQuery });
-      setTimeout(() => router.push(pagesApp.logRedir.pagePath), 0);
+      chgUserAndRouteStart({ loggedUser: loggedUserNow, pagePath: nextPagePathName, query: nextPageQuery });
+      //setTimeout(() => router.push(pagesApp.logRedir.pagePath), 0);
     } catch (error) {
       LogErrorUnmanaged(error, `${pageSelf.pagePath}-onSubmit`);
       if (!IsErrorManaged(error)) {

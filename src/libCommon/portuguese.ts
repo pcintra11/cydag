@@ -35,7 +35,7 @@ function RemoveAccentuation(text: string) {
   result = result.replace(new RegExp('[óòôõ]', 'g'), 'o');
   result = result.replace(new RegExp('[úùûü]', 'g'), 'u');
   result = result.replace(new RegExp('[ç]', 'g'), 'c');
-  //console.log('PortugueseRemoveAccentuation', { text, result });
+  //csl('PortugueseRemoveAccentuation', { text, result });
   return result;
 }
 

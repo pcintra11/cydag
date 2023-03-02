@@ -106,14 +106,14 @@ export enum OrigemClasseCusto {
   calculada = 'c',
   inputada = 'i', // classeCusto OU subClasseCusto (código < '30')
   //detalhada = 'd', // apenas em subClasseCusto dinâmicas (código >= '30') ???
-  totalInputada = 't', // apenas em classeCusto (gera subClasses dinâmicas código >= '30')
+  totalImputada = 't', // apenas em classeCusto (gera subClasses dinâmicas código >= '30')
   totalCalculada = 'k', // apenas em classeCusto (gera subClasses dinâmicas código < '30')
 }
 export class OrigemClasseCustoMd {
   static get all() {
     return [
       new EnumMd(OrigemClasseCusto.inputada, 'inf'),
-      new EnumMd(OrigemClasseCusto.totalInputada, 'tot(inf)'),
+      new EnumMd(OrigemClasseCusto.totalImputada, 'tot(inf)'),
       new EnumMd(OrigemClasseCusto.calculada, 'calc'),
       new EnumMd(OrigemClasseCusto.totalCalculada, 'tot(calc)'),
     ];

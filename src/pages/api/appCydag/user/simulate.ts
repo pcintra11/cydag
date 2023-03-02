@@ -49,12 +49,21 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       const userDbSigned = await UserModel.findOne({ email: loggedUserReq.emailSigned }).lean();
       CheckApiAuthorized(apiSelf, userDbSigned, loggedUserReq.emailSigned);
 
-      const userDbNew = subCmd == 'simulCancel' ? userDbSigned : await UserModel.findOne({ email: parm.email }).lean();
-      CheckUserAllowed(userDbNew, parm.email);
-      const hasSomeCCResponsavel = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailResponsavel: userDbNew.email })) != null;
-      const hasSomeCCPlanejador = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailPlanejador: userDbNew.email })) != null;
-      const hasSomeCCConsulta = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailConsulta: userDbNew.email })) != null;
-      const loggedUserNow = User.loggedUser(userDbNew, loggedUserReq.emailSigned, agora, agora, agora, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta, cookieUserConfig.TTLSeconds);
+      let emailSession, userDbSession;
+      if (subCmd === 'simulCancel') {
+        emailSession = loggedUserReq.emailSigned;
+        userDbSession = userDbSigned;
+      }
+      else {
+        emailSession = parm.email;
+        userDbSession = await UserModel.findOne({ email: parm.email }).lean();
+      }
+      CheckUserAllowed(userDbSession, emailSession);
+
+      const hasSomeCCResponsavel = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailResponsavel: userDbSession.email })) != null;
+      const hasSomeCCPlanejador = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailPlanejador: userDbSession.email })) != null;
+      const hasSomeCCConsulta = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailConsulta: userDbSession.email })) != null;
+      const loggedUserNow = User.loggedUser(userDbSession, loggedUserReq.emailSigned, agora, agora, agora, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta, cookieUserConfig.TTLSeconds);
       await HttpCriptoCookieCmdASync(ctrlApiExec, `main-${parm.cmd}-${subCmd}`, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, loggedUserNow); // , `user-${parm.cmd}`
       resumoApi.jsonData({ value: loggedUserNow });
 

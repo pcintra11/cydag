@@ -14,7 +14,7 @@ import cookiesHttp from '../libServer/cookiesHttp';
 //     dns.reverse(ip, (err, domains) => {
 //       if (err) {
 //         // const xx = ResultErr(err);
-//         // console.log('err', xx);
+//         // csl('err', xx);
 //         reject(err);
 //       }
 //       else
@@ -147,7 +147,7 @@ const UserAgent_deviceDisp = (userAgent: WhichBrowser) => {
     else
       return device;
   } catch (error) {
-    //console.log('UserAgent_deviceDisp error', { userAgent })
+    //csl('UserAgent_deviceDisp error', { userAgent })
     return error.message;
   }
 };

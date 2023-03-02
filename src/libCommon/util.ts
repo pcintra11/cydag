@@ -232,10 +232,10 @@ export function DispFirstNameAbrev(text: string, max = 10) {
 
 // export function FunctInCallStack(functCheck) {
 //   const functExecuting = FunctInCallStack.caller;
-//   console.log(`functExecuting ${functExecuting.name}`);
+//   csl(`functExecuting ${functExecuting.name}`);
 //   let functStack = functExecuting.caller;
 //   while (functStack != null) {
-//     console.log(`caller ${functStack.name}`);
+//     csl(`caller ${functStack.name}`);
 //     if (functStack == functCheck)
 //       return true;
 //   }
@@ -336,13 +336,8 @@ export function DateDisp(date: Date, components: 'dmy' | 'dmyhm' | 'dmyhms') {
 
 export function HoraDebug(data?: Date, format = 'HH:mm:ss:SSS') {
   const dataUse = data || new Date();
-  // `${(dataUse.getFullYear()+'').padStart(2,'0')}-${(dataUse.getMonth()+1+'').padStart(2,'0')}-${(dataUse.getDate()+'').padStart(2,'0')}`;
-  // `${(dataUse.getHours()+'').padStart(2,'0')}-${(dataUse.getMinutes()+'').padStart(2,'0')}-${(dataUse.getSeconds()+'').padStart(2,'0')}-${(dataUse.getMilliseconds()+'').padStart(2,'0')}`;
   return FormatDate(dataUse, format);
 }
-// function NumberPaddingZeros(num: number, size) { // PadZerosLeft / usar padStart 
-//   return (num + '').padStart(size);
-// }
 
 // export function HoraDebugSeg(data?: Date) {
 //   const dataUse = data || new Date();
@@ -445,6 +440,15 @@ export function AnchorHrefMailTo(email: string, subject?: string, body?: any) {
     return `mailto:${email}?${parms.join('&')}`;
 }
 
+export const ObscureEmail = (email: string) => {
+  const [name, domain] = email.split('@');
+  const nameLetters = [];
+  for (let index = 0; index < name.length; index++) {
+    const divisor = index <= 4 ? 4 : 2;
+    nameLetters.push((index % divisor) == 0 ? name[index] : '+');
+  }
+  return `${nameLetters.join('')}@${domain}`;
+};
 
 export class CtrlRecursion {
   #moduleFunc: string;
@@ -452,14 +456,14 @@ export class CtrlRecursion {
   #pendingCalls: number;
   #ciclos: number;
   constructor(moduleFunc: string, maxPendings = 5) {
-    //console.log('******** CtrlRecursion constructor', context);
+    //csl('******** CtrlRecursion constructor', context);
     this.#maxPendings = maxPendings;
     this.#moduleFunc = moduleFunc;
     this.#pendingCalls = 0;
     this.#ciclos = 0;
   }
   inExceeded(info?: string) {
-    //console.log('CtrlRecursion', this.#context, 'pendding calls', this.#pendingCalls);
+    //csl('CtrlRecursion', this.#context, 'pendding calls', this.#pendingCalls);
     this.#pendingCalls++;
     if (this.#pendingCalls > this.#maxPendings) {
       console.warn(`CtrlRecursion '${this.#moduleFunc}' - max pending calls allowed: ${this.#maxPendings} ; this call: ${this.#pendingCalls} (${info})`);
@@ -476,7 +480,7 @@ export class CtrlRecursion {
       dbgError(`CtrlRecursion '${this.#moduleFunc}': #out exceeded #in`);
     else {
       this.#ciclos++;
-      //console.log(`CtrlRecursion ${this.#context}: completou o ciclo ${this.#ciclos}`);
+      //csl(`CtrlRecursion ${this.#context}: completou o ciclo ${this.#ciclos}`);
     }
   }
   status() {
@@ -589,7 +593,7 @@ export const NextNumberSpecialBaseSystem = (currentNumber?: string) => {
   for (posDigit = currentNumber.length - 1; posDigit >= 0; posDigit--) {
     const digit = currentNumber.charAt(posDigit);
     const indexDigit = digitsBaseSystem.indexOf(digit);
-    //console.log({ digit, indexDigit });
+    //csl({ digit, indexDigit });
     if (indexDigit < (digitsBaseSystem.length - 1)) { // apenas soma nessa posição, sem impacto nos digitos a esquerda
       nextNumber = `${currentNumber.substring(0, posDigit)}${digitsBaseSystem.charAt(indexDigit + 1)}${lastDigits}`; // '0Ay' -> '0Az'
       break;
@@ -915,15 +919,14 @@ export class CtrlCollect<T = any> {
 //   return apiDef;
 // }
 
-//#region objetos
-
+//#region objetos e arrays
 export const ObjHasProp = (obj: object, prop: string) => {
   return Object.prototype.hasOwnProperty.call(obj, prop);
 };
 
 export const NavigateToProperty = (obj: IGenericObject, prop: string) => {
   // explora o objeto passado até chegar na propriedade
-  // console.log( NavigateToProperty( 'a.b' , { a: { b: 'bbbb' } } ) ) => 'bbbb'
+  // csl( NavigateToProperty( 'a.b' , { a: { b: 'bbbb' } } ) ) => 'bbbb'
   const propsComps = prop.split('.');
   const value = (propsComps.length == 1) ? obj[prop] : propsComps.reduce((prev, curr) => prev != null ? prev[curr] : prev, obj);
   return value;
@@ -963,12 +966,12 @@ export const ObjDiff = (obj1: object, obj2: object) => {
         const propObjDiffValue = ObjDiff(obj1[curr], obj2[curr]);
         if (propObjDiffValue != null) {
           //if (Object.keys(propObjDiffValue).length > 0) {
-          //console.log('alguma prop dif', Object.keys(propObjDiffValue));
+          //csl('alguma prop dif', Object.keys(propObjDiffValue));
           propIsDiff = true;
           propDiffValue = propObjDiffValue;
         }
         else if (obj1[curr].toString() != obj2[curr].toString()) {
-          //console.log('prop dif', prop,objNew[prop].toString(), objOrigin[prop].toString());
+          //csl('prop dif', prop,objNew[prop].toString(), objOrigin[prop].toString());
           propIsDiff = true;
           propDiffValue = obj2[curr];
         }
@@ -1052,7 +1055,21 @@ export const ObjUpdAllProps = <T>(objTarget: T, objSource: object, config?: ObjU
   });
 };
 
-//#endregion objetos
+/**
+ * Concatena todos os arrays não nulos
+ * @param param0 
+ * @returns 
+ */
+export const ConcatArrays = (...params) => {
+  let result = [];
+  params.forEach(item => {
+    if (item != null)
+      //item.forEach((x) => result.push(x));
+      result = [...result, ...item];
+  });
+  return result;
+};
+//#endregion 
 
 export function PhoneFormat(phone: string) {
   return `(${phone.substring(0, 2)}) ${phone.substring(2, 7)}.${phone.substring(7, 11)}`;
@@ -1175,10 +1192,9 @@ function ScrambleKeySum(key?: string) {
 //   else
 //     result = textOut;
 
-//   //console.log({ cmd, shift, inputText, outputText, outputTextUse });
+//   //csl({ cmd, shift, inputText, outputText, outputTextUse });
 //   return result;
 // }
-
 
 export function Scramble(normalText: string, key: string = undefined, withCrc = false) {
   return ScrambleX('do', normalText, withCrc, key);
@@ -1225,7 +1241,7 @@ function ScrambleX(cmd: 'do' | 'undo', inputText: string, withCrc: boolean, key?
   const shiftNumbers = shift(numbers.length);
   const shiftSpecials = shift(specials.length);
 
-  // o caracter na posição do shift não será alterado (excluido da conversão)
+  // o carácter na posição do shift não será alterado (excluído da conversão)
   // embaralha a ordem das sequencias lógicas pra dificultar a detecção 
   const charsForScramble =
     lettersLowerCase.substring(0, shiftLettersLowerCase) +
@@ -1273,7 +1289,7 @@ function ScrambleX(cmd: 'do' | 'undo', inputText: string, withCrc: boolean, key?
     }
   }
 
-  let result;
+  let result: string;
   if (withCrc && cmd === 'undo') {
     if (textOut.length <= crcMaxLen)
       result = null;
@@ -1289,10 +1305,9 @@ function ScrambleX(cmd: 'do' | 'undo', inputText: string, withCrc: boolean, key?
   else
     result = textOut;
 
-  //console.log({ cmd, shift, inputText, outputText, outputTextUse });
+  //csl({ cmd, shift, inputText, outputText, outputTextUse });
   return result;
 }
-
 //#endregion
 
 // export function isSerializable(obj: any) { // considera meus objetos com não serializaveis, mesmo tendo apenas propriedades basicas
@@ -1300,18 +1315,18 @@ function ScrambleX(cmd: 'do' | 'undo', inputText: string, withCrc: boolean, key?
 //     return (typeof val === 'undefined' || typeof val === 'string' || typeof val === 'boolean' || typeof val === 'number' || Array.isArray(val) || _.isPlainObject(val));
 //   }
 //   if (!isPlain(obj)) {
-//     console.log(obj);
+//     csl(obj);
 //     return false;
 //   }
 //   for (var property in obj) {
 //     if (ObjHasProp(obj,property)) {
 //       if (!isPlain(obj[property])) {
-//         console.log(obj);
+//         csl(obj);
 //         return false;
 //       }
 //       if (typeof obj[property] == 'object') {
 //         if (!isSerializable(obj[property])) {
-//           console.log(obj);
+//           csl(obj);
 //           return false;
 //         }
 //       }
@@ -1320,12 +1335,13 @@ function ScrambleX(cmd: 'do' | 'undo', inputText: string, withCrc: boolean, key?
 //   return true;
 // }
 
+//#region formatações / conversões
 const formatterPtBr = (decimals = 0) => (new Intl.NumberFormat('pt-BR', { style: 'decimal', minimumFractionDigits: decimals, maximumFractionDigits: decimals })).format;
 export const AmountPtBrFormat = (value?: number, decimals?: number) => {
   const decimalsUse = decimals || 0;
   if (value == null) return '';
   const formated = formatterPtBr(decimalsUse)(value);
-  //console.log('amountFormatter', { value, formated });
+  //csl('amountFormatter', { value, formated });
   return formated;
 };
 export const AmountPtBrParse = (value: string, decimals: number, allowNegative = false, nullForZero = false) => {
@@ -1389,7 +1405,7 @@ export const StrToNumber = (str: string, decimals = 0) => {
     value = RoundDecs(value, decimals);
   return value;
 };
-
+//#endregion 
 
 // https://developer.mozilla.org/pt-BR/docs/Web/HTTP/Basics_of_HTTP/MIME_types/Common_types
 export const mimeTypes = {
@@ -1397,6 +1413,7 @@ export const mimeTypes = {
   msExcel: { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8', ext: { xls: 'xls', xlsx: 'xlsx' } },
 };
 
+//#region search
 export type LanguageSearch = 'br';
 
 /**
@@ -1430,7 +1447,7 @@ function OnlyLetterOrNumber(text: string) {
   // remove pontuação por tabela
   let result = text;
   result = result.replace(new RegExp('([^((A-Z)|(a-z)|(0-9)| )])', 'g'), ' ').trim();
-  //console.log('OnlyLetterOrNumber', { text, result });
+  //csl('OnlyLetterOrNumber', { text, result });
   return result;
 }
 
@@ -1447,7 +1464,7 @@ export function FilterRelevantWordsForSearch(language: LanguageSearch, texts: st
     words = words.map((word) => Portuguese.RemoveAccentuation(word));
 
   // remove os caracteres especiais, como o '.' => poderá haver quebra de mais words
-  words = words.map((word) => OnlyLetterOrNumber(word)).join(' ').split(' ').filter((str) => str != ''); 
+  words = words.map((word) => OnlyLetterOrNumber(word)).join(' ').split(' ').filter((str) => str != '');
 
   //const allTextsInWords = allWords.reduce((prev, curr) => [...prev, ...curr.split(' ')], []);
   words = [...new Set(words)]; // exclui palavras duplicadas
@@ -1462,3 +1479,4 @@ export function FilterRelevantWordsForSearch(language: LanguageSearch, texts: st
   //wordsAux;
   return words;
 }
+//#endregion 

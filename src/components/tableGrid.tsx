@@ -14,7 +14,7 @@ import { AbortProcComponent, LogErrorUnmanaged } from './abortProc';
 // const isBigScreen = useMediaQuery({ query: '(min-width: 1824px)' })
 // const isTabletOrMobile = useMediaQuery({ query: '(max-width: 1224px)' })
 // const isPortrait = useMediaQuery({ query: '(orientation: portrait)' })
-// console.log({ isDesktopOrLaptop, isBigScreen, isTabletOrMobile, isPortrait });
+// csl({ isDesktopOrLaptop, isBigScreen, isTabletOrMobile, isPortrait });
 
 interface ColGridConfigOptions {
   width?: string;
@@ -22,7 +22,7 @@ interface ColGridConfigOptions {
 }
 export class ColGridConfig {
   hdr: React.ReactNode;
-  content: (dataRow: IGenericObject) => React.ReactNode;
+  content: (dataRow: IGenericObject) => React.ReactNode; //@@!!!!!!! IGenericObject -> RowGrid
   //width: string;
   options?: ColGridConfigOptions;
   // { width: 'auto' } default
@@ -220,7 +220,7 @@ export function TableGrid({ colsGridConfig, extraLinesGridConfig, dataRows, preG
   //   </>);
   // };
   const Row = ({ rowGrid }: { rowGrid: RowGrid }) => {
-    //console.log({ rowGrid });
+    //csl({ rowGrid });
     const classFirst = (rowGrid.index == 0 ? ' firstRow' : '');
     const classAltern = ''; // (alternColor && rowGrid.index % 2 === 1 ? g_cn.destaq1 : '');
     try {

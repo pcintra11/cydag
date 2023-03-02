@@ -45,7 +45,7 @@ export const MenuBarraSuperior = ({ menuEntriesLeft, menuEntriesRight, pageDefCu
 
   // for (let index = 0; index < pagesDisp.length; index++) 
   //   router.prefetch(`/${pagesDisp[index].page}`);
-  //   //console.log(`http://localhost:3010/${pagesDisp[index].page}`); // parece que não está funcionando ....
+  //   //csl(`http://localhost:3010/${pagesDisp[index].page}`); // parece que não está funcionando ....
 
   // <ThemeConsumer>
   //   {(theme) =>

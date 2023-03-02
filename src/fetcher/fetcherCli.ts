@@ -9,7 +9,7 @@ import { SystemMsgCli } from '../libClient/systemMsgCli';
 
 import { FetchOptions, CallApiASync } from './fetcher';
 
-export async function CallApiCliASync(apiPath: string, context: string, parm: IGenericObject = null,
+export async function CallApiCliASync<T>(apiPath: string, context: string, parm: IGenericObject = null,
   fetchOptions: FetchOptions = {}) {
   //try {
 
@@ -22,7 +22,7 @@ export async function CallApiCliASync(apiPath: string, context: string, parm: IG
   const calcExecTimeApiCall = new CalcExecTime();
   const timeOut = fetchOptions.timeOut != null ? fetchOptions.timeOut : EnvApiTimeout().waitCallFromCli;
   try {
-    const data = await CallApiASync(apiPath, context, null, parm, 'client', '', { ...fetchOptions, timeOut });
+    const data: T = await CallApiASync(apiPath, context, null, parm, 'client', '', { ...fetchOptions, timeOut });
     const elapsedMs = calcExecTimeApiCall.elapsedMs();
     if (elapsedMs >= EnvApiTimeout().alertCallFromCli) {
       const paramsVarianteSel = ['cmd'];
@@ -49,7 +49,7 @@ export async function CallApiCliASync(apiPath: string, context: string, parm: IG
         await SleepMs(waitMs);
         csl('tentando novamente');
         try {
-          const data = await CallApiASync(apiPath, context, null, parm, 'client', '', { ...fetchOptions, timeOut });
+          const data: T = await CallApiASync(apiPath, context, null, parm, 'client', '', { ...fetchOptions, timeOut });
           return data;
           // erroContornado = true;
           // break;

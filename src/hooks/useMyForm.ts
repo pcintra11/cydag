@@ -34,63 +34,45 @@ export function useFrm<FormData = any>({ schema, defaultValues, mode }:
  * @param values valores a assinalar
  * @param propsPreserveNull - propriedades onde o valor null será preservado (não vai substituir por '')
  */
-export function FrmDefaultValues<T>(frmInitValues: T, values?: any, propsPreserveNull?: string[]): T {
+export function FrmDefaultValues<T>(frmInitValues: T, valuesDb?: any): T {
   for (const prop in frmInitValues) {
-    let valueSet;
     const valueInit = frmInitValues[prop];
-    if (valueInit == null) {
-      if (propsPreserveNull == null || !propsPreserveNull.includes(prop))
-        valueSet = '';
-      else if (valueInit == undefined)
-        valueSet = null;
-    }
-    if (values != null &&
-      values[prop] != null)
-      valueSet = values[prop];
-    frmInitValues[prop] = valueSet;
+    let valueSet = undefined;
+    if (valueInit == null)
+      valueSet = '';
+    if (valuesDb != null &&
+      valuesDb[prop] != null)
+      valueSet = valuesDb[prop];
+    if (valueSet !== undefined)
+      frmInitValues[prop] = valueSet;
   }
   return frmInitValues;
 }
-// export function FrmDefaultValuesOld<T>(frmStructure: T, values?: any, propsPreserveNull?: string[]): T {
-//   for (const prop in frmStructure) {
-//     let valueSet = values != null ? values[prop] : null;
-//     if (valueSet == null &&
-//       (propsPreserveNull == null || !propsPreserveNull.includes(prop)))
-//       valueSet = '';
-//     else if (valueSet === undefined)
-//       valueSet = null;
-//     frmStructure[prop] = valueSet;
+// export function FrmDefaultValuesOld<T>(frmInitValues: T, values?: any, propsPreserveNull?: string[]): T {
+//   for (const prop in frmInitValues) {
+//     const valueInit = frmInitValues[prop];
+//     let valueSet = undefined;
+//     if (valueInit == null) {
+//       if (propsPreserveNull == null || !propsPreserveNull.includes(prop))
+//         valueSet = '';
+//       else if (valueInit == undefined)
+//         valueSet = null;
+//     }
+//     if (values != null &&
+//       values[prop] != null)
+//       valueSet = values[prop];
+//     if (valueSet !== undefined)
+//       frmInitValues[prop] = valueSet;
 //   }
-//   return frmStructure;
+//   return frmInitValues;
 // }
-
 export function FrmSetValues(frm, values) { //@@!!!!! type !!
   for (const name in values)
     frm.setValue(name, values[name]);
   frm.clearErrors(); //@@!!!!!!
 }
 
-// export function NormalizePropsStringOld<T>(dataform: T, propsPreserveEmptyString?: string[]) {
-//   const result: any = {};
-//   if (dataform == null)
-//     return null;
-//   for (let index = 0; index < Object.keys(dataform).length; index++) {
-//     const prop = Object.keys(dataform)[index];
-//     let valueSet = dataform[prop];
-//     if (typeof valueSet === 'string') {
-//       valueSet = valueSet.trim();
-//       if (valueSet == '' &&
-//         (propsPreserveEmptyString == null || !propsPreserveEmptyString.includes(prop)))
-//         valueSet = null;
-//     }
-//     result[prop] = valueSet;
-//   }
-//   return result as T;
-// }
-/**
- * Retorna novo objeto removendo os brancos do valor das propriedades (trim). Se o valor for vazio altera para null.
- */
-export function NormalizePropsString<T>(dataform: T, propsPreserveEmptyString?: string[]) {
+export function NormalizePropsString<T>(dataform: T) {
   const result = {} as T;
   if (dataform == null) return undefined;
   for (let index = 0; index < Object.keys(dataform).length; index++) {
@@ -98,13 +80,28 @@ export function NormalizePropsString<T>(dataform: T, propsPreserveEmptyString?: 
     let valueSet = dataform[prop];
     if (typeof valueSet === 'string') {
       valueSet = valueSet.trim();
-      if (valueSet == '' &&
-        (propsPreserveEmptyString == null || !propsPreserveEmptyString.includes(prop)))
+      if (valueSet == '')
+        //(propsPreserveEmptyString == null || !propsPreserveEmptyString.includes(prop)))
         valueSet = undefined;
     }
     result[prop] = valueSet;
   }
   return result;
 }
-
+// export function NormalizePropsStringOld<T>(dataform: T, propsPreserveEmptyString?: string[]) {
+//   const result = {} as T;
+//   if (dataform == null) return undefined;
+//   for (let index = 0; index < Object.keys(dataform).length; index++) {
+//     const prop = Object.keys(dataform)[index];
+//     let valueSet = dataform[prop];
+//     if (typeof valueSet === 'string') {
+//       valueSet = valueSet.trim();
+//       if (valueSet == '' &&
+//         (propsPreserveEmptyString == null || !propsPreserveEmptyString.includes(prop)))
+//         valueSet = undefined;
+//     }
+//     result[prop] = valueSet;
+//   }
+//   return result;
+// }
 export const useWatchMy = useWatch;

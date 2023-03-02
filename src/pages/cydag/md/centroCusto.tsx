@@ -43,7 +43,7 @@ class FrmFilter {
   searchTerms: string;
 }
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync(apisApp.centroCusto.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.centroCusto.apiPath, globals.windowId, parm) };
 const pageSelf = pagesApp.centroCusto;
 export default function PageCentroCustoCrud() {
   const frmFilter = useFrm<FrmFilter>({
@@ -191,7 +191,7 @@ export default function PageCentroCustoCrud() {
               </Stack>
             }
           </Box>
-        </Stack >
+        </Stack>
       );
     }
     let phaseCrud: { onSubmit?: (data: any) => void, button: ReturnType<typeof BtnCrud> };

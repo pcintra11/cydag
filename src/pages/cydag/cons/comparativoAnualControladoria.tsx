@@ -73,7 +73,7 @@ class FrmFilter {
 //#endregion
 
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync(apisApp.valoresContas.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, globals.windowId, parm) };
 const pageSelf = pagesApp.comparativoAnualControladoria;
 
 const statesCompsSubord = { setMainStatesData1: null as any, setMainStatesData2: null as any, showConta: false, setShowConta: null as any };
@@ -274,7 +274,7 @@ export default function PageComparativoAnualControladoria() {
 
   const FilterComp = () => {
     const frmFilter = useFrm<FrmFilter>({
-      defaultValues: FrmDefaultValues(new FrmFilter(), null, [ValoresComparativoAnual.F.ano]),
+      defaultValues: FrmDefaultValues(new FrmFilter()),
     });
     const ano = useWatchMy({ control: frmFilter.control, name: ValoresComparativoAnual.F.ano });
 
@@ -293,7 +293,7 @@ export default function PageComparativoAnualControladoria() {
     return (
       <form onSubmit={frmFilter.handleSubmit(getItensSubmit)}>
         <Stack direction='row' alignItems='center' gap={1}>
-          <SelAno value={ano} onChange={(value) => frmFilter.setValue(ValoresComparativoAnual.F.ano, value)}
+          <SelAno value={ano} onChange={(newValue) => frmFilter.setValue(ValoresComparativoAnual.F.ano, newValue || '')}
             options={processoOrcamentarioArray.map((x) => new SelOption(x.ano, x.ano))}
           />
           <IconButtonAppSearch />

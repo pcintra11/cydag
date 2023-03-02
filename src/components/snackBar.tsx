@@ -32,13 +32,13 @@ export const PopupMsg = {
 const autoHideDurationDefault = 4000;
 export function SnackBarContainer() {
   const [mainStates, setMainStates] = React.useState<{ open: boolean, message?: string, severity?: Severities, autoHideDuration?: number }>({ open: false });
-  //console.log({ ctrl });
+  //csl({ ctrl });
   const handleClose = () => { // event: React.SyntheticEvent | Event, reason?: string
-    //console.log('mySnack close', reason);
+    //csl('mySnack close', reason);
     setMainStates({ open: false });
   };
   _snackBarSet = (open: boolean, message?: string, severity?: Severities) => {
-    //console.log('_snackBarSet open', mainStates.open, 'message', message);
+    //csl('_snackBarSet open', mainStates.open, 'message', message);
     const autoHideDuration = severity == 'error' ? null : autoHideDurationDefault;
     if (open) {
       if (mainStates.open)

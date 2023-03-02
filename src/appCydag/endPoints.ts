@@ -35,37 +35,37 @@ export const quadroPage = {
 };
 
 const rolesQuadro = [rolesApp.dyn_responsCC, rolesApp.dyn_planejCC, rolesApp.dyn_consultaCC, rolesApp.dyn_consTodosCCs, rolesApp.gestorContr, rolesApp.operContr];
-const rolesControledoria = [rolesApp.gestorContr, rolesApp.operContr];
+const rolesControladoria = [rolesApp.gestorContr, rolesApp.operContr];
 //let seqVariante = 0;
 export const pagesApp = {
-  processoOrcamentario: new PageDef(`${pathPages}/processoOrcamentario`, 'Controle do Processo Orçamentário', null, { onlyAuthenticated: true, roles: rolesControledoria }),
+  processoOrcamentario: new PageDef(`${pathPages}/processoOrcamentario`, 'Controle do Processo Orçamentário', null, { onlyAuthenticated: true, roles: rolesControladoria }),
   cargaFuncionario: new PageDef(`${pathPages}/cargaFuncionario`, 'Carga de Funcionários', null, { onlyAuthenticated: true, roles: [rolesApp.cargaFunc] }),
-  importReal: new PageDef(`${pathPages}/importReal`, 'Importação do Realizado', null, { onlyAuthenticated: true, roles: rolesControledoria }),
+  importReal: new PageDef(`${pathPages}/importReal`, 'Importação do Realizado', null, { onlyAuthenticated: true, roles: rolesControladoria }),
 
-  user: new PageDef(`${pathPages}/md/user`, 'Usuários', null, { onlyAuthenticated: true, roles: rolesControledoria }),
+  user: new PageDef(`${pathPages}/md/user`, 'Usuários', null, { onlyAuthenticated: true, roles: rolesControladoria }),
 
-  agrupPremissas: new PageDef(`${pathPages}/md/agrupPremissas`, 'Agrupamento de Premissas', null, { onlyAuthenticated: true, roles: rolesControledoria }),
-  centroCusto: new PageDef(`${pathPages}/md/centroCusto`, 'Centros de Custo', null, { onlyAuthenticated: true, roles: rolesControledoria }),
-  classeCusto: new PageDef(`${pathPages}/md/classeCusto`, 'Classes de Custo', null, { onlyAuthenticated: true, roles: rolesControledoria }),
-  diretoria: new PageDef(`${pathPages}/md/diretoria`, 'Diretorias', null, { onlyAuthenticated: true, roles: rolesControledoria }),
-  empresa: new PageDef(`${pathPages}/md/empresa`, 'Empresas', null, { onlyAuthenticated: true, roles: rolesControledoria }),
-  gerencia: new PageDef(`${pathPages}/md/gerencia`, 'Gerências', null, { onlyAuthenticated: true, roles: rolesControledoria }),
-  localidade: new PageDef(`${pathPages}/md/localidade`, 'Localidades', null, { onlyAuthenticated: true, roles: rolesControledoria }),
-  unidadeNegocio: new PageDef(`${pathPages}/md/unidadeNegocio`, 'Unidades de Negócio', null, { onlyAuthenticated: true, roles: rolesControledoria }),
+  agrupPremissas: new PageDef(`${pathPages}/md/agrupPremissas`, 'Agrupamento de Premissas', null, { onlyAuthenticated: true, roles: rolesControladoria }),
+  centroCusto: new PageDef(`${pathPages}/md/centroCusto`, 'Centros de Custo', null, { onlyAuthenticated: true, roles: rolesControladoria }),
+  classeCusto: new PageDef(`${pathPages}/md/classeCusto`, 'Classes de Custo', null, { onlyAuthenticated: true, roles: rolesControladoria }),
+  diretoria: new PageDef(`${pathPages}/md/diretoria`, 'Diretorias', null, { onlyAuthenticated: true, roles: rolesControladoria }),
+  empresa: new PageDef(`${pathPages}/md/empresa`, 'Empresas', null, { onlyAuthenticated: true, roles: rolesControladoria }),
+  gerencia: new PageDef(`${pathPages}/md/gerencia`, 'Gerências', null, { onlyAuthenticated: true, roles: rolesControladoria }),
+  localidade: new PageDef(`${pathPages}/md/localidade`, 'Localidades', null, { onlyAuthenticated: true, roles: rolesControladoria }),
+  unidadeNegocio: new PageDef(`${pathPages}/md/unidadeNegocio`, 'Unidades de Negócio', null, { onlyAuthenticated: true, roles: rolesControladoria }),
 
-  classeCustoRestrita: new PageDef(`${pathPages}/classeCustoRestrita`, 'Classes de Custo Restritas', null, { onlyAuthenticated: true, roles: rolesControledoria }),
+  classeCustoRestrita: new PageDef(`${pathPages}/classeCustoRestrita`, 'Classes de Custo Restritas', null, { onlyAuthenticated: true, roles: rolesControladoria }),
 
-  premissasGerais: new PageDef(`${pathPages}/premissasGerais`, 'Premissas Gerais', 'Gerais', { onlyAuthenticated: true, roles: rolesControledoria }),
-  valoresLocalidade: new PageDef(`${pathPages}/valoresLocalidade`, 'Valores de Pernoites', 'Pernoites', { onlyAuthenticated: true, roles: rolesControledoria }),
-  valoresTransfer: new PageDef(`${pathPages}/valoresTransfer`, 'Valores de Viagens', 'Viagens', { onlyAuthenticated: true, roles: rolesControledoria }),
+  premissasGerais: new PageDef(`${pathPages}/premissasGerais`, 'Premissas Gerais', 'Gerais', { onlyAuthenticated: true, roles: rolesControladoria }),
+  valoresLocalidade: new PageDef(`${pathPages}/valoresLocalidade`, 'Valores de Pernoites', 'Pernoites', { onlyAuthenticated: true, roles: rolesControladoria }),
+  valoresTransfer: new PageDef(`${pathPages}/valoresTransfer`, 'Valores de Viagens', 'Viagens', { onlyAuthenticated: true, roles: rolesControladoria }),
 
   index: new PageDef(`${pathPages}/`, 'Cydag'),
   home: new PageDef(`${pathPages}/home`, 'Orientações para Uso do Sistema', 'Orientações', { onlyAuthenticated: true }),
 
-  logRedir: new PageDef(`${pathPages}/logRedir`),
+  //logRedir: new PageDef(`${pathPages}/logRedir`),
   signIn: new PageDef(EnvDeployConfig().mode_auth == 'azure' ? `${pathPages}/signInAzure` : `${pathPages}/signIn`, 'Login'),
   signOut: new PageDef(EnvDeployConfig().mode_auth == 'azure' ? `${pathPages}/signOutAzure` : `${pathPages}/signOut`, 'Logout'),
-  userSimulate: new PageDef(`${pathPages}/userSimulate`, 'Simulação de Usuário', null, { onlyAuthenticated: true, roles: [rolesApp.gestorContr, roleSimulateUserDyn] }),
+  userSimulate: new PageDef(`${pathPages}/userSimulate`, 'Simulação de Usuário', null, { onlyAuthenticated: true, roles: [rolesApp.gestorContr, rolesDev.dev, roleSimulateUserDyn] }),
   userResetPsw: new PageDef(`${pathPages}/resetPsw`, 'Reset de Senha'),
 
   funcionario: new PageDef(`${pathPages}/plan/funcionario`, 'Composição da Equipe', null, { onlyAuthenticated: true, roles: [rolesApp.dyn_responsCC, rolesApp.gestorContr] }),
@@ -77,8 +77,8 @@ export const pagesApp = {
   //ajustesCtasCalc: new PageDef(pageDummy.pagePath, 'Ajustes em Contas Calculadas', null, { onlyAuthenticated: true, roles: [rolesApp.dyn_responsCC], variant: `var-${++seqVariante}` }),
 
   analiseAnualRxOCentroCusto: new PageDef(`${pathPages}/cons/analiseAnualCentroCusto`, 'Análise Anual RxO Centro de Custo', 'Anual RxO Centro de Custo', { onlyAuthenticated: true, roles: rolesQuadro }),
-  analiseAnualRxOControladoria: new PageDef(`${pathPages}/cons/analiseAnualControladoria`, 'Análise Anual RxO Controladoria', 'Anual RxO Controladoria', { onlyAuthenticated: true, roles: rolesControledoria }),
-  comparativoAnualControladoria: new PageDef(`${pathPages}/cons/comparativoAnualControladoria`, 'Comparativo Anual Controladoria', 'Comparativo Anual Controladoria', { onlyAuthenticated: true, roles: rolesControledoria }),
+  analiseAnualRxOControladoria: new PageDef(`${pathPages}/cons/analiseAnualControladoria`, 'Análise Anual RxO Controladoria', 'Anual RxO Controladoria', { onlyAuthenticated: true, roles: rolesControladoria }),
+  comparativoAnualControladoria: new PageDef(`${pathPages}/cons/comparativoAnualControladoria`, 'Comparativo Anual Controladoria', 'Comparativo Anual Controladoria', { onlyAuthenticated: true, roles: rolesControladoria }),
 
   exportaPlanej: new PageDef(`${pathPages}/exportaPlanej`, 'Exportação do Orçamento', null, { onlyAuthenticated: true, roles: rolesQuadro }),
   exportaRealPlanej: new PageDef(`${pathPages}/exportaRealPlanej`, 'Exportação do Real / Orçado', null, { onlyAuthenticated: true, roles: rolesQuadro }),
@@ -102,7 +102,7 @@ const pathApi = 'appCydag';
 export const apisApp = {
   userAuth: new ApiDef(`${pathApi}/user/auth`),
   userOthers: new ApiDef(`${pathApi}/user/others`),
-  userSimulate: new ApiDef(`${pathApi}/user/simulate`, [rolesApp.gestorContr, roleSimulateUserDyn]),
+  userSimulate: new ApiDef(`${pathApi}/user/simulate`, [rolesApp.gestorContr, rolesDev.dev, roleSimulateUserDyn]),
 
   processoOrcamentario: new ApiDef(`${pathApi}/processoOrcamentario`),
   funcionario: new ApiDef(`${pathApi}/funcionario`),

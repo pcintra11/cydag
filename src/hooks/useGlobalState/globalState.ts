@@ -194,7 +194,7 @@ export class GlobalState {
 //     const delay = 0; // OnServer() ? 1000 : 2000;
 //     const agora = new Date();
 
-//     //console.log('cookieName', this.#cookieName, 'onserver', OnServer());
+//     //csl('cookieName', this.#cookieName, 'onserver', OnServer());
 
 //     if (this.#cookieName != null) {
 //       this.#isLoading = true;
@@ -204,12 +204,12 @@ export class GlobalState {
 //           setTimeout(async () => {
 //             //this.setValueInternal(this.#currentValue, true); // força o reRender para dar refresh no isLoading
 //             try {
-//               //console.log('cookieName', this.#cookieName, 'setting internal', 'onserver', OnServer());
-//               //console.log(PreComp(), 'chamando api para valor inicial', this.api);
+//               //csl('cookieName', this.#cookieName, 'setting internal', 'onserver', OnServer());
+//               //csl(PreComp(), 'chamando api para valor inicial', this.api);
 //               const data = await CallApi(this.#api,
 //                 { cookieName: this.#cookieName, cmd: GlobalStateCmd.get })
 //               //{ callId: this.callId() }
-//               //console.log(PreComp(), 'getCookie ok', { data });
+//               //csl(PreComp(), 'getCookie ok', { data });
 //               let newValue = this.#currentValue;
 //               if (data?.value != null &&
 //                 data.value != this.#currentValue)
@@ -218,16 +218,16 @@ export class GlobalState {
 //             } catch (error) {
 //               LogErrorUnmanaged(error, `useGlobalState-getDefault (api ${this.#api})`);
 //               this.setValueInternal(this.#currentValue, true, false);
-//               //console.log(PreComp(), 'getCookie err ***', error.message);
+//               //csl(PreComp(), 'getCookie err ***', error.message);
 //             }
 //           }, delay);
 //         }
 //         else {
 //           setTimeout(() => {
 //             //this.setValueInternal(this.#currentValue, true); // força o reRender para dar refresh no isLoading
-//             //console.log('obtendo cookie', this.#cookieName);
+//             //csl('obtendo cookie', this.#cookieName);
 //             const cookieData = Cookies.getJSON(this.#cookieName);
-//             console.log('cookie data', this.#cookieName, cookieData);
+//             csl('cookie data', this.#cookieName, cookieData);
 //             //let newValue = this.#currentValue;
 //             if (cookieData != null)
 //               this.setValueInternal(cookieData.value, true, false);
@@ -244,11 +244,11 @@ export class GlobalState {
 //     this.setValueInternal(newState, false, null);
 //     if (this.#cookieName != null) {
 //       if (this.#methodRetention === MethodRetention.httpSecureCookie) {
-//         //console.log('chamando api para set value');
+//         //csl('chamando api para set value');
 //         CallApi(this.#api,
 //           { cookieName: this.#cookieName, cmd: GlobalStateCmd.set, value: newState })
 //           //{ callId: this.callId() }
-//           //.then(data => console.log(`ok para cookie set`, data))
+//           //.then(data => csl(`ok para cookie set`, data))
 //           .catch(error => SystemErrorCli('useGlobalState-setValue', error.message))
 //       }
 //       else if (this.#methodRetention === MethodRetention.custom) { } // deve ser feito pela rotina específica!
@@ -264,12 +264,12 @@ export class GlobalState {
 
 //   setValueInternal(newState, originValueFromCookie: boolean, isLoadingSet: boolean | null) { // usada para inicialização via cookie, sem setar novamente o cookie
 //     // This is a method for updating a global state
-//     //console.log(this.#cookieName, 'set', { newState, originValueFromCookie });
+//     //csl(this.#cookieName, 'set', { newState, originValueFromCookie });
 
 //     const newValue = this.getValue() !== newState;
-//     //console.log(`setValueInternal ${this.#cookieName} (#${this.#subscribers.length})`, newState);
+//     //csl(`setValueInternal ${this.#cookieName} (#${this.#subscribers.length})`, newState);
 //     if (newValue || isLoadingSet != null) {
-//       //console.log('newValueSet');
+//       //csl('newValueSet');
 //       this.#currentValue = newState;
 //       this.#originValueFromCookie = originValueFromCookie;
 //       // Update global state value
@@ -283,9 +283,9 @@ export class GlobalState {
 //   }
 
 //   getValue() {
-//     //console.log(this.#cookieName, 'get', this.#currentValue);
+//     //csl(this.#cookieName, 'get', this.#currentValue);
 //     // Get the actual value of a global state
-//     //console.log('getting value from object');
+//     //csl('getting value from object');
 //     return this.#currentValue;
 //   }
 //   isOriginValueFromCookie() {
@@ -300,7 +300,7 @@ export class GlobalState {
 //       // Already subscribed
 //       return
 //     }
-//     //console.log('subscribing');
+//     //csl('subscribing');
 //     this.#subscribers.push(itemToSubscribe);
 //   }
 

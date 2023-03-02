@@ -131,7 +131,7 @@ class NodeContent {
         <Box style={cssTextNoWrapEllipsis}>{this.descr}</Box>
       );
   }
-  get descrAcum() { // todos os niveis de hierarquia (para melhor msg se houver algum erro ao gravar)
+  get descrAcum() { // todos os níveis de hierarquia (para melhor msg se houver algum erro ao gravar)
     return this.descrNodesUpp == null ? this.descr : `${this.descrNodesUpp} - ${this.descr}`;
   }
 }
@@ -148,7 +148,7 @@ const fldFrmExtra = {
 //#endregion
 
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync(apisApp.valoresContas.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, globals.windowId, parm) };
 let pageSelf = new PageDef('/pathForPageQuadro');
 
 const statesCompsSubord = { setMainStatesFilter: null, setMainStatesData1: null, setMainStatesData2: null, setBgColorsHier: null, showConta: false, setShowConta: null };
@@ -204,7 +204,7 @@ export default function PageQuadroGeral() {
       let headerInfo = null, canEdit = false;
 
       if (pageSelf.options.variant === quadroPage.variant.input) {
-        const apiReturn = await apis.crud({ cmd: CmdApi.quadroImputItensGet, filter });
+        const apiReturn = await apis.crud({ cmd: CmdApi.quadroInputItensGet, filter });
         processoOrcamentario = ProcessoOrcamentario.deserialize(apiReturn.value.processoOrcamentario);
         processoOrcamentarioCentroCusto = ProcessoOrcamentarioCentroCusto.deserialize(apiReturn.value.processoOrcamentarioCentroCusto);
         valoresPlanejados = (apiReturn.value.valoresPlanejados as IGenericObject[]).map((data) => ValoresPlanejadosDetalhes.deserialize(data));
@@ -254,7 +254,7 @@ export default function PageQuadroGeral() {
   };
   const setItens = async (filter: FrmFilter, changedLines: IChangedLine[]) => {
     try {
-      await apis.crud({ cmd: CmdApi.quadroImputItensSet, filter, data: { changedLines } });
+      await apis.crud({ cmd: CmdApi.quadroInputItensSet, filter, data: { changedLines } });
       PopupMsg.success(`Valores gravados para ${filter.ano} / ${filter.centroCusto}`);
     } catch (error) {
       SnackBarError(error, `${pageSelf.pagePath}-setItens`);
@@ -297,7 +297,7 @@ export default function PageQuadroGeral() {
     };
 
     classeCustoArray.forEach((x) => {
-      const group = x.origem == OrigemClasseCusto.totalInputada || x.origem == OrigemClasseCusto.totalCalculada;
+      const group = x.origem == OrigemClasseCusto.totalImputada || x.origem == OrigemClasseCusto.totalCalculada;
       const editable = canEdit && allowClasseCustoRestrita(x.classeCusto);
       const descrNodesUpp = null; //`Fator de Custo (${x.fatorCusto})`;
       nodes.push(
@@ -308,7 +308,7 @@ export default function PageQuadroGeral() {
     valoresPlanejados.forEach((valores) => {
       //  valoresPlanejados.filter((x) => x.idDetalhe != null).forEach((valores) => {
       const classeCustoDef = BinSearchItem(classeCustoArray, valores.classeCusto, 'classeCusto');
-      if (classeCustoDef.origem == OrigemClasseCusto.totalInputada || classeCustoDef.origem == OrigemClasseCusto.totalCalculada) {
+      if (classeCustoDef.origem == OrigemClasseCusto.totalImputada || classeCustoDef.origem == OrigemClasseCusto.totalCalculada) {
         const editable = canEdit && allowClasseCustoRestrita(valores.classeCusto);
         const descrNodesUpp = classeCustoDef.descr; // `Fator de Custo ${classeCustoDef?.fatorCusto} - Conta ${valores.classeCusto}`;
         nodes.push(nodeDetalheClasseCusto(descrNodesUpp, valores.classeCusto, valores.idDetalhe || '', valores.descr || '', editable));
@@ -342,7 +342,7 @@ export default function PageQuadroGeral() {
         let keys: any[];
         const classeCustoDef = BinSearchItem(classeCustoArray, valores.classeCusto, 'classeCusto');
         //csd(valores.classeCusto, { classeCustoDef });
-        if (classeCustoDef.origem == OrigemClasseCusto.totalInputada || classeCustoDef.origem == OrigemClasseCusto.totalCalculada) {
+        if (classeCustoDef.origem == OrigemClasseCusto.totalImputada || classeCustoDef.origem == OrigemClasseCusto.totalCalculada) {
           nodeType = NodeType.detClasseCusto;
           keys = [valores.classeCusto, valores.idDetalhe || ''];
         }
@@ -417,7 +417,7 @@ export default function PageQuadroGeral() {
 
   const FilterComp = () => {
     const frmFilter = useFrm<FrmFilter>({
-      defaultValues: FrmDefaultValues(new FrmFilter(), { revisao: RevisaoValor.atual, centroCustoArray: [] }, [ValoresPlanejadosDetalhes.F.ano, ValoresPlanejadosDetalhes.F.revisao, ValoresPlanejadosDetalhes.F.centroCusto, fldFrmExtra.centroCustoArray]),
+      defaultValues: FrmDefaultValues(new FrmFilter(), { revisao: RevisaoValor.atual, centroCustoArray: [] }),
     });
     const ano = useWatchMy({ control: frmFilter.control, name: ValoresPlanejadosDetalhes.F.ano });
     const revisao = useWatchMy({ control: frmFilter.control, name: ValoresPlanejadosDetalhes.F.revisao });
@@ -459,7 +459,7 @@ export default function PageQuadroGeral() {
             centroCustoOptions.findIndex((x) => x.cod === centroCustoSelected) !== -1)
             frmFilter.setValue(ValoresPlanejadosDetalhes.F.centroCusto, centroCustoSelected);
           else
-            frmFilter.setValue(ValoresPlanejadosDetalhes.F.centroCusto, null);
+            frmFilter.setValue(ValoresPlanejadosDetalhes.F.centroCusto, '');
         }
         else {
           if (centroCustosSelected.length === 1 &&
@@ -472,7 +472,7 @@ export default function PageQuadroGeral() {
     };
 
     React.useEffect(() => {
-      const ano = mainStates.anoCentroCustosArray.length != 0 ? mainStates.anoCentroCustosArray[0].ano : null;
+      const ano = mainStates.anoCentroCustosArray.length != 0 ? mainStates.anoCentroCustosArray[0].ano : '';
       frmFilter.setValue(ValoresPlanejadosDetalhes.F.ano, ano);
       mountOptionsCC(ano, true);
     }, []);
@@ -505,14 +505,14 @@ export default function PageQuadroGeral() {
             placeHolder='Ano'
             options={[new SelOption('Ano', 'Ano', true), ...mainStates.anoCentroCustosArray.map((x) => new SelOption(x.ano, x.ano))]}
           /> */}
-          <SelAno value={ano} onChange={(value) => { frmFilter.setValue(ValoresPlanejadosDetalhes.F.ano, value); mountOptionsCC(value); }}
+          <SelAno value={ano} onChange={(newValue) => { frmFilter.setValue(ValoresPlanejadosDetalhes.F.ano, newValue || ''); mountOptionsCC(newValue); }}
             options={mainStates.anoCentroCustosArray.map((x) => new SelOption(x.ano, x.ano))}
           />
           <SelRevisao value={revisao} onChange={(newValue: RevisaoValor) => frmFilter.setValue(ValoresPlanejadosDetalhes.F.revisao, newValue)} />
           {centroCustoOptions != null &&
             <>
               {pageSelf.options.variant === quadroPage.variant.input
-                ? <SelEntity value={centroCusto} onChange={(newValue: string) => frmFilter.setValue(ValoresPlanejadosDetalhes.F.centroCusto, newValue)}
+                ? <SelEntity value={centroCusto} onChange={(newValue: string) => frmFilter.setValue(ValoresPlanejadosDetalhes.F.centroCusto, newValue || '')}
                   options={centroCustoOptions} name={CentroCusto.Name} withCod width='550px' disableClearable />
                 : <>
                   <SelEntity value={centroCustoArray} onChange={(newValue: string[]) => frmFilter.setValue(fldFrmExtra.centroCustoArray, newValue)}
@@ -554,7 +554,7 @@ export default function PageQuadroGeral() {
     const dataStructure = mainStatesData2.dataStructure;
     if (dataStructure.loading) return <WaitingObs text='carregando' />;
 
-    //#region niveis acima e outros contextos
+    //#region níveis acima e outros contextos
     const adustHierUp = (node: HierNode<NodeContent>, deltas: ISxMesVal[]) => {
       let idPaiSum = node.idPai;
       while (idPaiSum != null) {
@@ -889,7 +889,7 @@ export default function PageQuadroGeral() {
       const cellError = globalCtrl.touchedCells.find((x) => x.valueError);
       if (cellError != null)
         return PopupMsg.error(`Favor corrigir os campos sinalizados com erro: linha ${cellError.descrLine}`);
-      //csl({ globalCtrl, camposInvalidos });
+      //csl({ globalCtrl, camposInválidos });
       // if (mainStates.filter.ano != frmFilter.getValues('ano') ||
       //   mainStates.filter.centroCusto != frmFilter.getValues(ValoresPlanejados.F.centroCusto)) {
       //   PopupMsg.error(`Os dados apresentados (${mainStates.filter.ano}/${mainStates.filter.centroCusto}) não se referem ao filtro atual`);

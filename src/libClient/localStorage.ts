@@ -17,7 +17,7 @@ function getJSON(name: string) {
     try {
       result = JSON.parse(strObj);
     } catch (error) {
-      //console.log('tem erro', strObj);
+      //csl('tem erro', strObj);
       // a função Cookies.getJSON nessa situação devolve o string !
     }
   }
@@ -44,4 +44,4 @@ export default {
   set,
   setJSON,
   remove,
-}
+};

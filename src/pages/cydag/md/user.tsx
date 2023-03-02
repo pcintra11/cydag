@@ -57,7 +57,7 @@ class FrmFilter {
   searchTerms: string;
 }
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync(apisApp.user.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.user.apiPath, globals.windowId, parm) };
 const pageSelf = pagesApp.user;
 export default function PageUserCrud() {
   const frmFilter = useFrm<FrmFilter>({
@@ -251,7 +251,7 @@ export default function PageUserCrud() {
             }
           </Box>
 
-        </Stack >
+        </Stack>
       );
     }
 

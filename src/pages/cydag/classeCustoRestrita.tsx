@@ -7,6 +7,7 @@ import { Box, FormControl, Stack } from '@mui/material';
 import { IsErrorManaged, ObjUpdAllProps, ErrorPlus, ObjDiff, CalcExecTime, ForceWait, BinSearchItem } from '../../libCommon/util';
 import { IGenericObject } from '../../libCommon/types';
 import { PageDef } from '../../libCommon/endPoints';
+import { csd } from '../../libCommon/dbg';
 
 import { CallApiCliASync } from '../../fetcher/fetcherCli';
 
@@ -45,10 +46,10 @@ class FrmData {
   obs: string;
 }
 class FrmFilter {
-  searchTerms: string;
+  classeCusto: string;
 }
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync(apisApp.classeCustoRestrita.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.classeCustoRestrita.apiPath, globals.windowId, parm) };
 const pageSelf = pagesApp.classeCustoRestrita;
 export default function PageClasseCustoRestritaCrud() {
   const frmFilter = useFrm<FrmFilter>({
@@ -150,10 +151,10 @@ export default function PageClasseCustoRestritaCrud() {
     mount = true;
     if (!router.isReady || isLoadingUser) return;
     if (!PageDef.IsUserAuthorized(pageSelf, loggedUser?.roles)) throw new ErrorPlus('Não autorizado.');
-    setMainStatesCache({ phase: Phase.list, filter: { searchTerms: '' }, filterApplyed: false, listing: { searching: false, dataRows: [] } });
-    CallApiCliASync(apisApp.classeCusto.apiPath, globals.windowId, {
+    setMainStatesCache({ phase: Phase.list, filter: { classeCusto: '' }, filterApplyed: false, listing: { searching: false, dataRows: [] } });
+    CallApiCliASync<any>(apisApp.classeCusto.apiPath, globals.windowId, {
       cmd: CmdApi_ClasseCusto.list, getAll: true,
-      filter: { origemArray: [OrigemClasseCusto.inputada, OrigemClasseCusto.totalInputada] },
+      filter: { origemArray: [OrigemClasseCusto.inputada, OrigemClasseCusto.totalImputada] },
       sortType: SortType_ClasseCusto.classeCusto
     })
       .then(async (apiReturn) => {
@@ -164,7 +165,7 @@ export default function PageClasseCustoRestritaCrud() {
       .catch((error) => {
         SnackBarError(error, `${pageSelf.pagePath}-CmdApi_ClasseCusto.list`);
       });
-    CallApiCliASync(apisApp.centroCusto.apiPath, globals.windowId, { cmd: CmdApi_CentroCusto.list, getAll: true })
+    CallApiCliASync<any>(apisApp.centroCusto.apiPath, globals.windowId, { cmd: CmdApi_CentroCusto.list, getAll: true })
       .then(async (apiReturn) => {
         const centroCustoArray = (apiReturn.value.documents as IGenericObject[]).map((data) => CentroCusto.deserialize(data));
         setMainStatesCache({ centroCustoArray });
@@ -183,7 +184,7 @@ export default function PageClasseCustoRestritaCrud() {
         setMainStatesCache({ phase: Phase.list, data: null, index: null });
       else {
         const data = phase === Phase.insert ? new Entity_Crud() : mainStates.listing.dataRows[index];
-        FrmSetValues(frmData, FrmDefaultValues(new FrmData(), data, [ClasseCustoRestrita.F.classeCusto]));
+        FrmSetValues(frmData, FrmDefaultValues(new FrmData(), data));
         setMainStatesCache({ phase, data, index, errorFlds: {} });
       }
     } catch (error) {
@@ -199,7 +200,7 @@ export default function PageClasseCustoRestritaCrud() {
           <Stack direction='row' alignItems='center' gap={1} justifyContent='center'>
             <IconButtonAppCrud icon='create' onClick={() => setPhase(Phase.insert)} />
           </Stack>,
-          ({ dummy, index }: { dummy: Entity_Crud, index: number }) => (
+          ({ index }: { index: number }) => (
             <Stack direction='row' alignItems='center' gap={1}>
               <IconButtonAppCrud icon='edit' onClick={() => setPhase(Phase.update, index)} />
               <IconButtonAppCrud icon='delete' onClick={() => setPhase(Phase.delete, index)} />
@@ -215,7 +216,7 @@ export default function PageClasseCustoRestritaCrud() {
           <form onSubmit={frmFilter.handleSubmit(onSubmitList)}>
             <Stack direction='row' alignItems='center' gap={1}>
               <Box flex={1}>
-                <FrmInput placeholder='termos de busca' frm={frmFilter} name={Entity_Crud.F.classeCusto} width='100%' autoFocus />
+                <FrmInput placeholder='classe de custo' frm={frmFilter} name={Entity_Crud.F.classeCusto} width='100%' autoFocus />
               </Box>
               <IconButtonAppSearch />
             </Stack>
@@ -233,7 +234,7 @@ export default function PageClasseCustoRestritaCrud() {
               </Stack>
             }
           </Box>
-        </Stack >
+        </Stack>
       );
     }
 
@@ -251,7 +252,7 @@ export default function PageClasseCustoRestritaCrud() {
     const isDelete = mainStates.phase == Phase.delete;
 
     let classeCustoSelected = null; const optionClasseCustoAppend = [];
-    if (classeCusto != null) {
+    if (classeCusto != '') {
       classeCustoSelected = BinSearchItem(mainStates.classeCustoArray, classeCusto, ClasseCustoRestrita.F.classeCusto);
       if (classeCustoSelected == null) {
         classeCustoSelected = new ClasseCusto().Fill({ classeCusto, descr: '*** inexistente ou imprópria para essa definição ***' });
@@ -264,7 +265,7 @@ export default function PageClasseCustoRestritaCrud() {
       let centroCustoSelected = BinSearchItem(mainStates.centroCustoArray, x, 'cod');
       if (centroCustoSelected == null) {
         centroCustoSelected = new CentroCusto().Fill({ cod: x, descr: '*** inexistente ***' });
-        optionCentroCustoAppend.push(classeCustoSelected);
+        optionCentroCustoAppend.push(centroCustoSelected);
       }
       centroCustoArraySelected.push(centroCustoSelected);
     });
@@ -284,7 +285,7 @@ export default function PageClasseCustoRestritaCrud() {
                 value={classeCustoSelected}
                 disableClearable
                 // isOptionEqualToValue={(option: ClasseCusto, value: ClasseCusto) => { return option.classeCusto === value?.classeCusto; }}
-                onChange={(_, value: ClasseCusto) => { frmData.setValue(ClasseCustoRestrita.F.classeCusto, value?.classeCusto); setMainStatesCache({ errorFlds: { ...mainStates.errorFlds, classeCustoError: null } }); }}
+                onChange={(_, value: ClasseCusto) => { frmData.setValue(ClasseCustoRestrita.F.classeCusto, value?.classeCusto || ''); setMainStatesCache({ errorFlds: { ...mainStates.errorFlds, classeCustoError: null } }); }}
                 renderInput={(params) => (
                   <TextField {...params} variant={themePlus.themePlusConfig?.inputVariant} label='Classe de Custo' placeholder='Selecione a Classe de Custo' />
                 )}

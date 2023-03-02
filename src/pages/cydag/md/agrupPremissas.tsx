@@ -41,7 +41,7 @@ class FrmFilter {
   searchTerms: string;
 }
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync(apisApp.agrupPremissas.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.agrupPremissas.apiPath, globals.windowId, parm) };
 const pageSelf = pagesApp.agrupPremissas;
 export default function PageAgrupPremissasCrud() {
   const frmFilter = useFrm<FrmFilter>({

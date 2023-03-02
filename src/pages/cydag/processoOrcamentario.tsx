@@ -41,7 +41,7 @@ enum Phase {
   configCCs = 'configCCs',
 }
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync(apisApp.processoOrcamentario.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.processoOrcamentario.apiPath, globals.windowId, parm) };
 const pageSelf = pagesApp.processoOrcamentario;
 export default function PageProcessoOrcamentario() {
   interface MainStates {
@@ -425,7 +425,7 @@ export default function PageProcessoOrcamentario() {
               <Btn onClick={() => setPhase(Phase.list)}>Voltar</Btn>
             </BtnLine>
           </Stack>
-        </Stack >
+        </Stack>
       );
     }
 

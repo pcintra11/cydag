@@ -44,14 +44,14 @@ const fldFrmExtra = {
 
 let mount; let mainStatesCache;
 const apis = {
-  getProcsOrcCCsAuth: () => CallApiCliASync(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.getProcsOrcCCsAuthQuadroCons }),
-  getContas: () => CallApiCliASync(apisApp.classeCusto.apiPath, globals.windowId, { cmd: CmdApi_ClasseCusto.list, sortType: SortType_ClasseCusto.classeCusto }),
-  getItens: (filter: FrmFilter) => CallApiCliASync(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.exportRealPlanValoresGet, filter }),
+  getProcsOrcCCsAuth: () => CallApiCliASync<any>(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.getProcsOrcCCsAuthQuadroCons }),
+  getContas: () => CallApiCliASync<any>(apisApp.classeCusto.apiPath, globals.windowId, { cmd: CmdApi_ClasseCusto.list, sortType: SortType_ClasseCusto.classeCusto }),
+  getItens: (filter: FrmFilter) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.exportRealPlanValoresGet, filter }),
 };
 const pageSelf = pagesApp.exportaRealPlanej;
 export default function PageExportPlanej() {
   const frmFilter = useFrm<FrmFilter>({
-    defaultValues: FrmDefaultValues(new FrmFilter(), { centroCustoArray: [] }, [ValoresPlanejadosDetalhes.F.ano, fldFrmExtra.centroCustoArray]),
+    defaultValues: FrmDefaultValues(new FrmFilter(), { centroCustoArray: [] }),
   });
   const ano = useWatchMy({ control: frmFilter.control, name: ValoresPlanejadosDetalhes.F.ano });
   const centroCustoArray = useWatchMy({ control: frmFilter.control, name: fldFrmExtra.centroCustoArray });
@@ -105,7 +105,7 @@ export default function PageExportPlanej() {
       .then((result) => {
         if (!mount) return;
         const { anoCentroCustosArray, centroCustoArray } = result;
-        const ano = anoCentroCustosArray.length != 0 ? anoCentroCustosArray[0].ano : null;
+        const ano = anoCentroCustosArray.length != 0 ? anoCentroCustosArray[0].ano : '';
         setMainStatesCache({ phase: Phase.ready, anoCentroCustosArray, centroCustoArray });
         frmFilter.setValue(ValoresPlanejadosDetalhes.F.ano, ano);
         mountOptionsCC(ano);
@@ -184,7 +184,7 @@ export default function PageExportPlanej() {
   return (
     <Stack gap={1} height='100%'>
       <Stack direction='row' alignItems='center' gap={1}>
-        <SelAno value={ano} onChange={(value) => { frmFilter.setValue(ValoresPlanejadosDetalhes.F.ano, value); mountOptionsCC(value); }}
+        <SelAno value={ano} onChange={(newValue) => { frmFilter.setValue(ValoresPlanejadosDetalhes.F.ano, newValue || ''); mountOptionsCC(newValue); }}
           options={mainStates.anoCentroCustosArray.map((x) => new SelOption(x.ano, x.ano))}
         />
         {centroCustoOptions != null &&

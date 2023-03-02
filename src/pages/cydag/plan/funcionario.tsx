@@ -79,7 +79,7 @@ class FrmFilter {
 }
 
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync(apisApp.funcionario.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.funcionario.apiPath, globals.windowId, parm) };
 const pageSelf = pagesApp.funcionario;
 
 const statesCompsSubord = { setMainStatesFilter: null, setMainStatesData1: null, setMainStatesData2: null, setStatePreReservedItens: null };
@@ -195,7 +195,7 @@ export default function PageFuncionarioCrud() {
 
   const FilterComp = () => {
     const frmFilter = useFrm<FrmFilter>({
-      defaultValues: FrmDefaultValues(new FrmFilter(), { revisao: RevisaoValor.atual }, [Funcionario.F.ano, Funcionario.F.revisao, Funcionario.F.centroCusto]),
+      defaultValues: FrmDefaultValues(new FrmFilter(), { revisao: RevisaoValor.atual }),
     });
     const ano = useWatchMy({ control: frmFilter.control, name: Funcionario.F.ano });
     const revisao = useWatchMy({ control: frmFilter.control, name: Funcionario.F.revisao });
@@ -223,11 +223,11 @@ export default function PageFuncionarioCrud() {
         centroCustoOptions.findIndex((x) => x.cod === centroCustoSelected) !== -1)
         frmFilter.setValue(Funcionario.F.centroCusto, centroCustoSelected);
       else
-        frmFilter.setValue(Funcionario.F.centroCusto, null);
+        frmFilter.setValue(Funcionario.F.centroCusto, '');
     };
 
     React.useEffect(() => {
-      const ano = mainStates.anoCentroCustosArray.length != 0 ? mainStates.anoCentroCustosArray[0].ano : null;
+      const ano = mainStates.anoCentroCustosArray.length != 0 ? mainStates.anoCentroCustosArray[0].ano : '';
       frmFilter.setValue(Funcionario.F.ano, ano);
       mountOptionsCC(ano, true);
     }, []);
@@ -255,13 +255,13 @@ export default function PageFuncionarioCrud() {
             placeHolder='Ano'
             options={[new SelOption('Ano', 'Ano', true), ...mainStates.anoCentroCustosArray.map((x) => new SelOption(x.ano, x.ano))]}
           /> */}
-          <SelAno value={ano} onChange={(value) => { frmFilter.setValue(Funcionario.F.ano, value); mountOptionsCC(value); }}
+          <SelAno value={ano} onChange={(newValue) => { frmFilter.setValue(Funcionario.F.ano, newValue || ''); mountOptionsCC(newValue); }}
             options={mainStates.anoCentroCustosArray.map((x) => new SelOption(x.ano, x.ano))}
           />
           <SelRevisao value={revisao} onChange={(newValue: RevisaoValor) => frmFilter.setValue(Funcionario.F.revisao, newValue)} />
 
           {centroCustoOptions != null &&
-            <SelEntity value={centroCusto} onChange={(newValue: string) => frmFilter.setValue(Funcionario.F.centroCusto, newValue)}
+            <SelEntity value={centroCusto} onChange={(newValue: string) => frmFilter.setValue(Funcionario.F.centroCusto, newValue || '')}
               options={centroCustoOptions} name={CentroCusto.Name} withCod width='550px' disableClearable />
           }
 
@@ -296,12 +296,12 @@ export default function PageFuncionarioCrud() {
     const dataStructure = mainStatesData2.dataStructure;
     if (dataStructure.loading) return <WaitingObs text='carregando' />;
 
-    let itenPreReserveNext = 0;
+    let itemPreReserveNext = 0;
     const newLine = () => {
-      //csd('newLine', itenPreReserveNext);
-      if (itenPreReserveNext > (itensPreReserve - 1))
+      //csd('newLine', mPreReserveNext);
+      if (itemPreReserveNext > (itensPreReserve - 1))
         return PopupMsg.error('O máximo de itens incluídos e não salvos foi atingido. Favor salvar os dados para incluir mais itens.');
-      statesCompsSubord.setStatePreReservedItens[itenPreReserveNext++](LineState.inserted);
+      statesCompsSubord.setStatePreReservedItens[itemPreReserveNext++](LineState.inserted);
     };
     const FuncId = (funcionario: Funcionario) => `${funcionario.origem}/${funcionario.refer}`;
 

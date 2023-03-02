@@ -39,7 +39,7 @@ enum Phase {
 let mount; let mainStatesCache;
 const apis = {
   //getProcsOrc: () => CallApiCliASync(apisApp.processoOrcamentario.apiPath, globals.windowId, { cmd: CmdApi_ProcessoOrcamentario.list }),
-  interfaceRealizado: (cmd: CmdApi_ValoresContas) => CallApiCliASync(apisApp.valoresContas.apiPath, globals.windowId, { cmd }),
+  interfaceRealizado: (cmd: CmdApi_ValoresContas) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, globals.windowId, { cmd }),
 };
 const pageSelf = pagesApp.importReal;
 export default function PageImportReal() {
@@ -157,6 +157,6 @@ export default function PageImportReal() {
           }
         </>
       }
-    </Stack >
+    </Stack>
   );
 }

@@ -14,7 +14,7 @@ const GetCtrlRecursion = (func: string) => {
   let item = _ctrlRecursion.find((x) => x.func == func);
   if (item == null)
     _ctrlRecursion.push(item = { func, ctrlRecursion: new CtrlRecursion(`fetcher->${func}`, 10) });
-  //console.log(`callApi ctrlRecursion`, _ctrlRecursion.map((x) => `${x.context}: ${x.ctrlRecursion.status()}`));
+  //csl(`callApi ctrlRecursion`, _ctrlRecursion.map((x) => `${x.context}: ${x.ctrlRecursion.status()}`));
   return item.ctrlRecursion;
 };
 
@@ -87,7 +87,7 @@ export async function CallApiASync(apiPath: string, context: string, callId: str
 
     if (method == 'get') {
       const urlWithParams = queryString.stringifyUrl({ url: urlApi, query: parmFull });
-      //console.log({fullUrl: urlWithParams});
+      //csl({fullUrl: urlWithParams});
       axiosCall = () => axios.get(urlWithParams, axiosRequestConfig);
     }
     else if (method == 'getParams') {
@@ -97,7 +97,7 @@ export async function CallApiASync(apiPath: string, context: string, callId: str
       const urlWithParams = params.reduce((prev, curr) => prev + '/' + curr, urlApi);
       //csd({ urlWithParams });
       axiosCall = () => axios.get(urlWithParams, axiosRequestConfig);
-      //console.log(response);
+      //csl(response);
     }
     else
       axiosCall = () => axios.post(urlApi, parmFull, axiosRequestConfig);
@@ -124,7 +124,7 @@ export async function CallApiASync(apiPath: string, context: string, callId: str
     dbgA(1, 'ok, status', response.status, `${calcExecTimeApiCall.elapsedMs()}ms`); // parm?.id, 
     dbgA(3, 'data', response.data);
 
-    //console.log('CallApi data', url, JSON.stringify(parm), JSON.stringify(result.data));
+    //csl('CallApi data', url, JSON.stringify(parm), JSON.stringify(result.data));
     // if (!IsTypeResultApi(result.data))
     //   throw new Error('resultado da api com tipo inválido')
     //return result.data.result  as ResultTy;
@@ -172,7 +172,7 @@ export async function CallApiASync(apiPath: string, context: string, callId: str
     //   //   SystemErrorCli('Api erro inesperado:', message, { apiPath, parm }, false);
     //   // }
     //   // if (OnServer())
-    //   //   console.log('Api erro inesperado:', message, { apiPath, parm }); // usar SystemError
+    //   //   csl('Api erro inesperado:', message, { apiPath, parm }); // usar SystemError
     //   //const msgUnexpectedErrorShow = isAmbDevOrtst() ? message : (Env('friendlyErrorMsg') || message);
     //   const msgUnexpectedErrorShow = Env('friendlyErrorMsg') || message;
     //   throw new ErrorPlus(msgUnexpectedErrorShow, { data, httpStatusCode, logged });
@@ -204,14 +204,14 @@ export async function CallApiASync(apiPath: string, context: string, callId: str
 
 // async function FetcherPost(uri: string, dados: object) {
 //   try {
-//     // console.log('start fetcher', uri);
+//     // csl('start fetcher', uri);
 //     const result = await fetch(uri, {
 //       method: 'post',
 //       headers: { 'Content-Type': 'application/json' },
 //       body: JSON.stringify(dados),
 //     })
 //       .then(x => x.json());
-//     //console.log('res fetcher', result);
+//     //csl('res fetcher', result);
 //     if (!IsTypeResultApi(result))
 //       throw new Error('resultado da api com tipo inválido')
 //     return result.result as Result;
@@ -250,10 +250,10 @@ export async function CallApiASync(apiPath: string, context: string, callId: str
 //   try {
 //     const result = await axios.get(uri);
 //     //.catch(x => ResultErr(x));
-//     //console.log('res fetcher get axios', result);
+//     //csl('res fetcher get axios', result);
 //     return ResultOk(result.data);
 //   } catch (error) {
-//     console.log('errou axios get', error);
+//     csl('errou axios get', error);
 //     return ResultErr(error);
 //   }
 // }

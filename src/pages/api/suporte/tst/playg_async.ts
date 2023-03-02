@@ -15,7 +15,7 @@ import { SystemMsgSvrASync } from '../../../../libServer/systemMsgSvr';
 import { SendMailASync, sysEmailSupport } from '../../../../libServer/sendMail';
 
 // function SystemError(...parms) {
-//   console.log(...parms);
+//   csl(...parms);
 // }
 export default async (req: NextApiRequest, res: NextApiResponse) => {
   const ctrlApiExec = GetCtrlApiExec(req, res);
@@ -29,7 +29,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   }
   //const dbgContext = `${varsReq.api}-${HoraDbg(agora)}`;
 
-  //console.log(dbgContext);
+  //csl(dbgContext);
 
   // ===========================
   // em resumo: no netlify qquer await APÒS o res.status ficará para a próxima execução da api

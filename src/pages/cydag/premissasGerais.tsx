@@ -92,7 +92,7 @@ class NodeContent {
     this.ativa = false;
     this.valMeses = undefined;
   }
-  get descrAcum() { // todos os niveis de hierarquia (para melhor msg se houver algum erro ao gravar)
+  get descrAcum() { // todos os níveis de hierarquia (para melhor msg se houver algum erro ao gravar)
     return this.descrNodesUpp == null ? this.descr : `${this.descrNodesUpp} - ${this.descr}`;
   }
 }
@@ -105,7 +105,7 @@ class FrmFilter {
 }
 
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync(apisApp.premissasGerais.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.premissasGerais.apiPath, globals.windowId, parm) };
 const pageSelf = pagesApp.premissasGerais;
 const statesCompsSubord = { setMainStatesData1: null, setMainStatesData2: null, setMainStatesCss: null };
 
@@ -339,7 +339,7 @@ export default function PagePremissasGerais() {
 
   const FilterComp = () => {
     const frmFilter = useFrm<FrmFilter>({
-      defaultValues: FrmDefaultValues(new FrmFilter(), { revisao: RevisaoValor.atual, agrupPremissas: agrupPremissasCoringa.cod, empresa: empresaCoringa.cod }, [ValoresPremissa.F.ano, ValoresPremissa.F.revisao, ValoresPremissa.F.agrupPremissas, ValoresPremissa.F.empresa]),
+      defaultValues: FrmDefaultValues(new FrmFilter(), { revisao: RevisaoValor.atual, agrupPremissas: agrupPremissasCoringa.cod, empresa: empresaCoringa.cod }),
     });
     const ano = useWatchMy({ control: frmFilter.control, name: ValoresPremissa.F.ano });
     const revisao = useWatchMy({ control: frmFilter.control, name: ValoresPremissa.F.revisao });
@@ -347,12 +347,12 @@ export default function PagePremissasGerais() {
     const empresa = useWatchMy({ control: frmFilter.control, name: ValoresPremissa.F.empresa });
 
     React.useEffect(() => {
-      const ano = mainStates.processoOrcamentarioArray.length != 0 ? mainStates.processoOrcamentarioArray[0].ano : null;
+      const ano = mainStates.processoOrcamentarioArray.length != 0 ? mainStates.processoOrcamentarioArray[0].ano : '';
       frmFilter.setValue(ValoresPremissa.F.ano, ano);
     }, []);
 
     const getItensSubmit = async (dataForm: FrmFilter) => {
-      const filter = NormalizePropsString(dataForm, [ValoresPremissa.F.ano, ValoresPremissa.F.revisao, ValoresPremissa.F.agrupPremissas, ValoresPremissa.F.empresa]);
+      const filter = NormalizePropsString(dataForm);
       if (filter.ano == null) return PopupMsg.error('Informe o Ano.');
       if (filter.revisao == null) return PopupMsg.error('Informe a Revisão.');
       getItens(filter);
@@ -370,13 +370,13 @@ export default function PagePremissasGerais() {
             placeHolder='Ano'
             options={[new SelOption('Ano', 'Ano', true), ...mainStates.processoOrcamentarioArray.map((x) => new SelOption(x.ano, x.ano))]}
           /> */}
-          <SelAno value={ano} onChange={(value) => frmFilter.setValue(ValoresPremissa.F.ano, value)}
+          <SelAno value={ano} onChange={(newValue) => frmFilter.setValue(ValoresPremissa.F.ano, newValue || '')}
             options={mainStates.processoOrcamentarioArray.map((x) => new SelOption(x.ano, x.ano))}
           />
           <SelRevisao value={revisao} onChange={(newValue: RevisaoValor) => frmFilter.setValue(ValoresPremissa.F.revisao, newValue)} />
-          <SelEntity value={agrupPremissas} onChange={(newValue: string) => frmFilter.setValue(ValoresPremissa.F.agrupPremissas, newValue)}
+          <SelEntity value={agrupPremissas} onChange={(newValue: string) => frmFilter.setValue(ValoresPremissa.F.agrupPremissas, newValue || '')}
             options={agrupPremissasOptions} name={AgrupPremissas.Name} disableClearable />
-          <SelEntity value={empresa} onChange={(newValue: string) => frmFilter.setValue(ValoresPremissa.F.empresa, newValue)}
+          <SelEntity value={empresa} onChange={(newValue: string) => frmFilter.setValue(ValoresPremissa.F.empresa, newValue || '')}
             options={empresaOptions} name={Empresa.Name} disableClearable />
           <IconButtonAppSearch />
         </Stack>

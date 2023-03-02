@@ -36,7 +36,7 @@ const GetCtrlRecursion = (func: string) => {
   let item = _ctrlRecursion.find((x) => x.func == func);
   if (item == null)
     _ctrlRecursion.push(item = { func, ctrlRecursion: new CtrlRecursion(`sendMail->${func}`, 10) });
-  //console.log(`callApi ctrlRecursion`, _ctrlRecursion.map((x) => `${x.context}: ${x.ctrlRecursion.status()}`));
+  //csl(`callApi ctrlRecursion`, _ctrlRecursion.map((x) => `${x.context}: ${x.ctrlRecursion.status()}`));
   return item.ctrlRecursion;
 };
 
@@ -137,10 +137,10 @@ async function _SendMailASync(sendEmailParams: SendEmailParams, context: string,
     ////transactionLog: true,
     dbgE(2, { mailOpt });
 
-    //console.log(`sending mail ${seqMail} - opt`, mailOpt);
+    //csl(`sending mail ${seqMail} - opt`, mailOpt);
 
     const transporter = nodemailer.createTransport(mailOpt);
-    //console.log(`sending mail ${seqMail} - pos createTransport`);
+    //csl(`sending mail ${seqMail} - pos createTransport`);
 
     // send mail with defined transport object
     // const info = await transporter.sendMail({
@@ -172,7 +172,7 @@ async function _SendMailASync(sendEmailParams: SendEmailParams, context: string,
     });
     // .then((x) => ResultOk({ response: x.response }))
     // .catch(ResultErr);
-    //.finally(() => console.log('finally sendMail'));
+    //.finally(() => csl('finally sendMail'));
 
     // if (sendMailResult.error)
     //   throw new Error(sendMailResult.error + 'aaa');
@@ -180,7 +180,7 @@ async function _SendMailASync(sendEmailParams: SendEmailParams, context: string,
     // // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
 
     // // Preview only available when sending through an Ethereal account
-    // console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+    // csl('Preview URL: %s', nodemailer.getTestMessageUrl(info));
     // // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
 
     resultOk = sendMailResult.response;

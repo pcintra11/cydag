@@ -72,7 +72,7 @@ const collectionsOthersConfig = {
 
 let msgsAcum: string[] = [];
 let mount; let mainStatesCache;
-const apis = { adm: (parm) => CallApiCliASync(apisApp.funcsAdm.apiPath, globals.windowId, parm) };
+const apis = { adm: (parm) => CallApiCliASync<any>(apisApp.funcsAdm.apiPath, globals.windowId, parm) };
 const pageSelf = pagesApp.funcsAdm;
 export default function PageFuncsAdm() {
   interface MainStates {
@@ -100,7 +100,7 @@ export default function PageFuncsAdm() {
   const appendResults = (id: string, msgs: string[] = [''], withHourAndId = true) => {
     const hourAndId = withHourAndId ? `${HoraDebug()} - ${id} - ` : '';
     msgsAcum = [...msgsAcum, ...msgs.map((x) => `${hourAndId}${x}`)];
-    //console.log({ msgs });
+    //csl({ msgs });
     //setResult(<div><p>1:{msgs.length}</p><p>2:{msgs.length}</p></div>);
     setResultAcum(<div>{msgsAcum.map((x, i) => <p key={i}>{x}</p>)}</div>);
   };

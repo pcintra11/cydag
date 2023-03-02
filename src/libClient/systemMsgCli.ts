@@ -18,7 +18,7 @@ const GetCtrlRecursion = (func: string) => {
 };
 
 export async function SystemMsgCli(categMsgSystem: CategMsgSystem, point: string, msg: string, details: object = null) {
-  //console.log('SystemMsgCli', msg);
+  //csl('SystemMsgCli', msg);
   const ctrlRecursion = GetCtrlRecursion('SystemMsgCli');
   if (ctrlRecursion.inExceeded(msg)) return;
   const showInClientUse = dbgShowCli();

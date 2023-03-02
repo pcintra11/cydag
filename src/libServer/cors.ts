@@ -47,7 +47,7 @@ export async function CorsMiddlewareAsync(req: NextApiRequest, res: NextApiRespo
             originAllowedByHostnamePrefix = true;
         }
       }
-      //console.log({ origin });
+      //csl({ origin });
       let allowed = null;
       if (origin == null)
         allowed = 'serverCall'; // na chamada pelo server esse campo está undefined

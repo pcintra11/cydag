@@ -14,7 +14,7 @@ import { LoggedUser } from './loggedUser';
 export const GetLoggedUserFromHttpCookieASync = async (point: string) => {
   //await SleepMs(500);
   try {
-    const apiReturn = await CallApiCliASync(apisApp.userAuth.apiPath, globals.windowId, { cmd: CmdApi_UserAuth.getLoggedUserCookie, point });
+    const apiReturn = await CallApiCliASync<any>(apisApp.userAuth.apiPath, globals.windowId, { cmd: CmdApi_UserAuth.getLoggedUserCookie, point });
     //await SleepMsDevClient('GetLoggedUserFromCookie', 3000);
     return apiReturn.value != null ? LoggedUser.deserialize(apiReturn.value) : null;
   } catch (error) {

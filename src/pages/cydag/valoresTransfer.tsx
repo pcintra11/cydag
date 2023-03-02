@@ -69,7 +69,7 @@ class FrmFilter {
 }
 
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync(apisApp.valoresTransfer.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.valoresTransfer.apiPath, globals.windowId, parm) };
 const pageSelf = pagesApp.valoresTransfer;
 const statesCompsSubord = { setMainStatesData1: null, setMainStatesData2: null };
 
@@ -163,19 +163,19 @@ export default function PageValoresTransfer() {
 
   const FilterComp = () => {
     const frmFilter = useFrm<FrmFilter>({
-      defaultValues: FrmDefaultValues(new FrmFilter(), { revisao: RevisaoValor.atual }, [ValoresTransfer.F.ano, ValoresTransfer.F.revisao, ValoresTransfer.F.localidadeOrigem]),
+      defaultValues: FrmDefaultValues(new FrmFilter(), { revisao: RevisaoValor.atual }),
     });
     const ano = useWatchMy({ control: frmFilter.control, name: ValoresTransfer.F.ano });
     const revisao = useWatchMy({ control: frmFilter.control, name: ValoresTransfer.F.revisao });
     const localidadeOrigem = useWatchMy({ control: frmFilter.control, name: ValoresTransfer.F.localidadeOrigem });
 
     React.useEffect(() => {
-      const ano = mainStates.processoOrcamentarioArray.length != 0 ? mainStates.processoOrcamentarioArray[0].ano : null;
+      const ano = mainStates.processoOrcamentarioArray.length != 0 ? mainStates.processoOrcamentarioArray[0].ano : '';
       frmFilter.setValue(ValoresTransfer.F.ano, ano);
     }, []);
 
     const getItensSubmit = async (dataForm: FrmFilter) => {
-      const filter = NormalizePropsString(dataForm, [ValoresTransfer.F.ano, ValoresTransfer.F.revisao, ValoresTransfer.F.localidadeOrigem]);
+      const filter = NormalizePropsString(dataForm);
       if (filter.ano == null) return PopupMsg.error('Informe o Ano.');
       if (filter.revisao == null) return PopupMsg.error('Informe a Revisão.');
       if (filter.localidadeOrigem == null) return PopupMsg.error('Informe a Localidade Origem.');
@@ -193,12 +193,12 @@ export default function PageValoresTransfer() {
             placeHolder='Ano'
             options={[new SelOption('Ano', 'Ano', true), ...mainStates.processoOrcamentarioArray.map((x) => new SelOption(x.ano, x.ano))]}
           /> */}
-          <SelAno value={ano} onChange={(value) => frmFilter.setValue(ValoresTransfer.F.ano, value)}
+          <SelAno value={ano} onChange={(newValue) => frmFilter.setValue(ValoresTransfer.F.ano, newValue || '')}
             options={mainStates.processoOrcamentarioArray.map((x) => new SelOption(x.ano, x.ano))}
           />
 
           <SelRevisao value={revisao} onChange={(newValue: RevisaoValor) => frmFilter.setValue(ValoresTransfer.F.revisao, newValue)} />
-          <SelEntity value={localidadeOrigem} onChange={(newValue: string) => frmFilter.setValue(ValoresTransfer.F.localidadeOrigem, newValue)}
+          <SelEntity value={localidadeOrigem} onChange={(newValue: string) => frmFilter.setValue(ValoresTransfer.F.localidadeOrigem, newValue || '')}
             options={localidadeOrigemOptions} name='Localidade Origem' withCod disableClearable />
           <IconButtonAppSearch />
         </Stack>

@@ -40,7 +40,7 @@ class FrmFilter {
   searchTerms: string;
 }
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync(apisApp.localidade.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.localidade.apiPath, globals.windowId, parm) };
 const pageSelf = pagesApp.localidade;
 export default function PageLocalidadeCrud() {
   const frmFilter = useFrm<FrmFilter>({

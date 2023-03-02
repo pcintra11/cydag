@@ -52,7 +52,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
   if (UriDb('other')) await ConnectDbASync({ ctrlApiExec, database: 'other' });
 
   try {
-    // console.log(req.method, parm);
+    // csl(req.method, parm);
     // const parm = req.body || {
     //   emailFrom: 'getmeetingapp@gmail.com',
     //   psw: 'getmeetingapppsw',

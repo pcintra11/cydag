@@ -28,7 +28,7 @@ async function CheckLastExecsASync(type: AsyncProcTypes, customType: string) {
   //   throw new Error(`SendEmailApiAsync chamada recursiva não permitida (${type}-${info})`);
   const lastMinuteStart = AddSeconds(agora, -60);
   const callsLastMinute = await ApiAsyncLogModel.find({ type, customType, register: { $gt: lastMinuteStart }, ended: null }).lean();
-  //console.log({ callsLastMinute });
+  //csl({ callsLastMinute });
   if (callsLastMinute.length >= 20)
     throw new Error(`AsyncProc type '${type}' abortado - chamadas não finalizadas nos últimos 60 segundos: ${callsLastMinute.length}.`);
 }

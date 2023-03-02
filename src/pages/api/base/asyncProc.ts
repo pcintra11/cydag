@@ -49,8 +49,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   //   else
   //     envsOthers[key] = process.env[key];
   // }
-  // console.log('asyncProc envsMain', envsMain);
-  // console.log('asyncProc envsOthers', envsOthers);
+  // csl('asyncProc envsMain', envsMain);
+  // csl('asyncProc envsOthers', envsOthers);
 
   const dbgX = (level: number, ...params) => dbg({ level, levelScope: ScopeDbg.x, context: ctrlApiExec.context(), color: ctrlApiExec?.colorDestaq }, `(${parm.info})`, ...params);
   //dbgX(1, 'asyncProc parm', parm);
@@ -63,14 +63,14 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     //dbgX(2, { testGlob1, hora1 }); // @!!! bizarro! o conceudo de testGlob1 permanece inter sessões (chamadas API), para 'hora' o valor original MUDA, mas a concatenação é acumulativa!!
 
     try {
-      //console.log('apiAsyncProc parm', parm);
+      //csl('apiAsyncProc parm', parm);
 
       const asyncProc = await ApiAsyncLogModel.findOne({ _id: new ObjectId(parm.idStr) }).lean();
       if (asyncProc == null)
         throw new Error(`id '${parm.idStr}' não encontrado (${parm.info}).`);
       if (asyncProc.type != parm.type)
         throw new Error(`id '${parm.idStr}' type ApiLogAsyncDb '${asyncProc.type}' diferente de parm '${parm.type}'.`);
-      //console.log('apiAsyncProc asyncProc', asyncProc);
+      //csl('apiAsyncProc asyncProc', asyncProc);
       dbgX(1, 'ini');
       const calcExecTime = new CalcExecTime();
       if (parm.forceDelay != null)
@@ -152,7 +152,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     await ApiStatusDataByErrorASync(error, 'throw 2', parm, ctrlApiExec);
   }
 
-  //console.log('asyncProc finalizada');
+  //csl('asyncProc finalizada');
 
   resumoApi.jsonData({}); // nunca deve retornar nada pois ninguem chama de forma syncrona !
 

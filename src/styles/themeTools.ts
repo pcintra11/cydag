@@ -254,7 +254,7 @@ export function GenThemePlus(themeSchemes: ThemeSchemes, themeVariants?: ThemeVa
 //     if (color_combinations.includes(props.color))
 //       result.className = `color_${props.color}`;
 //     else
-//       console.log('color invalid', props.color);
+//       csl('color invalid', props.color);
 //   }
 //   return result;
 // }
@@ -262,8 +262,8 @@ export function GenThemePlus(themeSchemes: ThemeSchemes, themeVariants?: ThemeVa
 // para uso nos componentes
 
 // export function CssColorsByType(colorType: string, theme: Theme) { // obsoleta !
-//   // console.log('colorTypeProp', `${colorType}BackColor`, theme[`${colorType}BackColor`]);
-//   // console.log('theme', theme);
+//   // csl('colorTypeProp', `${colorType}BackColor`, theme[`${colorType}BackColor`]);
+//   // csl('theme', theme);
 //   const colorBack = theme[`${colorType}BackColor`] || 'white';
 //   //const colorBack = theme.palette[colorType].main..[`${colorType}BackColor`] || 'white';
 //   return CssColorsByBack(colorBack);
@@ -304,7 +304,7 @@ export function ForeColorByBack(backColor: string) {
     dbgError(`Erro ao interpretar backColor '${backColor}' e assumido blue como cor de fonte (tente usar o código da cor no formato #xxxxxx)`);
     result = 'blue';
   }
-  //console.log('ForeColorByBack - backcolor', backColor, 'dark?', Color(backColor).isDark(), 'fore', result);
+  //csl('ForeColorByBack - backcolor', backColor, 'dark?', Color(backColor).isDark(), 'fore', result);
   return result;
 }
 
@@ -328,7 +328,7 @@ export function BackColorAlternative(backColor: string, variant: number) {
   }
   else
     throw new Error(`BackColorAlternative backcolor '${backColor}' não prevista.`);
-  //console.log('BackColorAlternative - backcolor', backColor, 'alternative', result);
+  //csl('BackColorAlternative - backcolor', backColor, 'alternative', result);
   return result;
 }
 
@@ -361,7 +361,7 @@ export function ForeColorAlternative(backColor: string, variant: number) {
   }
   else
     throw new Error(`BackColorAlternative backcolor '${backColor}' não prevista.`);
-  //console.log('BackColorAlternative - backcolor', backColor, 'alternative', result);
+  //csl('BackColorAlternative - backcolor', backColor, 'alternative', result);
   return result;
 }
 

@@ -51,11 +51,11 @@ export async function HttpCriptoCookieCmdASync(ctrlApiExec: CtrlApiExec, point: 
     if (value != null) {
       reqSession.session.set(CookieSession_fldFixed, value);
       await reqSession.session.save();
-      //console.log('CookieSessionCmd set - value', JSON.stringify(data.value));
+      //csl('CookieSessionCmd set - value', JSON.stringify(data.value));
     }
     else {
       reqSession.session.destroy();
-      //console.log('CookieSessionCmd set - destroy');
+      //csl('CookieSessionCmd set - destroy');
     }
     return null;
   }
@@ -67,20 +67,20 @@ export async function HttpCriptoCookieCmdASync(ctrlApiExec: CtrlApiExec, point: 
     }
     else
       value = null;
-    //console.log({ api: `${ctrlApiExec.apiPath}(point ${point})-${JSON.stringify(ctrlApiExec.parm)}`, cmd, cookieSessionConfig, options, cookieOptions, valueGet: value });
+    //csl({ api: `${ctrlApiExec.apiPath}(point ${point})-${JSON.stringify(ctrlApiExec.parm)}`, cmd, cookieSessionConfig, options, cookieOptions, valueGet: value });
     return value;
   }
   // else if (cmd == GlobalStateCmd.renew) { // apenas extende o tempo de vida do cookie
   //   let value = reqSession.session.get(CookieSession_fldFixed);
   //   if (value)
   //     await reqSession.session.save();
-  //   //console.log('CookieSessionCmd renew');
+  //   //csl('CookieSessionCmd renew');
   //   return null;
   // }
   else
     throw new Error(`cmd ${cmd} inválido`);
   // } catch (error) {
-  //   //console.log('CookieSessionCmd', error);
+  //   //csl('CookieSessionCmd', error);
   //   throw error;
   // }
 }

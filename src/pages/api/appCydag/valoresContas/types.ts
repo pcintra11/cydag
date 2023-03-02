@@ -6,8 +6,8 @@ import { IGenericObject } from '../../../../libCommon/types';
 enum CmdApi_ValoresContas {
   quadroInitialization = 'quadroInitialization',
   quadroConsValoresGet = 'quadroConsValoresGet',
-  quadroImputItensGet = 'quadroImputItensGet',
-  quadroImputItensSet = 'quadroImputItensSet',
+  quadroInputItensGet = 'quadroInputItensGet',
+  quadroInputItensSet = 'quadroInputItensSet',
 
   importRealizadoStart = 'importRealizadoStart',
   importRealizadoCheck = 'importRealizadoCheck',

@@ -82,7 +82,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         const fatorCustoArray = await FatorCustoModel.find().lean().sort({ fatorCusto: 1 });
         const classeCustoArray = incluiContasCalc
           ? await ClasseCustoModel.find().lean().sort({ classeCusto: 1 })
-          : await ClasseCustoModel.find({ origem: { $in: [OrigemClasseCusto.inputada, OrigemClasseCusto.totalInputada] } }).lean().sort({ classeCusto: 1 });
+          : await ClasseCustoModel.find({ origem: { $in: [OrigemClasseCusto.inputada, OrigemClasseCusto.totalImputada] } }).lean().sort({ classeCusto: 1 });
         const procsCentrosCustoConfigAllYears = await procsCentroCustosConfigAuthAllYears(loggedUserReq, authCC);
         const centroCustoArray = await ccsAuthArray(procsCentrosCustoConfigAllYears);
 
@@ -97,15 +97,15 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         deleteIfOk = true;
       }
 
-      else if (parm.cmd == CmdApi.quadroImputItensGet ||
-        parm.cmd == CmdApi.quadroImputItensSet) {
+      else if (parm.cmd == CmdApi.quadroInputItensGet ||
+        parm.cmd == CmdApi.quadroInputItensSet) {
         const { ano, centroCusto, revisao } = parm.filter || {};
         const processoOrcamentario = await ProcessoOrcamentarioModel.findOne({ ano }).lean();
         if (processoOrcamentario == null) throw new ErrorPlus(`Processo Orçamentário para ${ano} não encontrado`);
         const processoOrcamentarioCentroCusto = await ProcessoOrcamentarioCentroCustoModel.findOne({ ano, centroCusto }).lean();
         if (processoOrcamentarioCentroCusto == null) throw new ErrorPlus(`Centro de Custo ${centroCusto} não configurado para o Processo Orçamentário`);
         CheckProcCentroCustosAuth(loggedUserReq, processoOrcamentarioCentroCusto, authCCQuadroInput);
-        if (parm.cmd == CmdApi.quadroImputItensGet) {
+        if (parm.cmd == CmdApi.quadroInputItensGet) {
           const valsPlanejados = await GetValsPlanejados(processoOrcamentario, revisao, [centroCusto], false, false, true, false, ctrlApiExec);
 
           const anoAnt = anoAdd(ano, -1);
@@ -127,7 +127,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           deleteIfOk = true;
         }
 
-        else if (parm.cmd == CmdApi.quadroImputItensSet) {
+        else if (parm.cmd == CmdApi.quadroInputItensSet) {
           if (revisao != RevisaoValor.atual) throw new ErrorPlus('Essa revisão não pode ser alterada');
           ProcessoOrcamentarioStatusMd.checkOperAllowed(OperInProcessoOrcamentario.altValoresPlanejados, processoOrcamentario.status);
           if (processoOrcamentarioCentroCusto.planejamentoEmAberto != true) throw new ErrorPlus('Centro de Custo não está aberto para lançamentos');

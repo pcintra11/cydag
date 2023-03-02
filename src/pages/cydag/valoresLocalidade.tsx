@@ -70,7 +70,7 @@ class FrmFilter {
 }
 
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync(apisApp.valoresLocalidade.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.valoresLocalidade.apiPath, globals.windowId, parm) };
 const pageSelf = pagesApp.valoresLocalidade;
 const statesCompsSubord = { setMainStatesData1: null, setMainStatesData2: null };
 
@@ -164,18 +164,18 @@ export default function PageValoresLocalidades() {
 
   const FilterComp = () => {
     const frmFilter = useFrm<FrmFilter>({
-      defaultValues: FrmDefaultValues(new FrmFilter(), { revisao: RevisaoValor.atual }, [ValoresLocalidade.F.ano, ValoresLocalidade.F.revisao]),
+      defaultValues: FrmDefaultValues(new FrmFilter(), { revisao: RevisaoValor.atual }),
     });
     const ano = useWatchMy({ control: frmFilter.control, name: ValoresLocalidade.F.ano });
     const revisao = useWatchMy({ control: frmFilter.control, name: ValoresLocalidade.F.revisao });
 
     React.useEffect(() => {
-      const ano = mainStates.processoOrcamentarioArray.length != 0 ? mainStates.processoOrcamentarioArray[0].ano : null;
+      const ano = mainStates.processoOrcamentarioArray.length != 0 ? mainStates.processoOrcamentarioArray[0].ano : '';
       frmFilter.setValue(ValoresLocalidade.F.ano, ano);
     }, []);
 
     const getItensSubmit = async (dataForm: FrmFilter) => {
-      const filter = NormalizePropsString(dataForm, [ValoresLocalidade.F.ano, ValoresLocalidade.F.revisao]);
+      const filter = NormalizePropsString(dataForm);
       if (filter.ano == null) return PopupMsg.error('Informe o Ano.');
       if (filter.revisao == null) return PopupMsg.error('Informe a Revisão.');
       getItens(filter);
@@ -191,7 +191,7 @@ export default function PageValoresLocalidades() {
             placeHolder='Ano'
             options={[new SelOption('Ano', 'Ano', true), ...mainStates.processoOrcamentarioArray.map((x) => new SelOption(x.ano, x.ano))]}
           /> */}
-          <SelAno value={ano} onChange={(value) => frmFilter.setValue(ValoresLocalidade.F.ano, value)}
+          <SelAno value={ano} onChange={(newValue) => frmFilter.setValue(ValoresLocalidade.F.ano, newValue || '')}
             options={mainStates.processoOrcamentarioArray.map((x) => new SelOption(x.ano, x.ano))}
           />
           <SelRevisao value={revisao} onChange={(newValue: RevisaoValor) => frmFilter.setValue(ValoresLocalidade.F.revisao, newValue)} />

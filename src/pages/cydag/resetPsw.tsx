@@ -45,8 +45,7 @@ export default function PageResetPsw() {
   const [mainStates, setMainStates] = React.useState<MainStates>({ phase: Phase.initiating });
   mainStatesCache = { ...mainStates }; const setMainStatesCache = (newValues: MainStates) => { if (!mount) return; ObjUpdAllProps(mainStatesCache, newValues); setMainStates({ ...mainStatesCache }); };
 
-  const { logRedirSetGet } = React.useContext(_AppLogRedir);
-
+  const { chgUserAndRouteStart } = React.useContext(_AppLogRedir);
   const router = useRouter();
   const { loggedUser, isLoadingUser, setUser } = useLoggedUser({ id: pageSelf.pagePath });
   const agora = new Date();
@@ -92,13 +91,13 @@ export default function PageResetPsw() {
         //return FrmSetError('Senhas não conferem', null, frm);
         return FrmSetError(frmResetPsw, f.pswConfirm, 'Senha não confere');
       const loggedUserNow = await UserResetPswASync(router.query.token as string, data.email, data.psw, data.pswConfirm);
-      // //console.log({ loggedUserNow });
+      // //csl({ loggedUserNow });
       // //dbg(3, 'resetPsw ok', { loggedUserNow });
       // //SnackBar.success('Senha alterada com sucesso!');
       // setNextPageChangedUser(pagesApp.welcome.pagePath);
       // setUser(loggedUserNow, pageSelf.pagePath);
-      logRedirSetGet({ loggedUser: loggedUserNow, pathname: pagesApp.home.pagePath });
-      setTimeout(() => router.push(pagesApp.logRedir.pagePath), 0);
+      chgUserAndRouteStart({ loggedUser: loggedUserNow, pagePath: pagesApp.home.pagePath });
+      //setTimeout(() => router.push(pagesApp.logRedir.pagePath), 0);
     } catch (error) {
       LogErrorUnmanaged(error, `${pageSelf.pagePath}-onSubmit`);
       if (!IsErrorManaged(error)) {

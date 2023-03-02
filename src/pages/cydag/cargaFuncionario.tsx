@@ -43,13 +43,13 @@ class FrmFilter {
 
 let mount; let mainStatesCache;
 const apis = {
-  getAnoAllowed: () => CallApiCliASync(apisApp.processoOrcamentario.apiPath, globals.windowId, { cmd: CmdApi_ProcessoOrcamentario.list, filter: { status: ProcessoOrcamentarioStatus.preparacao } }),
-  upload: (parm: any) => CallApiCliASync(apisApp.funcionario.apiPath, globals.windowId, { cmd: CmdApi_Funcionario.upload, ...parm })
+  getAnoAllowed: () => CallApiCliASync<any>(apisApp.processoOrcamentario.apiPath, globals.windowId, { cmd: CmdApi_ProcessoOrcamentario.list, filter: { status: ProcessoOrcamentarioStatus.preparacao } }),
+  upload: (parm: any) => CallApiCliASync<any>(apisApp.funcionario.apiPath, globals.windowId, { cmd: CmdApi_Funcionario.upload, ...parm })
 };
 const pageSelf = pagesApp.cargaFuncionario;
 export default function PageCargaFuncionario() {
   const frmFilter = useFrm<FrmFilter>({
-    defaultValues: FrmDefaultValues(new FrmFilter(), null, [ProcessoOrcamentario.F.ano]),
+    defaultValues: FrmDefaultValues(new FrmFilter()),
   });
   const ano = useWatchMy({ control: frmFilter.control, name: ProcessoOrcamentario.F.ano });
 
@@ -134,7 +134,7 @@ export default function PageCargaFuncionario() {
     const amostra = [ToCsvDownload(new Funcionario().Fill({ centroCusto: '' }), Funcionario.fldsCsvDefUpload)];
     const orientacoes = [
       { 'Orientações': '' },
-      { 'Orientações': 'Preechimento' },
+      { 'Orientações': 'Preenchimento' },
       { 'Orientações': `TipoColaborador: ${TipoColaboradorMd.all.map((x) => `${x.cod}=${x.descr}`).join('; ')} ` },
       { 'Orientações': `tipoIni: ${TipoParticipPerOrcamMd.all.filter((x) => x.plus.ini).map((x) => `${x.cod}=${x.descr}`).join('; ')} ` },
       { 'Orientações': `tipoFim: ${TipoParticipPerOrcamMd.all.filter((x) => x.plus.fim).map((x) => `${x.cod}=${x.descr}`).join('; ')} ` },
@@ -179,7 +179,7 @@ export default function PageCargaFuncionario() {
             placeHolder='Ano'
             options={[new SelOption('Ano', 'Ano', true), ...mainStates.processoOrcamentarioArray.map((x) => new SelOption(x.ano, x.ano))]}
           /> */}
-          <SelAno value={ano} onChange={(value) => frmFilter.setValue(ProcessoOrcamentario.F.ano, value)}
+          <SelAno value={ano} onChange={(newValue) => frmFilter.setValue(ProcessoOrcamentario.F.ano, newValue || '')}
             options={mainStates.processoOrcamentarioArray.map((x) => new SelOption(x.ano, x.ano))}
           />
           {ano != null &&
@@ -207,7 +207,7 @@ export default function PageCargaFuncionario() {
             </Stack>
           }
         </Stack>
-      </Stack >
+      </Stack>
     );
 
   } catch (error) {

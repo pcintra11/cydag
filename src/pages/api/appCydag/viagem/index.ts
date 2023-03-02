@@ -40,8 +40,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
   const parm = ctrlApiExec.parm;
 
-  csd({ parm }); // #!!!!!!
-
   const resumoApi = new ResumoApi(ctrlApiExec);
   const agora = new Date();
   let deleteIfOk = false;

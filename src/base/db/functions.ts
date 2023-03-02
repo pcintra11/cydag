@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb';
 
 import { EnvSvrDatabase } from '../../libCommon/envs';
 
-import { dbg, dbgError, dbgInfo, dbgWarn, ScopeDbg } from '../../libCommon/dbg';
+import { csd, dbg, dbgError, dbgInfo, dbgWarn, ScopeDbg } from '../../libCommon/dbg';
 import { CalcExecTime, DateToStrISO, HoraDebug } from '../../libCommon/util';
 import { IGenericObject } from '../../libCommon/types';
 
@@ -354,6 +354,24 @@ export function AddIndex(models: CollectionDef[], modelName: string, schema: mon
     return;
   for (const index of modelDef.indexes)
     schema.index(index.fields, { ...index.options, background: true });
+}
+
+export function MongoIncrVersion(query) {
+  const update: any = query.getUpdate();
+  // remove do 'update' qualquer menção ao campo de versionamento     
+  if (update.__v != null)
+    delete update.__v;
+  const keys = ['$set', '$setOnInsert'];
+  for (const key of keys) {
+    if (update[key] != null && update[key].__v != null) {
+      delete update[key].__v;
+      if (Object.keys(update[key]).length === 0)
+        delete update[key];
+    }
+  }
+  // agora faz o incremento na versão, de forma controlada
+  update.$inc = update.$inc || {};
+  update.$inc.__v = 1;
 }
 
 export class Junk {

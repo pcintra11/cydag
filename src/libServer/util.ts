@@ -8,7 +8,7 @@ import { v1 as uuidv1 } from 'uuid';
 
 import { EnvDeployConfig } from '../libCommon/envs';
 import { AddToDate, CalcExecTime, CompareDates, DateFromStrISO, DateToStrISO, ErrorPlus, FilterRelevantWordsForSearch, LanguageSearch, SleepMs, StrLeft } from '../libCommon/util';
-import { csd, dbg, dbgError, dbgWarn, NivelLog, ScopeDbg, SetNivelLog } from '../libCommon/dbg';
+import { csd, csl, dbg, dbgError, dbgWarn, NivelLog, ScopeDbg, SetNivelLog } from '../libCommon/dbg';
 import { HttpStatusCode, IdByTime, DispAbrev } from '../libCommon/util';
 import { IGenericObject } from '../libCommon/types';
 
@@ -59,7 +59,7 @@ export class CtrlApiExec {
     const elapsedTot = this.calcExecTime.elapsedMs();
     const gap = elapsedTot - this.lastElapsed;
     if (showAlways || gap > 1000)
-      console.log(this.apiPath, point, `elapsed tot ${elapsedTot}ms, gap ${gap}ms ${gap > 1000 ? '- **********' : ''}`);
+      csl(this.apiPath, point, `elapsed tot ${elapsedTot}ms, gap ${gap}ms ${gap > 1000 ? '- **********' : ''}`);
     this.lastElapsed = elapsedTot;
   }
 }
@@ -132,7 +132,7 @@ export function GetCtrlApiExec(req: NextApiRequest, res: NextApiResponse, params
     //_protocolHost = ctrlApiExec.protocolHost;
 
     ctrlApiExec.parm = ReqParm(req);
-    //console.log('parm em varsHttp', varsHttp.parm);
+    //csl('parm em varsHttp', varsHttp.parm);
 
     const paramsTypeVariantVals = [];
     for (let index = 0; index < paramsTypeVariantSel.length; index++) {
@@ -166,9 +166,9 @@ export function GetCtrlApiExec(req: NextApiRequest, res: NextApiResponse, params
       dispApiComps.push(`keys '${ctrlApiExec.paramsTypeKey}'`);
 
     let parmPlus: IGenericObject = {};
-    //console.log('parm', varsHttp.parm);
+    //csl('parm', varsHttp.parm);
 
-    //console.log('_parmPlus', varsHttp.apiPath, varsHttp.parm._parmPlus);
+    //csl('_parmPlus', varsHttp.apiPath, varsHttp.parm._parmPlus);
 
     if (ctrlApiExec.parm._parmPlus != null) {
       //parmPlus.loggedUser = varsHttp.parm._parmPlus.loggedUser != null ? LoggedUser.deserialize(varsHttp.parm._parmPlus.loggedUser) : null;
@@ -294,10 +294,10 @@ export class ResumoApi { // @@@@!!!! nome!
     const statusCodeUse = this.#_statusCode || HttpStatusCode.ok;
     if (this.#_data == null)
       throw new Error('ResumoApi.send without data.');
-    //console.log('jason data', this.#_data);
+    //csl('jason data', this.#_data);
     //this.#_data = { aa: new Date(), bb: true, cc: 123, dd: 'abcd', ee: { e1: 12, e2: 'abcd' } };
     // if (!isSerializable(this.#_data))
-    //   console.log('json data not serializable', this.#_data);
+    //   csl('json data not serializable', this.#_data);
     this.#_ctrlApiExec.res.status(statusCodeUse).json(this.#_data);
     elapsedMs = this.#_ctrlApiExec.calcExecTime?.elapsedMs();
     dbgA(1, '==> json', `${elapsedMs}ms`, `status(${statusCodeUse}).json(${DispAbrev(JSON.stringify(this.#_data), 500)})`);
@@ -307,7 +307,7 @@ export class ResumoApi { // @@@@!!!! nome!
     return elapsedMs;
   }
   redirect() {
-    //console.log('redirecionando para', this.#_redirectUrl);
+    //csl('redirecionando para', this.#_redirectUrl);
     if (this.#_statusCode != null)
       throw new Error('ResumoApi.redirect with statusCode.');
     if (this.#_redirectUrl == null)
@@ -353,7 +353,7 @@ export function ValidateObjectFirstError(data: IGenericObject, schema: yup.Objec
     schema.validateSync(data, { abortEarly: true });
     return null;
   } catch (error) {
-    //console.log(error);
+    //csl(error);
     return {
       fldName: error.path,
       msg: error.message,

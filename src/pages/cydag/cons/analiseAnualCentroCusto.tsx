@@ -72,7 +72,7 @@ class FrmFilter {
 //#endregion
 
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync(apisApp.valoresContas.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, globals.windowId, parm) };
 const pageSelf = pagesApp.analiseAnualRxOCentroCusto;
 
 const statesCompsSubord = { setMainStatesFilter: null, setMainStatesData1: null, setMainStatesData2: null, showConta: false, setShowConta: null };
@@ -243,7 +243,7 @@ export default function PageAnaliseAnualCentroCusto() {
 
   const FilterComp = () => {
     const frmFilter = useFrm<FrmFilter>({
-      defaultValues: FrmDefaultValues(new FrmFilter(), { mes: mesDefault(), centroCustoArray: [] }, [ValoresAnaliseAnual.F.ano, ValoresAnaliseAnual.F.centroCustoArray]),
+      defaultValues: FrmDefaultValues(new FrmFilter(), { mes: mesDefault(), centroCustoArray: [] }),
     });
     const ano = useWatchMy({ control: frmFilter.control, name: ValoresAnaliseAnual.F.ano });
     const centroCustoArray = useWatchMy({ control: frmFilter.control, name: ValoresAnaliseAnual.F.centroCustoArray });
@@ -280,7 +280,7 @@ export default function PageAnaliseAnualCentroCusto() {
     };
 
     React.useEffect(() => {
-      const ano = mainStates.anoCentroCustosArray.length != 0 ? mainStates.anoCentroCustosArray[0].ano : null;
+      const ano = mainStates.anoCentroCustosArray.length != 0 ? mainStates.anoCentroCustosArray[0].ano : '';
       frmFilter.setValue(ValoresAnaliseAnual.F.ano, ano);
       mountOptionsCC(ano, true);
     }, []);
@@ -299,7 +299,7 @@ export default function PageAnaliseAnualCentroCusto() {
     return (
       <form onSubmit={frmFilter.handleSubmit(getItensSubmit)}>
         <Stack direction='row' alignItems='center' gap={1}>
-          <SelAno value={ano} onChange={(value) => { frmFilter.setValue(ValoresAnaliseAnual.F.ano, value); mountOptionsCC(value); }}
+          <SelAno value={ano} onChange={(newValue) => { frmFilter.setValue(ValoresAnaliseAnual.F.ano, newValue || ''); mountOptionsCC(newValue); }}
             options={mainStates.anoCentroCustosArray.map((x) => new SelOption(x.ano, x.ano))}
           />
           {centroCustoOptions != null &&
@@ -311,7 +311,7 @@ export default function PageAnaliseAnualCentroCusto() {
               <FakeLink onClick={() => frmFilter.setValue(ValoresAnaliseAnual.F.centroCustoArray, mainStatesFilter.centroCustoOptions.map((x) => x.cod))}>(Sel. Todos)</FakeLink>
             </>
           }
-          <SelMes value={mes} onChange={(value) => frmFilter.setValue(ValoresAnaliseAnual.F.mes, value)} />
+          <SelMes value={mes} onChange={(newValue) => frmFilter.setValue(ValoresAnaliseAnual.F.mes, newValue || 0)} />
 
           <IconButtonAppSearch />
         </Stack>

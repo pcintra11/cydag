@@ -1,7 +1,7 @@
 import { ObjectId } from 'mongodb';
 
 import { csd, dbgError } from '../libCommon/dbg';
-import { AmountPtBrParse, BinSearchProp, DateDisp, DateFromStrISO, DateToStrISO, ErrorPlus, FillClass, RandomNumber, Scramble, Unscramble } from '../libCommon/util';
+import { AmountPtBrParse, BinSearchProp, ConcatArrays, DateDisp, DateFromStrISO, DateToStrISO, ErrorPlus, FillClass, RandomNumber, Scramble, Unscramble } from '../libCommon/util';
 import { IGenericObject } from '../libCommon/types';
 import { FldCsvDef, FldsCsvAll } from '../libCommon/uploadCsv';
 import { BooleanToSN, SNToBoolean, SearchTermsForDbSavePtBr, StrToNumber } from '../libCommon/util';
@@ -221,7 +221,7 @@ export class User {
     ]);
   }
   static loggedUser(userMd: UserMd, emailSigned: string, firstSignIn: Date, lastReSignIn: Date, lastActivity: Date, hasSomeCCResponsavel: boolean, hasSomeCCPlanejador: boolean, hasSomeCCConsulta: boolean, ttlSeconds?: number) {
-    const rolesUse = [...userMd.roles];
+    const rolesUse = ConcatArrays(userMd.roles, userMd.rolesControlled);
     if (hasSomeCCResponsavel) rolesUse.push(rolesApp.dyn_responsCC);
     if (hasSomeCCPlanejador) rolesUse.push(rolesApp.dyn_planejCC);
     if (hasSomeCCConsulta) rolesUse.push(rolesApp.dyn_consultaCC);
@@ -232,8 +232,6 @@ export class User {
     }
     if (emailSigned != userMd.email)
       rolesUse.push(roleSimulateUserDyn);
-    else
-      userMd.rolesControlled.forEach((x) => rolesUse.push(x));
     return {
       sessionIdStr: null,
       userIdStr: userMd._id.toString(),

@@ -49,14 +49,14 @@ const fldFrmExtra = {
 let mount; let mainStatesCache;
 const apis = { // cdm sempre aqui?? #!!!!!!
   // #!!!!! agrupar e executar em paralelo (await all)
-  getProcsOrcCCsAuth: () => CallApiCliASync(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.getProcsOrcCCsAuthQuadroCons }),
-  getContas: () => CallApiCliASync(apisApp.classeCusto.apiPath, globals.windowId, { cmd: CmdApi_ClasseCusto.list, sortType: SortType_ClasseCusto.classeCusto }),
-  getItens: (filter: FrmFilter) => CallApiCliASync(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.exportPlanejValoresGet, filter }),
+  getProcsOrcCCsAuth: () => CallApiCliASync<any>(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.getProcsOrcCCsAuthQuadroCons }),
+  getContas: () => CallApiCliASync<any>(apisApp.classeCusto.apiPath, globals.windowId, { cmd: CmdApi_ClasseCusto.list, sortType: SortType_ClasseCusto.classeCusto }),
+  getItens: (filter: FrmFilter) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.exportPlanejValoresGet, filter }),
 };
 const pageSelf = pagesApp.exportaPlanej;
 export default function PageExportPlanej() {
   const frmFilter = useFrm<FrmFilter>({
-    defaultValues: FrmDefaultValues(new FrmFilter(), { revisao: RevisaoValor.atual, centroCustoArray: [], withDetails: false, showCalc: false }, [ValoresPlanejadosDetalhes.F.ano, ValoresPlanejadosDetalhes.F.revisao, fldFrmExtra.centroCustoArray]),
+    defaultValues: FrmDefaultValues(new FrmFilter(), { revisao: RevisaoValor.atual, centroCustoArray: [], withDetails: false, showCalc: false }),
   });
   const ano = useWatchMy({ control: frmFilter.control, name: ValoresPlanejadosDetalhes.F.ano });
   const revisao = useWatchMy({ control: frmFilter.control, name: ValoresPlanejadosDetalhes.F.revisao });
@@ -116,7 +116,7 @@ export default function PageExportPlanej() {
       .then((result) => {
         if (!mount) return;
         const { anoCentroCustosArray, classeCustoArray } = result; // , centroCustoArray
-        const ano = anoCentroCustosArray.length != 0 ? anoCentroCustosArray[0].ano : null;
+        const ano = anoCentroCustosArray.length != 0 ? anoCentroCustosArray[0].ano : '';
         setMainStatesCache({ phase: Phase.ready, anoCentroCustosArray, classeCustoArray }); //, centroCustoArray
         frmFilter.setValue(ValoresPlanejadosDetalhes.F.ano, ano);
         mountOptionsCC(ano);
@@ -199,7 +199,7 @@ export default function PageExportPlanej() {
           placeHolder='Ano'
           options={[new SelOption('Ano', 'Ano', true), ...mainStates.processoOrcamentarioArray.map((x) => new SelOption(x.ano, x.ano))]}
         /> */}
-        <SelAno value={ano} onChange={(value) => { frmFilter.setValue(ValoresPlanejadosDetalhes.F.ano, value); mountOptionsCC(value); }}
+        <SelAno value={ano} onChange={(newValue) => { frmFilter.setValue(ValoresPlanejadosDetalhes.F.ano, newValue || ''); mountOptionsCC(newValue); }}
           options={mainStates.anoCentroCustosArray.map((x) => new SelOption(x.ano, x.ano))}
         />
         <SelRevisao value={revisao} onChange={(newValue: RevisaoValor) => frmFilter.setValue(ValoresPlanejadosDetalhes.F.revisao, newValue)} />

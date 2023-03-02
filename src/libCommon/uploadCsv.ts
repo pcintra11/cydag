@@ -44,13 +44,13 @@ export function UploadFileNameValidator(file, config: IUploadNameValidatorConfig
 
 export const UploadStateClear = (dropZone: DropzoneState) => {
   //export const UploadStateClear = (acceptedFiles: File[], fileRejections: FileRejection[], inputRef: React.RefObject<HTMLInputElement>) => {
-  //console.log('removeAll...', acceptedFiles.length);
+  //csl('removeAll...', acceptedFiles.length);
   dropZone.acceptedFiles.length = 0;
   dropZone.acceptedFiles.splice(0, dropZone.acceptedFiles.length);
   dropZone.fileRejections.length = 0;
   dropZone.fileRejections.splice(0, dropZone.acceptedFiles.length);
   dropZone.inputRef.current.value = '';
-  //console.log(acceptedFiles);
+  //csl(acceptedFiles);
 };
 
 export enum MessageLevelUpload {

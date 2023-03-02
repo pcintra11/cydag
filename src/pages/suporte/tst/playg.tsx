@@ -110,7 +110,7 @@ export default function PagePlayg() {
   const appendResults = (id: string, result?: any, withHourAndId = true) => {
     const hourAndId = withHourAndId ? `${HoraDebug()} - ${id} - ` : '';
     //msgsAcum = [...msgsAcum, ...msgs.map((x) => `${hourAndId}${x}`)];
-    //console.log({ msgs });
+    //csl({ msgs });
     //setResult(<div><p>1:{msgs.length}</p><p>2:{msgs.length}</p></div>);
     setResultAcum((acum) => [...acum, { id: hourAndId, result }]);
   };
@@ -152,7 +152,7 @@ export default function PagePlayg() {
   async function SubEnvs() {
     //const horaStart = HoraDebug();
     try {
-      const apiReturn = await CallApiCliASync(apiUse(apiCorresp1.apiPath), globals.windowId, {
+      const apiReturn = await CallApiCliASync<any>(apiUse(apiCorresp1.apiPath), globals.windowId, {
         cmd: CmdApi_Playg.envs,  //...parmNivelLog()
       });
       appendResults('SubEnvs', apiReturn.value);
@@ -199,7 +199,7 @@ export default function PagePlayg() {
     //const horaStart = HoraDebug();
     try {
       //setResultMail({ horaStart, horaEnd: '......', dataApi: resultMail.dataApi });
-      const apiReturn = await CallApiCliASync(apiUse(apiCorresp1.apiPath), globals.windowId, { ...parm, cmd: CmdApi_Playg.mail });
+      const apiReturn = await CallApiCliASync<any>(apiUse(apiCorresp1.apiPath), globals.windowId, { ...parm, cmd: CmdApi_Playg.mail });
       appendResults('SubMail', apiReturn.value);
     } catch (error) {
       appendResults('SubMail (error)', error.message);
@@ -212,7 +212,7 @@ export default function PagePlayg() {
     const calcExecTime = new CalcExecTime();
     appendResults(`${idProc}-ini (params)`, [JSON.stringify(parm)]);
     try {
-      const apiReturn = await CallApiCliASync(apiCorresp1.apiPath, globals.windowId, { ...parm, idProc, cmd: CmdApi_Playg.testDbWrite });
+      const apiReturn = await CallApiCliASync<any>(apiCorresp1.apiPath, globals.windowId, { ...parm, idProc, cmd: CmdApi_Playg.testDbWrite });
       if (!mount) return;
       appendResults(`${idProc}-fim ${calcExecTime.elapsedMs()}ms`, apiReturn.value);
     } catch (error) {
@@ -225,7 +225,7 @@ export default function PagePlayg() {
     const calcExecTime = new CalcExecTime();
     appendResults(`${idProc}-ini (params)`, [JSON.stringify(parm)]);
     try {
-      const apiReturn = await CallApiCliASync(apiCorresp1.apiPath, globals.windowId, { ...parm, idProc, cmd: CmdApi_Playg.testDbRead });
+      const apiReturn = await CallApiCliASync<any>(apiCorresp1.apiPath, globals.windowId, { ...parm, idProc, cmd: CmdApi_Playg.testDbRead });
       if (!mount) return;
       appendResults(`${idProc}-fim ${calcExecTime.elapsedMs()}ms`, apiReturn.value);
     } catch (error) {
@@ -235,7 +235,7 @@ export default function PagePlayg() {
   const TestDbReset = async () => {
     const parm = frmTestsDb.getValues();
     try {
-      const apiReturn = await CallApiCliASync(apiCorresp1.apiPath, globals.windowId, { ...parm, cmd: CmdApi_Playg.testDbReset });
+      const apiReturn = await CallApiCliASync<any>(apiCorresp1.apiPath, globals.windowId, { ...parm, cmd: CmdApi_Playg.testDbReset });
       if (!mount) return;
       appendResults('TestDbReset', apiReturn.value);
     } catch (error) {
@@ -244,12 +244,12 @@ export default function PagePlayg() {
   };
   const TestApiCalls = async () => {
     const parm = frmApiCalls.getValues();
-    //console.log(parm);
+    //csl(parm);
     const idProc = idProcGen();
     const calcExecTime = new CalcExecTime();
     appendResults(`${idProc}-ini (params)`, [JSON.stringify(parm)]);
     try {
-      const apiReturn = await CallApiCliASync(apiCorresp1.apiPath, globals.windowId, { ...parm, idProc, cmd: CmdApi_Playg.testApiCalls });
+      const apiReturn = await CallApiCliASync<any>(apiCorresp1.apiPath, globals.windowId, { ...parm, idProc, cmd: CmdApi_Playg.testApiCalls });
       if (!mount) return;
       appendResults(`${idProc}-fim ${calcExecTime.elapsedMs()}ms`, apiReturn.value);
     } catch (error) {
@@ -305,7 +305,7 @@ export default function PagePlayg() {
       return FrmSetError(frm, 'name', 'Informação obrigatória');
     //const horaStart = HoraDebug();
     try {
-      const apiReturn = await CallApiCliASync(apiUse(apiCorresp1.apiPath), globals.windowId, {
+      const apiReturn = await CallApiCliASync<any>(apiUse(apiCorresp1.apiPath), globals.windowId, {
         cmd: CmdApi_Playg.cookieHttpNormal, cmdCookie, ...dataForm, // ...parmNivelLog()
       }, { withCredentials: true });
       appendResults('SubCookieHttpNormal', apiReturn.value);
@@ -329,7 +329,7 @@ export default function PagePlayg() {
       return FrmSetError(frm, 'name', 'Informação obrigatória');
     //const horaStart = HoraDebug();
     try {
-      const apiReturn = await CallApiCliASync(apiUse(apiCorresp1.apiPath), globals.windowId, {
+      const apiReturn = await CallApiCliASync<any>(apiUse(apiCorresp1.apiPath), globals.windowId, {
         cmd: CmdApi_Playg.cookieHttpCrypto, cmdCookie, ...dataForm,
       }, { withCredentials: true });
       appendResults('SubCookieHttpCrypto', apiReturn.value);
@@ -376,7 +376,7 @@ export default function PagePlayg() {
         else
           parm = { ...parm, cmd: CmdApi_Playg.wait };
         const horaStart = HoraDebug();
-        CallApiCliASync(apiUse(api), globals.windowId, parm)
+        CallApiCliASync<any>(apiUse(api), globals.windowId, parm)
           .then(apiReturn => {
             calls.push({ horaStart, api, callInfo, apiReturn });
             appendResults('SubASyncAndDb', { header, calls });
@@ -395,7 +395,7 @@ export default function PagePlayg() {
     const calcExecTime = new CalcExecTime();
     appendResults(`${idProc}-ini (status ${httpStatus} async: ${isAsync})`);
     try {
-      const apiReturn = await CallApiCliASync(apiCorresp1.apiPath, globals.windowId, { idProc, cmd: CmdApi_Playg.forceHttpStatus, httpStatus, isAsync });
+      const apiReturn = await CallApiCliASync<any>(apiCorresp1.apiPath, globals.windowId, { idProc, cmd: CmdApi_Playg.forceHttpStatus, httpStatus, isAsync });
       //const msgsProc = apiReturn.value as string[];
       if (!mount) return;
       appendResults(`${idProc}-fim ${calcExecTime.elapsedMs()}ms`, apiReturn.value);

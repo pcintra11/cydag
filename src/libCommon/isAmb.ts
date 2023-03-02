@@ -1,4 +1,5 @@
 import { Env } from '../libCommon/envs';
+import { csl } from './dbg';
 
 enum Amb {
   dev = 'dev',
@@ -18,7 +19,7 @@ export function GetAmb() {
       throw new Error(`amb ${amb} não previsto`);
     return amb;
   } catch (error) {
-    console.log('GetAmb error', error.message);
+    csl('GetAmb error', error.message);
     return null;
   }
 }

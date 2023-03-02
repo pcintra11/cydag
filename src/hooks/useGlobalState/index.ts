@@ -77,7 +77,7 @@ export function useGlobalState(globalState: GlobalState, config?: { reRender?: b
 //     if (reRender) {
 //       globalState.subscribe(localReRender);
 //       const currentState = globalState.getValue();
-//       //console.log({ state, currentState });
+//       //csl({ state, currentState });
 //       if (currentState !== state) // numa situação limite o valor foi alterado antes da subscrição ser registrada
 //       {
 //         dbg(3, 'page', 'valor alterado antes da subscrição!');
@@ -86,7 +86,7 @@ export function useGlobalState(globalState: GlobalState, config?: { reRender?: b
 //       // const currentIsLoading = globalState.isLoading();
 //       // if (currentIsLoading !== isLoading) // numa situação limite o valor foi alterado antes da subscrição ser registrada
 //       // {
-//       //   console.log('isLoading alterado antes da subscrição!');
+//       //   csl('isLoading alterado antes da subscrição!');
 //       //   localReRender(true);
 //       // }
 //     }

@@ -12,7 +12,7 @@ import { MenuEntriesHub, pagesHub, reSignInFuncHub, ControlledAccessCheckHub, Co
 import { Env, EnvDeployConfig } from '../libCommon/envs';
 
 import { CmdApi_Others } from './api/base/others/types';
-import { apisBase, PagesBaseArray } from '../base/endPoints';
+import { apisBase, pagesBase, PagesBaseArray } from '../base/endPoints';
 import { LoggedUserBase } from '../base/db/types';
 
 import { IdByTime, DateDifHours, ObjUpdAllProps, OnClient, NumberOrDef, IsErrorManaged, HttpStatusCode, ErrorPlusHttpStatusCode, ErrorPlus, ObjDiff } from '../libCommon/util';
@@ -45,11 +45,17 @@ import { useLoggedUser } from '../appCydag/useLoggedUser';
 import { PagesAppArray } from '../appCydag/endPoints';
 import { menuTypeApp } from '../appCydag/themes';
 
-export interface ILogRedir { loggedUser: LoggedUserBase, pathname: string, query?: any }
-export interface ILogRedirContext {
-  logRedirSetGet: (logRedir?: ILogRedir) => ILogRedir;
+//#region troca de usuário logado em página de serviço
+// Ao setar o loggedUser em uma pagina ela será sempre renderizada, pois está dentro do _App.
+// Como uma 'autenticação' sempre vai acabar 'roteando' para uma página 'pós login' o 'setUser' é executado em uma
+// 'página de serviço', pois a renderização extra não trará nenhum prejuízo nessa página
+export interface IChgUserAndRoute { loggedUser: LoggedUserBase, pagePath: string, query?: any }
+export interface IChgUserAndRouteContext {
+  chgUserAndRouteStart: (chgUserAndRoute?: IChgUserAndRoute) => void;
+  chgUserAndRouteFinish: () => void;
 }
-export const _AppLogRedir = React.createContext<ILogRedirContext>(null);
+export const _AppLogRedir = React.createContext<IChgUserAndRouteContext>(null);
+//#endregion
 
 let themeVariants: ThemeVariants = {}; // defaultThemeVariants(themeSchemesHub);
 
@@ -103,7 +109,7 @@ class MainStates {
   themeVariants?: ThemeVariants;
   nivelLogA?: number; nivelLogD?: number; nivelLogE?: number; nivelLogT?: number; nivelLogX?: number;
   menuType?: MenuType;
-  logRedir?: ILogRedir;
+  chgUserAndRoute?: IChgUserAndRoute;
 }
 export default function _app({ Component, pageProps }: AppProps) {
   // 'Component' é o export default da pagina
@@ -117,18 +123,25 @@ export default function _app({ Component, pageProps }: AppProps) {
 
   //const { loggedUser, isLoadingUser, setUser, reloginFromCookieNotConfirmed, setReloginConfirmed } = useLoggedUser(true); 
   const router = useRouter();
-  const { loggedUser, isLoadingUser } = useLoggedUser({ id: '_app' });
-  //console.log('_app', ++renderCount, router.route );
-  //console.log('_app', dbgContext);
+  const { loggedUser, isLoadingUser, setUser } = useLoggedUser({ id: '_app' });
+  //csl('_app', ++renderCount, router.route );
+  //csl('_app', dbgContext);
   const agora = new Date();
   const dbgContext = `${router.route} (_app)`;
 
   const loggedUserBase: LoggedUserBase = loggedUser;
 
-  const logRedirSetGet = (logRedir?: ILogRedir) => {
-    const lastValues = mainStates.logRedir;
-    setMainStatesCache({ logRedir });
-    return lastValues;
+  const chgUserAndRouteStart = (chgUserAndRoute?: IChgUserAndRoute) => {
+    //csd('chgUserAndRouteStart', chgUserAndRoute);
+    setMainStatesCache({ chgUserAndRoute });
+    setTimeout(() => router.push(pagesBase.chgUserAndRoute.pagePath), 0);
+  };
+  const chgUserAndRouteFinish = () => {
+    //csd('chgUserAndRouteFinish', mainStates.chgUserAndRoute);
+    if (mainStates.chgUserAndRoute == null) return;
+    setUser(mainStates.chgUserAndRoute.loggedUser, 'chgUserAndRoute(_app)');
+    setTimeout(() => router.push({ pathname: mainStates.chgUserAndRoute.pagePath, query: mainStates.chgUserAndRoute.query }), 0);
+    setMainStatesCache({ chgUserAndRoute: null });
   };
 
   if (loggedUser == null ||
@@ -137,9 +150,9 @@ export default function _app({ Component, pageProps }: AppProps) {
       return (<Box>Sistema bloqueado: {Env('blockMsg')} </Box>);
   }
 
-  //csl('_app render', { isLoadingUser, loggedUser, mainStates });
+  //csd('_app render', { isLoadingUser, loggedUser, mainStates });
 
-  //console.log(dbgContext, { loggedUser, isLoadingUser, reloginFromCookieNotConfirmed });
+  //csl(dbgContext, { loggedUser, isLoadingUser, reloginFromCookieNotConfirmed });
 
   const retryAccessControlled = () => {
     setMainStatesCache({ blockContentReason: null });
@@ -202,7 +215,7 @@ export default function _app({ Component, pageProps }: AppProps) {
         }
       }
       else
-        CallApiCliASync(apisBase.others.apiPath, globals.windowId, { cmd: CmdApi_Others.logReferer }, { fetchAndForget: true }); //@!!!!!!
+        CallApiCliASync<any>(apisBase.others.apiPath, globals.windowId, { cmd: CmdApi_Others.logReferer }, { fetchAndForget: true }); //@!!!!!!
       //await SleepMsDevRandom(1000, '_app');
       try {
         const themeVariantsCookie = CookieCli.getJSON(Env('appName', cookiesSys.themeVariants));
@@ -242,13 +255,13 @@ export default function _app({ Component, pageProps }: AppProps) {
       if (loggedUserBase != null) {
         if (reSignInFuncHub != null) {
           //if (reloginFromCookieNotConfirmed) {
-          //console.log('_app', { lastActivity: loggedUser.lastActivity, expire: loggedUser.expire() }) //@@@!!!
-          //console.log('setReloginConfirmed');
+          //csl('_app', { lastActivity: loggedUser.lastActivity, expire: loggedUser.expire() }) //@@@!!!
+          //csl('setReloginConfirmed');
           //setReloginConfirmed();
           const hoursInactivity = 0; //12; // @@@!!! em mobile não deve interferir !
           try {
             await reSignInFuncHub(); //@@!!!!!!
-            //console.log({ loggedUserNow });
+            //csl({ loggedUserNow });
             // setUser(loggedUserNow, '_app(reSignIn)'); já está settado com as informações mais recentes do DB !!
             // se depois de algum tempo buscar o login do cookie será forçado a apresentação da pagina 'welcome', para o usuario ver o nome
             if (DateDifHours(agora, loggedUserBase.lastActivity) > hoursInactivity &&
@@ -364,7 +377,7 @@ export default function _app({ Component, pageProps }: AppProps) {
 
         <MsalProvider instance={msalInstance}>
 
-          <_AppLogRedir.Provider value={{ logRedirSetGet }}>
+          <_AppLogRedir.Provider value={{ chgUserAndRouteStart, chgUserAndRouteFinish }}>
             {/* <ThemeProviderSC theme={themeMui}> */}
             <ThemeProvider_mui theme={themePlus}>
               {mainStates.blockContentReason == null

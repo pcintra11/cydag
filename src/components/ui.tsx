@@ -244,7 +244,7 @@ export function BadgeMy({ content, max, showZero, vertical, horizontal, contentS
   else if (horizontalUse == 'right')
     sx.paddingRight = `${margingExcedHoriz}px`;
   //sx.width = `${sizeXY + margingExcedHoriz}px`; // mudou o position??!!
-  //console.log({ sizeXY, horizontalUse, verticalUse, sx });
+  //csl({ sizeXY, horizontalUse, verticalUse, sx });
 
   // const sizeBadge = sizeXY;
   // const StyledComp = styled(Badge_mui)<BadgeProps_mui>(({ theme }) => ({
@@ -344,7 +344,7 @@ interface IAvatarGroupProps {
 }
 export function AvatarGroupMy(props: IAvatarGroupProps) {
   const { sizeXY, fontSize } = props; // , ...propsIgnore
-  //console.log({ props, avatares });
+  //csl({ props, avatares });
   const sx = sxMaker({ sizeXY, fontSize });
   return (
     <AvatarGroup_mui max={props.max}
@@ -372,7 +372,7 @@ interface IconButtonProps {
   disabled?: boolean;
   submit?: boolean;
   padding?: number;
-  executing?: boolean; // @!!!!!!!!!
+  executing?: boolean;
 }
 export function IconButtonMy(props: IconButtonProps) { // implementar no componente do icon o 'onclick' opcional @@!!!!!!
   const { children, submit, onClick, disabled, padding } = props;
@@ -392,23 +392,37 @@ export function IconButtonMy(props: IconButtonProps) { // implementar no compone
 export function WaitingObs({ text = 'Favor aguardar' }: { text?: string }) {
   return (
     <Box sx={{ width: '100%' }}>
-      <Box>{text}</Box>
+      {text != null &&
+        <Box>{text}</Box>
+      }
       <LinearProgress_mui />
     </Box>
   );
 }
 
-export function BtnLine({ children, left, right }: { children: React.ReactNode, center?: boolean, left?: boolean, right?: boolean }) {
+export function BtnLine({ children, left, right, bottomStick }: { children: React.ReactNode, center?: boolean, left?: boolean, right?: boolean, bottomStick?: boolean }) {
+  const themePlus = useTheme();
   let justifyContent = 'center';
   if (left) justifyContent = 'left';
   else if (right) justifyContent = 'right';
-  return (
-    <Box>
-      <Stack direction='row' alignItems='center' gap={1} justifyContent={justifyContent} flexWrap='wrap' >
-        {children}
-      </Stack>
-    </Box>
-  );
+  //const propsForward = bottomStick ? {  } : {}; //@!!!!!!!!! color
+  if (bottomStick)
+    return (
+      <Box position='sticky' bottom={0} p='0.5' bgcolor={themePlus.themePlusDeriv.destaque1.backColor}>
+        <Stack direction='row' alignItems='center' gap={1} justifyContent={justifyContent} flexWrap='wrap' >
+          {children}
+        </Stack>
+      </Box>
+    );
+  else
+
+    return (
+      <Box>
+        <Stack direction='row' alignItems='center' gap={1} justifyContent={justifyContent} flexWrap='wrap' >
+          {children}
+        </Stack>
+      </Box>
+    );
 }
 
 export function VisualBlock({ children, className }: { children: React.ReactNode, className?: string }) {
@@ -446,7 +460,7 @@ export function FakeLink({ onClick, disabled, color, bgcolor, children }: IFakeL
 export function WhatsAppLink({ phone, textLink, message }: { phone: string, textLink?: string, message?: string }) {
   const phoneCountryCode = '55';
   const href = `https://api.whatsapp.com/send?phone=${phoneCountryCode}${phone}&text=${message || ''}`;
-  //console.log(href);
+  //csl(href);
   return (
     <a href={
       `${encodeURI(href)}`
@@ -628,7 +642,7 @@ export const AutocompleteMy = ({ width, value, onChange, getOptionLabel, isOptio
   const disableCloseOnSelect = multiple;
   return (
     <Autocomplete_mui
-      sx={{ width: widthUse, whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}
+      sx={{ width: widthUse, whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}
       freeSolo={freeSolo}
       autoSelect
       blurOnSelect

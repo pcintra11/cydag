@@ -73,7 +73,7 @@ class FrmFilter {
 }
 
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync(apisApp.viagem.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.viagem.apiPath, globals.windowId, parm) };
 const pageSelf = pagesApp.viagem;
 
 const statesCompsSubord = { setMainStatesFilter: null, setMainStatesData1: null, setMainStatesData2: null, setStatePreReservedItensPrem: null, setStatePreReservedItensVal: null };
@@ -190,7 +190,7 @@ export default function PageViagem() {
 
   const FilterComp = () => {
     const frmFilter = useFrm<FrmFilter>({
-      defaultValues: FrmDefaultValues(new FrmFilter(), { revisao: RevisaoValor.atual }, [Funcionario.F.ano, Funcionario.F.revisao, Funcionario.F.centroCusto]),
+      defaultValues: FrmDefaultValues(new FrmFilter(), { revisao: RevisaoValor.atual }),
     });
     const ano = useWatchMy({ control: frmFilter.control, name: Funcionario.F.ano });
     const revisao = useWatchMy({ control: frmFilter.control, name: Funcionario.F.revisao });
@@ -218,11 +218,11 @@ export default function PageViagem() {
         centroCustoOptions.findIndex((x) => x.cod === centroCustoSelected) !== -1)
         frmFilter.setValue(Funcionario.F.centroCusto, centroCustoSelected);
       else
-        frmFilter.setValue(Funcionario.F.centroCusto, null);
+        frmFilter.setValue(Funcionario.F.centroCusto, '');
     };
 
     React.useEffect(() => {
-      const ano = mainStates.anoCentroCustosArray.length != 0 ? mainStates.anoCentroCustosArray[0].ano : null;
+      const ano = mainStates.anoCentroCustosArray.length != 0 ? mainStates.anoCentroCustosArray[0].ano : '';
       frmFilter.setValue(Funcionario.F.ano, ano);
       mountOptionsCC(ano, true);
     }, []);
@@ -238,12 +238,12 @@ export default function PageViagem() {
     return (
       <form onSubmit={frmFilter.handleSubmit(getItensSubmit)}>
         <Stack direction='row' alignItems='center' gap={1}>
-          <SelAno value={ano} onChange={(value) => { frmFilter.setValue(Funcionario.F.ano, value); mountOptionsCC(value); }}
+          <SelAno value={ano} onChange={(newValue) => { frmFilter.setValue(Funcionario.F.ano, newValue || ''); mountOptionsCC(newValue); }}
             options={mainStates.anoCentroCustosArray.map((x) => new SelOption(x.ano, x.ano))}
           />
           <SelRevisao value={revisao} onChange={(newValue: RevisaoValor) => frmFilter.setValue(Funcionario.F.revisao, newValue)} />
           {centroCustoOptions != null &&
-            <SelEntity value={centroCusto} onChange={(newValue: string) => frmFilter.setValue(Funcionario.F.centroCusto, newValue)}
+            <SelEntity value={centroCusto} onChange={(newValue: string) => frmFilter.setValue(Funcionario.F.centroCusto, newValue || '')}
               options={centroCustoOptions} name={CentroCusto.Name} withCod width='550px' disableClearable />
           }
           <IconButtonAppSearch />
@@ -271,17 +271,17 @@ export default function PageViagem() {
     const dataStructure = mainStatesData2.dataStructure;
     if (dataStructure.loading) return <WaitingObs text='carregando' />;
 
-    let itenPreReserveNextPrem = 0;
+    let itemPreReserveNextPrem = 0;
     const newLine1 = () => {
-      if (itenPreReserveNextPrem > (itensPreReserve - 1))
+      if (itemPreReserveNextPrem > (itensPreReserve - 1))
         return PopupMsg.error('O máximo de itens incluídos e não salvos foi atingido. Favor salvar os dados para incluir mais itens.');
-      statesCompsSubord.setStatePreReservedItensPrem[itenPreReserveNextPrem++](LineState.inserted);
+      statesCompsSubord.setStatePreReservedItensPrem[itemPreReserveNextPrem++](LineState.inserted);
     };
-    let itenPreReserveNextVal = 0;
+    let itemPreReserveNextVal = 0;
     const newLine2 = () => {
-      if (itenPreReserveNextVal > (itensPreReserve - 1))
+      if (itemPreReserveNextVal > (itensPreReserve - 1))
         return PopupMsg.error('O máximo de itens incluídos e não salvos foi atingido. Favor salvar os dados para incluir mais itens.');
-      statesCompsSubord.setStatePreReservedItensVal[itenPreReserveNextVal++](LineState.inserted);
+      statesCompsSubord.setStatePreReservedItensVal[itemPreReserveNextVal++](LineState.inserted);
     };
     const FuncId = (origem: OrigemFunc, refer: string) => `${origem}/${refer}`;
     const FuncDescr = (funcionario: Funcionario) => `${funcionario.nome} (${OrigemFuncMd.descr(funcionario.origem)}/${funcionario.refer})`;

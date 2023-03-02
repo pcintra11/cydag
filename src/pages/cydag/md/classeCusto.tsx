@@ -46,7 +46,7 @@ class FrmFilter {
   searchTerms: string;
 }
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync(apisApp.classeCusto.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.classeCusto.apiPath, globals.windowId, parm) };
 const pageSelf = pagesApp.classeCusto;
 export default function PageClasseCustoCrud() {
   const frmFilter = useFrm<FrmFilter>({
@@ -149,7 +149,7 @@ export default function PageClasseCustoCrud() {
     if (!router.isReady || isLoadingUser) return;
     if (!PageDef.IsUserAuthorized(pageSelf, loggedUser?.roles)) throw new ErrorPlus('Não autorizado.');
     setMainStatesCache({ phase: Phase.list, filter: { searchTerms: '' }, filterApplyed: false, listing: { searching: false, dataRows: [] } });
-    CallApiCliASync(apisApp.diversos.apiPath, globals.windowId, { cmd: CmdApi_Diversos.listFatorCusto })
+    CallApiCliASync<any>(apisApp.diversos.apiPath, globals.windowId, { cmd: CmdApi_Diversos.listFatorCusto })
       .then(async (apiReturn) => {
         const fatorCustoArray = (apiReturn.value.documents as IGenericObject[]).map((data) => FatorCusto.deserialize(data));
         setMainStatesCache({ fatorCustoArray });
@@ -302,7 +302,7 @@ export default function PageClasseCustoCrud() {
               // preparar como  em FrmInput
               >
                 <FormControlLabel value={OrigemClasseCusto.inputada} disabled={!isInsert} control={<Radio />} label={OrigemClasseCustoMd.descr(OrigemClasseCusto.inputada)} />
-                <FormControlLabel value={OrigemClasseCusto.totalInputada} disabled={!isInsert} control={<Radio />} label={OrigemClasseCustoMd.descr(OrigemClasseCusto.totalInputada)} />
+                <FormControlLabel value={OrigemClasseCusto.totalImputada} disabled={!isInsert} control={<Radio />} label={OrigemClasseCustoMd.descr(OrigemClasseCusto.totalImputada)} />
                 <FormControlLabel value={OrigemClasseCusto.calculada} disabled control={<Radio />} label={OrigemClasseCustoMd.descr(OrigemClasseCusto.calculada)} />
                 <FormControlLabel value={OrigemClasseCusto.totalCalculada} disabled control={<Radio />} label={OrigemClasseCustoMd.descr(OrigemClasseCusto.totalCalculada)} />
               </RadioGroup>

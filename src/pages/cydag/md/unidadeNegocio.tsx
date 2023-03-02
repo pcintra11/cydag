@@ -43,18 +43,18 @@ class FrmFilter {
   searchTerms: string;
 }
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync(apisApp.unidadeNegocio.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.unidadeNegocio.apiPath, globals.windowId, parm) };
 const pageSelf = pagesApp.unidadeNegocio;
 export default function PageUnidadeNegocioCrud() {
   const frmFilter = useFrm<FrmFilter>({
     defaultValues: FrmDefaultValues(new FrmFilter()),
   });
   const frmData = useFrm<FrmData>({ defaultValues: {}, schema: crudValidations });
-  const categRegional = useWatchMy({ control: frmData.control, name: Entity_Crud.F.categRegional });
+  const categRegional = useWatchMy({ control: frmData.control, name: Entity_Crud.F.categRegional }); //#!!!!!!!!
 
   interface MainStates {
     error?: Error | ErrorPlus; phase?: Phase;
-    filter?: IGenericObject; filterApplyed?: boolean;
+    filter?: IGenericObject; filterApplied?: boolean;
     listing?: { searching: boolean, dataRows?: Entity_Crud[], partialResults?: boolean }; data?: Entity_Crud; index?: number;
   }
   const [mainStates, setMainStates] = React.useState<MainStates>({ phase: Phase.initiating });
@@ -68,7 +68,7 @@ export default function PageUnidadeNegocioCrud() {
     const filter = NormalizePropsString(dataForm);
     try {
       const calcExecTimeSearch = new CalcExecTime();
-      setMainStatesCache({ filterApplyed: true, listing: { searching: true } });
+      setMainStatesCache({ filterApplied: true, listing: { searching: true } });
       const apiReturn = await apis.crud({ cmd: CmdApi.list, filter });
       const documents = (apiReturn.value.documents as IGenericObject[]).map((data) => Entity_Crud.deserialize(data));
       if (!mount) return;
@@ -120,7 +120,7 @@ export default function PageUnidadeNegocioCrud() {
     mount = true;
     if (!router.isReady || isLoadingUser) return;
     if (!PageDef.IsUserAuthorized(pageSelf, loggedUser?.roles)) throw new ErrorPlus('Não autorizado.');
-    setMainStatesCache({ phase: Phase.list, filter: { searchTerms: '' }, filterApplyed: false, listing: { searching: false, dataRows: [] } });
+    setMainStatesCache({ phase: Phase.list, filter: { searchTerms: '' }, filterApplied: false, listing: { searching: false, dataRows: [] } });
     return () => { mount = false; };
   }, [router.isReady, isLoadingUser, loggedUser?.email]);
   if (mainStates.error != null) return <AbortProc error={mainStates.error} tela={pageSelf.pagePath} loggedUserBase={loggedUser} />;
@@ -175,7 +175,7 @@ export default function PageUnidadeNegocioCrud() {
               ? <WaitingObs text='buscando' />
               : <Stack gap={1} height='100%'>
                 {(mainStates.listing.partialResults) && <AlertMy>Resultados parciais</AlertMy>}
-                {(mainStates.filterApplyed && mainStates.listing.dataRows.length == 0) && <Box>Nada encontrado</Box>}
+                {(mainStates.filterApplied && mainStates.listing.dataRows.length == 0) && <Box>Nada encontrado</Box>}
                 <TableGrid
                   colsGridConfig={colsGridConfig}
                   dataRows={mainStates.listing.dataRows}

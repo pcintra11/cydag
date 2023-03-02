@@ -74,7 +74,7 @@ class FrmFilter {
 //#endregion
 
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync(apisApp.valoresContas.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, globals.windowId, parm) };
 const pageSelf = pagesApp.analiseAnualRxOControladoria;
 
 const statesCompsSubord = { setMainStatesData1: null as any, setMainStatesData2: null as any, showConta: false, setShowConta: null as any }; //#!!!!!!
@@ -170,7 +170,7 @@ export default function PageAnaliseAnualControladoria() {
     categRegionalUNFator = 'un_fator',
     categRegionalUNDirFator = 'un_dir_fator',
   }
-  const setValsInf = (nodes: HierNode<NodeContent>[], valoresArray: ValoresAnaliseAnual[], estrutHier: EstrutHier) => { //##!!!!!!!!! fora da função
+  const setValsInf = (nodes: HierNode<NodeContent>[], valoresArray: ValoresAnaliseAnual[], estrutHier: EstrutHier) => { //##!!!!!!!! fora da função
     valoresArray.forEach((valores) => {
       const nodeType = NodeType.classeCusto;
       const keys =
@@ -276,7 +276,7 @@ export default function PageAnaliseAnualControladoria() {
 
   const FilterComp = () => {
     const frmFilter = useFrm<FrmFilter>({
-      defaultValues: FrmDefaultValues(new FrmFilter(), { mes: mesDefault() }, [ValoresAnaliseAnual.F.ano]),
+      defaultValues: FrmDefaultValues(new FrmFilter(), { mes: mesDefault() }),
     });
     const ano = useWatchMy({ control: frmFilter.control, name: ValoresAnaliseAnual.F.ano });
     const mes = useWatchMy({ control: frmFilter.control, name: ValoresAnaliseAnual.F.mes });
@@ -297,10 +297,10 @@ export default function PageAnaliseAnualControladoria() {
     return (
       <form onSubmit={frmFilter.handleSubmit(getItensSubmit)}>
         <Stack direction='row' alignItems='center' gap={1}>
-          <SelAno value={ano} onChange={(value) => frmFilter.setValue(ValoresAnaliseAnual.F.ano, value)}
+          <SelAno value={ano} onChange={(newValue) => frmFilter.setValue(ValoresAnaliseAnual.F.ano, newValue || '')}
             options={processoOrcamentarioArray.map((x) => new SelOption(x.ano, x.ano))}
           />
-          <SelMes value={mes} onChange={(value) => frmFilter.setValue(ValoresAnaliseAnual.F.mes, value)} />
+          <SelMes value={mes} onChange={(newValue) => frmFilter.setValue(ValoresAnaliseAnual.F.mes, newValue || 0)} />
           <IconButtonAppSearch />
         </Stack>
       </form>
@@ -362,7 +362,7 @@ export default function PageAnaliseAnualControladoria() {
       );
     };
 
-    const ValoresNodeComp = ({ node, nodes, level }: { nodes: HierNode<NodeContent>[], node: HierNode<NodeContent>, level: number }) => { //##!!!!!! nodes como parametro
+    const ValoresNodeComp = ({ node, nodes, level }: { nodes: HierNode<NodeContent>[], node: HierNode<NodeContent>, level: number }) => { //##!!!!!! nodes como parâmetro
       //if (node.stateOpen == null) node.stateOpen = true;
 
       const [open, setOpen] = React.useState(node.stateOpen);

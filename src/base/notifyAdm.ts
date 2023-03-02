@@ -19,7 +19,7 @@ const GetCtrlRecursion = (func: string) => {
 //const lockCtrl = { id: 'notifyAdmCtrl' };
 
 export async function NotifyAdmASync(mainMsg: string, variableInfo: string, ctrlApiExec: CtrlApiExec, details?: object) {
-  //console.log({ mainMsg, variableInfo });
+  //csl({ mainMsg, variableInfo });
   dbgNotifyAdm(mainMsg, `(${variableInfo})`);
   const ctrlRecursion = GetCtrlRecursion('NotifyAdmASync');
   if (ctrlRecursion.inExceeded(`${mainMsg} (${variableInfo})`)) return;
@@ -53,7 +53,7 @@ export async function NotifyAdmASync(mainMsg: string, variableInfo: string, ctrl
         //await SleepMsDevRandom(1000, mainMsg + ' 1');
 
         const agora = new Date();
-        //console.log(mainMsg, HoraDbg(agora));
+        //csl(mainMsg, HoraDbg(agora));
 
         //await NotifyAdmCtrlModel.findOneAndUpdate({ key }, {}, { upsert: true, new: true }); // apenas garante a inclusão do registro, se não houver
         const findAndLock = async (lockedStr: string) => {
@@ -82,7 +82,7 @@ export async function NotifyAdmASync(mainMsg: string, variableInfo: string, ctrl
         };
         const lockedStr = `${HoraDebug(agora)}`; //  (${mainMsg})
         const { doc: sysCtrl, lockStatus } = await findAndLock(lockedStr);
-        // findAndLock(lockedStr + '_0').then((x) => console.log(x.doc.lockedStr, x.lockStatus));
+        // findAndLock(lockedStr + '_0').then((x) => csl(x.doc.lockedStr, x.lockStatus));
         dbgT(1, 'lock concedido: ', sysCtrl.lockedStr, lockStatus);
 
         const propsInicializ: NotifyAdmCtrl = {};
@@ -116,7 +116,7 @@ export async function NotifyAdmASync(mainMsg: string, variableInfo: string, ctrl
           sysCtrl.messages[notifAdmMessageJaIndex].total++;
         }
 
-        //console.log({ notifAdmMessageJaIndex, notifEmailReason, notifSMSReason });
+        //csl({ notifAdmMessageJaIndex, notifEmailReason, notifSMSReason });
 
         if (notifEmailReason != null || notifSMSReason != null)
           sysCtrl.last = agora;
@@ -143,7 +143,7 @@ export async function NotifyAdmASync(mainMsg: string, variableInfo: string, ctrl
   };
 
   const { notifEmailReason, notifSMSReason } = await SysCtrl(mainMsg, variableInfo);
-  //console.log('notifEmail', { notifEmail, notifSMS });
+  //csl('notifEmail', { notifEmail, notifSMS });
 
   // push notif no celular @@@!
 

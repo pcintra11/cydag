@@ -29,6 +29,7 @@ type EnvName =
   'blockMsg' |
   'appName' |
   'appVersion' |
+  'keyScrambleApp' |
   'cloudinaryCloudName' |
   'emailSupport' |
   'friendlyErrorMsg' |
@@ -53,6 +54,8 @@ export function Env(envName: EnvName, suffix?: string) {
       value = process.env.NEXT_PUBLIC_APP_NAME;
     else if (envName == 'appVersion')
       value = process.env.NEXT_PUBLIC_APP_VERSION;
+    else if (envName == 'keyScrambleApp')
+      value = process.env.SITE_KEY_SCRAMBLEAPP;
 
     else if (envName == 'supportPhone')
       value = process.env.NEXT_PUBLIC_SUPPORT_PHONE;

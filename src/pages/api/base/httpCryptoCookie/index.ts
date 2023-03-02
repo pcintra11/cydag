@@ -37,8 +37,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       resumoApi.jsonData({});
     }
     else if (parm.cmd == HttpCriptoCookieCmd.get) {
-      const value = await HttpCriptoCookieCmdASync(ctrlApiExec, 'main', cookieSessionConfig, 'get', { domain: EnvDeployConfig().domain });
-      resumoApi.jsonData({ value });
+      const cookieValue = await HttpCriptoCookieCmdASync(ctrlApiExec, 'main', cookieSessionConfig, 'get', { domain: EnvDeployConfig().domain });
+      resumoApi.jsonData({ value: { cookieValue } });
     }
     else {
       dbgError(`cmd inválido (${parm.cmd}) em httpCriptoCookie`);

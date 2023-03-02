@@ -14,7 +14,7 @@ export const useMediaQueryMy = () => {
         lgDown ? 'lg' :
           xlDown ? 'xl' :
             xxl ? 'xxl' : '??';
-  //console.log('DevConfigBar', { widthCategory, smDown, mdDown, lgDown, xlDown, xxl });
+  //csl('DevConfigBar', { widthCategory, smDown, mdDown, lgDown, xlDown, xxl });
   return {
     smDown,
     mdDown,

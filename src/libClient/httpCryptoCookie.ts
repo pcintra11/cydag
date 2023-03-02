@@ -11,8 +11,9 @@ import { SystemMsgCli } from './systemMsgCli';
 
 export async function GetHttpCryptoCookieASync(cookieName: string) {
   try {
-    const apiReturn = await CallApiCliASync(apisBase.httpCryptoCookie.apiPath, globals.windowId, { cookieName, cmd: HttpCriptoCookieCmd.get });
-    return apiReturn.value;
+    const apiReturn = await CallApiCliASync<{ value: { cookieValue: any } }>(apisBase.httpCryptoCookie.apiPath, globals.windowId, { cookieName, cmd: HttpCriptoCookieCmd.get });
+    const cookieValue = apiReturn.value.cookieValue;
+    return cookieValue;
   } catch (error) {
     SystemMsgCli(CategMsgSystem.error, 'GetHttpCriptoCookie', error.message);
     return null;

@@ -40,13 +40,13 @@ const fldFrmExtra = {
 
 let mount; let mainStatesCache;
 const apis = {
-  getProcsOrcCCsAuth: () => CallApiCliASync(apisApp.funcionario.apiPath, globals.windowId, { cmd: CmdApi_Funcionario.getProcsOrcCCsAuthFuncionarios }),
-  getItens: (filter: FrmFilter) => CallApiCliASync(apisApp.funcionario.apiPath, globals.windowId, { cmd: CmdApi_Funcionario.exportFuncionarios, filter }),
+  getProcsOrcCCsAuth: () => CallApiCliASync<any>(apisApp.funcionario.apiPath, globals.windowId, { cmd: CmdApi_Funcionario.getProcsOrcCCsAuthFuncionarios }),
+  getItens: (filter: FrmFilter) => CallApiCliASync<any>(apisApp.funcionario.apiPath, globals.windowId, { cmd: CmdApi_Funcionario.exportFuncionarios, filter }),
 };
 const pageSelf = pagesApp.exportaFuncionario;
 export default function PageExportPlanej() {
   const frmFilter = useFrm<FrmFilter>({
-    defaultValues: FrmDefaultValues(new FrmFilter(), { centroCustoArray: [] }, [Funcionario.F.ano, fldFrmExtra.centroCustoArray]),
+    defaultValues: FrmDefaultValues(new FrmFilter(), { centroCustoArray: [] }),
   });
   const ano = useWatchMy({ control: frmFilter.control, name: Funcionario.F.ano });
   const centroCustoArray = useWatchMy({ control: frmFilter.control, name: fldFrmExtra.centroCustoArray });
@@ -100,7 +100,7 @@ export default function PageExportPlanej() {
       .then((result) => {
         if (!mount) return;
         const { anoCentroCustosArray, centroCustoArray } = result;
-        const ano = anoCentroCustosArray.length != 0 ? anoCentroCustosArray[0].ano : null;
+        const ano = anoCentroCustosArray.length != 0 ? anoCentroCustosArray[0].ano : '';
         setMainStatesCache({ phase: Phase.ready, anoCentroCustosArray, centroCustoArray });
         frmFilter.setValue(Funcionario.F.ano, ano);
         mountOptionsCC(ano);
@@ -188,7 +188,7 @@ export default function PageExportPlanej() {
   return (
     <Stack gap={1} height='100%'>
       <Stack direction='row' alignItems='center' gap={1}>
-        <SelAno value={ano} onChange={(value) => { frmFilter.setValue(Funcionario.F.ano, value); mountOptionsCC(value); }}
+        <SelAno value={ano} onChange={(newValue) => { frmFilter.setValue(Funcionario.F.ano, newValue || ''); mountOptionsCC(newValue); }}
           options={mainStates.anoCentroCustosArray.map((x) => new SelOption(x.ano, x.ano))}
         />
         {centroCustoOptions != null &&

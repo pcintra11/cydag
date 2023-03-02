@@ -233,7 +233,7 @@ interface ISelAno {
 export const SelAno = ({ value, onChange, options }: ISelAno) => {
   return (
     <SelectMy width='70px'
-      value={value || ''}
+      value={value}
       onChange={(ev) => onChange(ev.target.value)}
       displayEmpty
       placeHolder='Ano'
@@ -250,7 +250,7 @@ export const SelMes = ({ value, onChange }: ISelMes) => {
   const options = mesesHdr.map((x, index) => new SelOption<number>(index + 1, x));
   return (
     <SelectMy width='60px'
-      value={value || ''}
+      value={value}
       onChange={(ev) => onChange(ev.target.value)}
       displayEmpty
       placeHolder='Mês'
@@ -271,8 +271,7 @@ interface ISelEntity {
   limitTags?: number;
 }
 export const SelEntity = ({ value, onChange, options, disableClearable, name, width, withCod, multiple, limitTags }: ISelEntity) => {
-  const optionsUse = [new SelOption<string>(null, name, true), ...options];
-  //new SelOption('', 'Todos'), // tem o mesmo efeito do 'não selecionado ()
+  const optionsUse = [new SelOption<string>('', name, true), ...options];
   let props, valueUse;
   if (multiple) {
     props = { onChange: (ev, newValue: SelOption[]) => onChange(newValue.map((x) => x.cod)), multiple, limitTags, placeholder: value.length > 0 ? undefined : name };

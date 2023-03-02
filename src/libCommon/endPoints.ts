@@ -1,4 +1,4 @@
-import { dbgError } from './dbg';
+import { csd, dbgError } from './dbg';
 import { ErrorPlus, HttpStatusCode } from './util';
 
 export const rolesDev = {
@@ -30,13 +30,13 @@ const IsAuthorized = (rolesNeeded: string[], rolesUser?: string[]) => {
  * @param rolesUser 
  * @param additionalRoles 
  */
-export const CheckRoleAllowed = (rolesAuth: string[], rolesUser?: string[]) => { // , additionalRoles?: string[]
-  let rolesCheck = [];
-  if (rolesAuth.length > 0)
-    rolesCheck = [...rolesCheck, ...rolesAuth];
+export const CheckRoleAllowed = (rolesNeeded: string[], rolesUser?: string[]) => { // , additionalRoles?: string[]
+  // let rolesCheck = [];
+  // if (rolesNeeded.length > 0)
+  //   rolesCheck = [...rolesCheck, ...rolesNeeded];
   // if (additionalRoles?.length > 0) // ao mudar API para simulUser retirar additional 
   //   rolesAuth = [...rolesAuth, ...additionalRoles];
-  if (!IsAuthorized(rolesCheck, rolesUser))
+  if (!IsAuthorized(rolesNeeded, rolesUser))
     throw new ErrorPlus('Não autorizado.', { httpStatusCode: HttpStatusCode.unAuthorized });
 };
 

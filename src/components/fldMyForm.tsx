@@ -17,7 +17,7 @@ import { ErrorPlus, ErrorPlusData, FriendlyErrorMsgApi, NavigateToProperty, ObjH
 
 import { PopupMsg } from './snackBar';
 import { AbortProcComponent, LogErrorUnmanaged } from './abortProc';
-import { dbgError } from '../libCommon/dbg';
+import { csd, dbgError } from '../libCommon/dbg';
 //import { FakeLink } from './ui';
 
 
@@ -112,7 +112,7 @@ export const FrmInput = ({
     //   textFieldProps.helperText = textsHelperText[0];
     // else if (textsHelperText.length === 2)
     //   textFieldProps.helperText = <>{textsHelperText[0]}<br />{textsHelperText[1]}</>;
-    textFieldProps.helperText = <>{textsHelperText.map((x, i) => i == 0 ? <span key={i}>{x}</span> : <span key={i}><br />{x}</span>)}</>;
+    textFieldProps.helperText = <>{textsHelperText.map((x, i) => i == 0 ? <span key={i}>{x}</span> : <span key={i}><br />{x}</span>)}</>; //@!!!!!!!!!!!!!
 
     if (frm != null) {
       // nesse caso o 'defaultValue' vem da inicialização de defaultValues do useForm
@@ -199,7 +199,7 @@ export const FrmInput = ({
 //   if (width == null)
 //     muiProps.fullWidth = true;
 
-//   //console.log({ parans });
+//   //csl({ parans });
 //   //  mask !!!!
 
 //   const inputProps = {
@@ -340,7 +340,6 @@ export const FrmCheckbox = ({
         control={frm.control}
         name={name}
         render={({ field: { onChange, onBlur, name, value } }) => {
-          //console.log({value});
           return (
             <FormControlLabel_mui
               label={label}
@@ -605,7 +604,7 @@ export const FrmCheckbox = ({
 //   };
 
 //   let component;
-//   //console.log({ options });
+//   //csl({ options });
 
 //   if (options != null)
 //     component = (
@@ -661,7 +660,7 @@ export function FrmSetError(frm: UseFormReturn<any>, name: any, message?: string
     //if (fld != fldErrorGeneric)
     frm.setFocus(name); // dá erro se o campo não existir ! @@!!!!!! parou de funcionar?
   } catch (error) {
-    //console.log(error);
+    //csl(error);
   }
 }
 export function FrmError(frm: UseFormReturn<any>, error: Error | ErrorPlus) {
@@ -688,7 +687,7 @@ export function FrmError(frm: UseFormReturn<any>, error: Error | ErrorPlus) {
     }
   }
   else {
-    dbgError('formulário ou nome de campo não informados');
+    //dbgError('formulário ou nome de campo não informados');
     PopupMsg.error(message);
   }
 }
@@ -721,7 +720,7 @@ const allHandlers_Event = (ev, ...handlers: ((ev) => void)[]) => {
   handlers.forEach((handler) => handler != null && handler(ev));
 };
 // const allHandlers_EventValue = (ev, value, ...handlers: ((ev, value) => void)[]) => {
-//   console.log({ handlers});
+//   csl({ handlers});
 //   handlers.forEach((handler) => handler != null && handler(ev, value));
 // }
 

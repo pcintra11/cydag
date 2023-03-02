@@ -57,7 +57,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       if (anyDocDb == null) {
         const documentInsert: User = {
           email: accountDeveloper,
-          nome: 'Desenvolvedor do sistema',
+          nome: 'Paulo Cintra (dev/suporte)',
           ativo: true,
           //email_superior: null,
           roles: [rolesApp.gestorContr, rolesApp.cargaFunc],

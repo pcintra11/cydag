@@ -1,6 +1,7 @@
 import { ApiDef, PageDef } from '../libCommon/endPoints';
 
-const pagesBase = {
+export const pagesBase = {
+  chgUserAndRoute: new PageDef('/chgUserAndRoute'),
 };
 
 export const PagesBaseArray = () => {

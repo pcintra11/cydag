@@ -79,7 +79,7 @@ async function _systemMsg(categMsgSystem: CategMsgSystem, scope: string, point: 
   else if (categMsgSystem === CategMsgSystem.alert)
     csd(colorAlert(consolePrint));
   // else //if (ctrlMsgs.categ === categWarning)
-  //   console.log(colorWarn(txt));
+  //   csl(colorWarn(txt));
   if (NivelLog(ScopeDbg.x) >= 3 &&
     details != null)
     csd('details', details);
@@ -89,11 +89,11 @@ async function _systemMsg(categMsgSystem: CategMsgSystem, scope: string, point: 
   // if (_systemMsg.in == null)
   //   _systemMsg.in = 0;
   // if (_systemMsg.in > 0) {
-  //   console.log(`_systemMsg recursiva ${_systemMsg.in} ${point} / ${msg}`);
+  //   csl(`_systemMsg recursiva ${_systemMsg.in} ${point} / ${msg}`);
   //   return;
   // }
   // _systemMsg.in++;
-  // console.log(`_systemMsg ini ${_systemMsg.in} ${point} / ${msg}`);
+  // csl(`_systemMsg ini ${_systemMsg.in} ${point} / ${msg}`);
   try {
 
     // // evita que um email de um mesmo motivo seja enviado várias vezes
@@ -106,18 +106,18 @@ async function _systemMsg(categMsgSystem: CategMsgSystem, scope: string, point: 
     // mudar o metodo para o controle por tempo, uma tabela apenas com uma ocorrencia por 'ponto', verificar qual o ultimo evento
     if (categMsgSystem === CategMsgSystem.error ||
       categMsgSystem === CategMsgSystem.alert) {
-      //console.log('error - pre notifyAdm async'); 
+      //csl('error - pre notifyAdm async'); 
       //NotifyAdm(`${Env('amb')} (${scope}) - ${point} - Error`, msg);
       await NotifyAdmASync(mainMsg, msg, ctrlApiExec, details);
 
-      //console.log('error - pos notifyAdm async');
+      //csl('error - pos notifyAdm async');
       //   // if (ctrlPoints.arMsg.length == 1)
       //   //   NotifyAdm(scope, point, ctrlMsgs, msg, details);
       //   // else {
       //   //   if ((ctrlPoints.arMsg.length % countCicloNotify) == 0)
       //   //     NotifyAdm(scope, point, ctrlMsgs, `${ctrlPoints.arMsg.length + ctrlPoints.excluded} msgs`);
       //   //   else
-      //   //     console.log(`NotifyAdm não executado, msgsAcum ${ctrlPoints.arMsg.length}`);
+      //   //     csl(`NotifyAdm não executado, msgsAcum ${ctrlPoints.arMsg.length}`);
       //   //   if (ctrlPoints.arMsg.length >= (countCicloNotify * (nrBlocksMax + 1))) {
       //   //     const nrMsgsExcluidas = ctrlPoints.arMsg.length - (countCicloNotify * nrBlocksMax);
       //   //     ctrlPoints.arMsg.splice(0, nrMsgsExcluidas);
@@ -142,7 +142,7 @@ async function _systemMsg(categMsgSystem: CategMsgSystem, scope: string, point: 
     };
 
     // aqui, se for chamado no 'connection' e antes de estabilizar pode dar erro
-    //console.log('inserindo logSystem - ini');
+    //csl('inserindo logSystem - ini');
     //dbg(nivelLogOpersDbDetail, dbgContext, `LogSystemModel.create - pre`);
     // NewOperAsyncDb(LogSystemModel.create(fields)
     //   .then((x) => dbg(nivelLogOpersDbDetail, dbgContext, `logSystem inserido: (${point} / ${msg})`))
@@ -175,12 +175,12 @@ async function _systemMsg(categMsgSystem: CategMsgSystem, scope: string, point: 
     //dbg(nivelLogOpersDbSuccess, dbgContext, `LogSystemModel.create - ok`);
   } catch (error) {
     dbgError(context, `erro em _systemMsg (${point} / ${msg}): `, error.message);
-    //console.log('dados', JSON.stringify({ point, msg, details, categ: ctrlMsgs.categ, email }, null, 4));
+    //csl('dados', JSON.stringify({ point, msg, details, categ: ctrlMsgs.categ, email }, null, 4));
     // throw error;
   }
 
   // _systemMsg.in--;
-  // console.log(`_systemMsg fim ${_systemMsg.in} ${point} / ${msg}`);
+  // csl(`_systemMsg fim ${_systemMsg.in} ${point} / ${msg}`);
 
   if (dbOpened) {
     try {

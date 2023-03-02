@@ -3,7 +3,7 @@ import _ from 'underscore';
 
 import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
 
-import { BinSearchItem, ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
+import { BinSearchItem, ConcatArrays, ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
 import { csd } from '../../../../libCommon/dbg';
 import { FromCsvUpload, IUploadMessage, MessageLevelUpload } from '../../../../libCommon/uploadCsv';
 import { CheckRoleAllowed } from '../../../../libCommon/endPoints';
@@ -207,7 +207,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
 
       else if (parm.cmd == CmdApi.upload) {
-        CheckRoleAllowed([rolesApp.cargaFunc], [...userDb.roles, ...userDb.rolesControlled]);
+        CheckRoleAllowed([rolesApp.cargaFunc], ConcatArrays(userDb.roles, userDb.rolesControlled));
 
         const ano = parm.ano;
         const uploadData: string[][] = parm.data;

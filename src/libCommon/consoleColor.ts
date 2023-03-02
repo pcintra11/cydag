@@ -39,7 +39,7 @@ export const colorsDestaq = [
   clc.bgWhite,
 ];
 
-// ex:       console.log(colorWarn(txt));
+// ex:       csl(colorWarn(txt));
 
 export function PreComp() { // para uso no render, quando o processamento é no server
   if (typeof window === 'undefined')

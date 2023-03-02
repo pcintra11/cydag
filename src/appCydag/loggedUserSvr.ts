@@ -1,7 +1,7 @@
 import { CookieUserConfig } from '../base/loggedUserSvr';
 
 import { EnvDeployConfig } from '../libCommon/envs';
-import { ErrorPlus, HttpStatusCode } from '../libCommon/util';
+import { ConcatArrays, ErrorPlus, HttpStatusCode } from '../libCommon/util';
 import { ApiDef, CheckRoleAllowed } from '../libCommon/endPoints';
 
 import { HttpCriptoCookieCmdASync } from '../libServer/httpCryptoCookie';
@@ -27,7 +27,7 @@ export const CheckApiAuthorized = (apiDef: ApiDef, userDb: UserMd, email: string
   //   return;
   CheckUserAllowed(userDb, email);
   //const loggedUser = await LoggedUserReq(req, res);
-  CheckRoleAllowed(apiDef.roles, [...userDb.roles, ...userDb.rolesControlled]);
+  CheckRoleAllowed(apiDef.roles, ConcatArrays(userDb.roles, userDb.rolesControlled));
 };
 
 export const CheckUserAllowed = (userDb: UserMd, email: string) => {

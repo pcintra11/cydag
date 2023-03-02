@@ -1,7 +1,6 @@
 
 import { CallApiCliASync } from '../fetcher/fetcherCli';
 import { globals } from '../libClient/clientGlobals';
-import { MenuType } from '../components';
 
 // import { DisclaimerApp  } from '../vsn/disclaimer';
 // import { themeSchemesApp } from '../vsn/themes';
@@ -44,6 +43,6 @@ export const pagesHub = {
 export const MenuEntriesHub = (loggedUser: LoggedUser, isLoadingUser: boolean) => MenuEntriesApp(loggedUser, isLoadingUser);
 
 export const reSignInFuncHub = async () => {
-  await CallApiCliASync(apisApp.userAuth.apiPath, globals.windowId, { cmd: CmdApi_UserAuth.reSignIn }); // isolar a api e não depender de parametro @@!!!!!!
+  await CallApiCliASync<any>(apisApp.userAuth.apiPath, globals.windowId, { cmd: CmdApi_UserAuth.reSignIn });
   return;
 };

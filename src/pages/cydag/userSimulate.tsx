@@ -47,8 +47,8 @@ export default function PageUserSimulate() {
   const [mainStates, setMainStates] = React.useState<MainStates>({ phase: Phase.initiating });
   mainStatesCache = { ...mainStates }; const setMainStatesCache = (newValues: MainStates) => { if (!mount) return; ObjUpdAllProps(mainStatesCache, newValues); setMainStates({ ...mainStatesCache }); };
 
-  const { logRedirSetGet } = React.useContext(_AppLogRedir);
-
+  //const { logRedirSetGet } = React.useContext(_AppLogRedir);
+  const { chgUserAndRouteStart } = React.useContext(_AppLogRedir);
   const router = useRouter();
   const { loggedUser, isLoadingUser } = useLoggedUser({ id: pageSelf.pagePath });
   //const agora = new Date();
@@ -64,9 +64,9 @@ export default function PageUserSimulate() {
     mount = true;
     if (!router.isReady || isLoadingUser) return;
     if (!PageDef.IsUserAuthorized(pageSelf, loggedUser?.roles)) throw new ErrorPlus('Não autorizado.');
-    FrmSetValues(frmUserSimulate, FrmDefaultValues(new FrmData(), { email: loggedUser.email == loggedUser.emailSigned ? null : loggedUser.email }, ['email']));
+    FrmSetValues(frmUserSimulate, FrmDefaultValues(new FrmData(), { email: loggedUser.email == loggedUser.emailSigned ? '' : loggedUser.email }));
     setMainStatesCache({ phase: Phase.ready });
-    CallApiCliASync(apisApp.user.apiPath, globals.windowId, { cmd: CmdApi_UserCrud.list, getAll: true })
+    CallApiCliASync<any>(apisApp.user.apiPath, globals.windowId, { cmd: CmdApi_UserCrud.list, getAll: true })
       .then(async (apiReturn) => {
         //await (SleepMs(5000));
         if (!mount) return;
@@ -125,12 +125,12 @@ export default function PageUserSimulate() {
   const cancelaSimul = async () => {
     await efetiva({ email: null });
   };
-
   const efetiva = async (data: FrmData) => {
     try {
       const loggedUserNow = await UserSimulateASync(data.email);
-      logRedirSetGet({ loggedUser: loggedUserNow, pathname: pagesApp.home.pagePath });
-      setTimeout(() => router.push(pagesApp.logRedir.pagePath), 0);
+      chgUserAndRouteStart({ loggedUser: loggedUserNow, pagePath: pagesApp.home.pagePath });
+      // logRedirSetGet({ loggedUser: loggedUserNow, pagePath: pagesApp.home.pagePath });
+      // setTimeout(() => router.push(pagesApp.logRedir.pagePath), 0);
     } catch (error) {
       LogErrorUnmanaged(error, `${pageSelf.pagePath}-onSubmit`);
       if (!IsErrorManaged(error)) {
@@ -140,7 +140,6 @@ export default function PageUserSimulate() {
       FrmError(frmUserSimulate, error);
     }
   };
-
   //#endregion
 
   try {
@@ -158,7 +157,7 @@ export default function PageUserSimulate() {
     let optionEmailSelected: User;
     optionsEmail = usersAll;
     optionEmailSelected = null;
-    if (email != null) {
+    if (email != '') {
       if (mainStates.users == null)
         optionEmailSelected = new User().Fill({ email, nome: `${email} ...` });
       else {
@@ -187,7 +186,7 @@ export default function PageUserSimulate() {
                 disableClearable
                 renderInput={(params) => <TextField {...params} variant={themePlus.themePlusConfig?.inputVariant} label='Usuário a simular' placeholder='Selecione a pessoa' />}
                 options={optionsEmail}
-                onChange={(ev, newValue: User) => frmUserSimulate.setValue(User.F.email, newValue?.email)}
+                onChange={(ev, newValue: User) => frmUserSimulate.setValue(User.F.email, newValue?.email || '')}
                 getOptionLabel={(option: User) => { return `${option.nome} (${option.email})`; }}
                 isOptionEqualToValue={(option: User, value: User) => { return option.email === value?.email; }}
                 {...disabledIfInitiating}

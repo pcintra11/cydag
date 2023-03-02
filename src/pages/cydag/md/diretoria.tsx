@@ -41,7 +41,7 @@ class FrmFilter {
   searchTerms: string;
 }
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync(apisApp.diretoria.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.diretoria.apiPath, globals.windowId, parm) };
 const pageSelf = pagesApp.diretoria;
 export default function PageDiretoriaCrud() {
   const frmFilter = useFrm<FrmFilter>({
