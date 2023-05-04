@@ -1,0 +1,54 @@
+ano;centroCusto;classeCusto;idDetalhe;descr;m01;m02;m03;m04;m05;m06;m07;m08;m09;m10;m11;m12;viagem
+2023;C0042BLAES;5200503001;30;VIAGEM À SÃO LUÍS;0;0;2000;0;0;0;0;0;0;0;0;2000;v
+2023;C0042BLJUR;5200503001;30;VIAGENS E WORKSHOP;70;70;70;70;70;70;70;70;70;70;70;70;v
+2023;C0042BLPLM;5200503001;30;viagens a sao luis para acompanhamento de demandas a cada 3 meses se necessario;0;0;1;0;0;1;0;0;1;0;0;1;v
+2023;C0042BLRHU;5200503001;30;Viagens SL e SP;2000;0;2000;0;0;2000;0;0;2000;0;0;2000;v
+2023;C0042COCOB;5200503001;30;Deslocamento de eventos equipe / uber / 99 taxi / pequenas viagens necessárias;500;500;500;500;500;500;500;500;500;500;500;500;v
+2023;C0042COMON;5200503001;30;Visitas da área de CI + DHO às regionais para acompanhamento de ações.;0;0;5000;0;0;0;0;0;5000;0;0;0;v
+2023;C0042COPLE;5200503001;30;Viagens Diversas;3000;3000;3000;3000;3000;3000;3000;3000;3000;3000;3000;3000;v
+2023;C0042COSIS;5200503001;30;Viagens Diversas;654;654;654;654;654;654;654;654;654;654;654;654;v
+2023;C0042EQCOC;5200503001;30;R$ 2.000 por pessoa/ semestre + R$ 200 por pessoa/semestre reembolso de refeições fora de SP.;0;0;0;4400;0;0;0;4400;0;0;0;0;v
+2023;C0042EQINL;5200503001;30;Obs: Estadia em Campinas - 10 diárias/ano. Diaria = R$400,00;0;0;0;4000;0;0;0;0;0;0;0;0;v
+2023;C0042EQPDL;5200503001;30;R$ 8400 custo de viagem para gerente + R$ 400 reembolso refeições fora de SP. \nR$ 4400 custo de viagem para coordenador + 400 reembolso refeições fora de SP;0;0;0;8400;0;0;0;0;4400;0;0;0;v
+2023;C0042EQRHU;5200503001;30;viagens nacionais para RJ e Sul (periodicas) + uma viagem para evento de inovação internacional;0;5000;20000;0;0;5000;0;5000;0;0;5000;0;v
+2023;C0042EQRHU;5200503001;31;visita às regionais;3000;0;0;0;0;0;3000;0;0;0;0;0;v
+2023;C0042NENNE;5200503001;30;Viagens Diversas;10000;10000;10000;10000;10000;10000;10000;10000;10000;10000;10000;10000;v
+2023;C0042SLJUR;5200503001;30;VIAGENS E WORKSHOP;45;45;45;45;45;45;45;45;45;45;45;45;v
+2023;C0042SOCMD;5200503001;30;Obs: Estadia em Campinas - 4 diárias/ano. Diaria = R$400,00;0;0;0;800;0;0;0;800;0;0;0;0;v
+2023;C0042SPESG;5200503001;30;viagens às regionais Porto Alegre e RJ 2 pessoas;8000;0;0;0;0;0;0;0;0;0;0;0;v
+2023;C0042SPOTE;5200503001;30;Pequenas viagens/ UBER/ Deslocamento eventos etc;500;500;500;500;500;500;500;500;500;500;500;500;v
+2023;C0042SPPRC;5200503001;30;previsao de 2 viagens por ano de aviao, para 4 pessoas estadia de 1 dias;0;0;0;10000;0;0;0;10000;0;0;0;0;v
+2023;C0219EQRHV;5200503001;30;Em Março , encontro de RH no Rio de Janeiro , 4 viagens ao ano regionais RIO e SUL;0;2000;15000;0;2000;0;0;2000;0;0;0;2000;v
+2023;C0219EQTIV;5200503001;30;Hotéis Campinas/Santos, 2 visitas;0;1000;0;0;0;0;0;0;0;1000;0;0;v
+2023;C0219RJBUS;5200503001;30;Viagens para Congressos;0;0;6000;0;0;0;0;0;6000;0;0;0;v
+2023;C0219RJBUS;5200503001;31;Envio da equipe para reuniões de projetos do site e digital;0;3600;0;0;0;3600;0;0;3600;0;0;0;v
+2023;C0219SPBUS;5200503001;30;Obs: Estadia em Campinas - 2 diárias/ano. Diaria = R$400,00;0;0;0;400;0;0;0;0;400;0;0;0;v
+2023;C0221EQSMA;5200503001;30;Visita obras;1200;1200;1200;1200;1200;1200;1200;1200;1200;1200;1200;1200;v
+2023;C0221EQSSE;5200503001;30;Visita às obras e feiras\nConsiderado R$ 150/obra x 6 visitas/mês x feiras (4/ano);1200;1200;1200;1200;1200;1200;1200;1200;1200;1200;1200;1200;v
+2023;C0221PJCYR;5200503001;30;1) Consideradas 4 viagens para RJ e 4 viagens para Porto Alegre, 1 noite de hospedagem, 2 dias (Despesas com passagens, diárias de hotéis e reembolsos de viagens) Considerações Rio de janeiro: R$ 1.500,00                                          Passagem aérea: R$700,00                                                  Premissa pernoite: R$475,00 (hospedagem, refeição e taxi)                                                                                                 Premissa viagem: R$275,00;2500;2500;2500;2500;2500;2500;2500;2500;2500;2500;2500;2500;v
+2023;C0221PJLIV;5200503001;30;1) Consideradas 2 viagens para RJ e 2 viagens para Porto Alegre, alinhamento entre regionais\n2) Inscrições para gerente e coordenadores em 2 eventos, um em Sp e um Fora de SP para cada \n3) Solicitado por suprimentos inclusão de 2 viagens para sul e 2 viagens para Rio, como previsão para encontro de fim de ano da engenharia;0;2517;2517;2517;0;2517;0;2517;0;2517;6000;0;v
+2023;C0221SPCNS;5200503001;30;Viagens Diversas;1700;1700;1700;1700;1700;1700;1700;1700;1700;1700;1700;1700;v
+2023;C0221SPDEL;5200503001;30;Viagens para regionais RJ e Sul;0;3200;0;3200;0;3200;0;0;3200;0;3200;0;v
+2023;C0221SPLPO;5200503001;30;Acompanhamento de obras em Campinas (4 a 5 obras) - Equipe de Planejamento;400;400;400;400;400;400;400;400;400;400;400;400;v
+2023;C0275RHUVH;5200503001;30;Viagem pra Regional Rio;0;3000;0;0;0;3000;0;0;0;0;3000;0;v
+2023;C0304DITER;5200503001;30;Orçamento Viagens;1232;1232;1232;1232;1232;1233;1233;1233;1233;1233;1233;1233;v
+2023;C0304EQINP;5200503001;30;Orçamento Viagens;460;460;460;460;460;460;460;460;460;460;459;459;v
+2023;C0304RJCOB;5200503001;30;Possível viagem à SP;127;127;127;127;127;127;127;127;127;127;127;127;v
+2023;C0304RJDI1;5200503001;30;Orçamento Viagens;206;206;206;206;206;205;205;205;205;205;205;205;v
+2023;C0304RJJUR;5200503001;30;VIAGENS E REUNIÕES;75;75;75;75;75;75;75;75;75;75;75;75;v
+2023;C0304RJPER;5200503001;30;Viagens SP e Porto Alegre;1420;1420;1420;1420;1420;1420;1420;1420;1420;1420;1420;1420;v
+2023;C0304RJPIN;5200503001;30;Orçamento Viagens;253;253;253;253;253;253;253;253;253;253;253;253;v
+2023;C0304RJPLM;5200503001;30;Orçamento Viagens;127;127;127;127;127;126;126;126;126;126;126;126;v
+2023;C0304RJPLO;5200503001;30;VIAGENS REUNIÃO PLANEJAMENTO, VIISTAS OBRAS, TREINAMENTOS;1500;1500;1500;1500;1500;1500;1500;1500;1500;1500;1500;1500;v
+2023;C0304RJQUA;5200503001;30;Reuniões e visitas na regional SP, visitas técnicas em fornecedores etc.;834;834;834;834;833;833;833;833;833;833;833;833;v
+2023;C0304RJRCL;5200503001;30;Orçamento Viagens;628;627;627;627;627;627;627;627;627;627;627;627;v
+2023;C0304RJSUP;5200503001;30;Orçamento Viagens;569;569;569;569;569;569;569;569;569;569;569;569;v
+2023;C0304RJTER;5200503001;30;Orçamento Viagens;206;206;206;206;206;205;205;205;205;205;205;205;v
+2023;C0600PRFIN;5200503001;30;Sem orçamento no Cydag, estamos colocando manualmente, considerando 2 mil por viagem (considerando voo+hospedagem+deslocamento);550;550;550;550;550;550;550;550;550;550;550;550;v
+2023;C0600RSDIR;5200503001;30;Viagens Diversas da diretoria;10000;10000;10000;10000;10000;10000;10000;10000;10000;10000;10000;10000;v
+2023;C0600RSRHU;5200503001;30;3 pessoas;5000;0;0;0;0;0;0;5000;0;0;0;0;v
+2023;C2546PRDTA;5200503001;30;Deslocamento equipe do PR para RS;500;500;500;500;500;500;500;500;500;500;500;500;v
+2023;C3228INOVA;5200503001;30;evento internacional de inovação em Austin, Texas;0;0;0;15000;0;0;0;0;0;0;0;0;v
+2023;C3228INOVA;5200503001;31;evento internacional de inovação em Lisboa, Portugal;0;0;0;0;0;0;0;0;0;0;15000;0;v
+2023;C3228INOVA;5200503001;32;evento interno de inovação nas regionais;0;0;0;4000;0;0;0;0;0;4000;0;0;v
+2023;C3228INOVA;5200503001;33;Evento internacional de data analytics;0;0;0;0;0;10000;0;0;0;0;0;0;v

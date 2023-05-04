@@ -806,6 +806,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         }
         else if (parm.cmd == CmdApi_FuncAdm.collectionUpload) {
           const uploadData = parm.data;
+          //const tipoInsert: 'lote' | 'each' = 'each'; //#!!!!!!!!
 
           const messages: IUploadMessage[] = [];
           let linesError = 0, linesOk = 0, linesErrorNotIdenf = 0;
@@ -850,7 +851,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
               const documentInsert = new entity().Fill(documentCsvDb);
 
+              //if (tipoInsert == 'lote') //#!!!!!!!!!!!!!!!!
               documentsInsert.push(documentInsert);
+              // else 
+              //   const result = await model.create(documentInsert);
+
               linesOk++;
 
             } catch (error) {

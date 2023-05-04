@@ -1240,8 +1240,10 @@ export class Viagem {
   static get fldsCsvDefUpload() {
     const agora = new Date();
     return FldsCsvAll(new Viagem(), [
+      // #!!!!!!!!!!!!!!!! tipoPlanejViagem check
       new FldCsvDef('qtdViagens', { mandatoryValue: false, up: (data: IGenericObject) => StrToNumber(data.qtdViagens) }),
       new FldCsvDef('mediaPernoites', { mandatoryValue: false, up: (data: IGenericObject) => StrToNumber(data.mediaPernoites) }),
+      new FldCsvDef('valor', { mandatoryValue: false, up: (data: IGenericObject) => StrToNumber(data.valor, 2) }),
       new FldCsvDef('created', { down: (data: Viagem) => DateToStrISO(data.created), up: (data: IGenericObject) => DateFromStrISO(data.created) || agora, def: () => new Date() }),
       new FldCsvDef('lastUpdated', { down: (data: Viagem) => DateToStrISO(data.lastUpdated), up: (data: IGenericObject) => DateFromStrISO(data.lastUpdated) || agora, def: () => new Date() }),
     ]);

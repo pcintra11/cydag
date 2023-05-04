@@ -2,28 +2,18 @@
 import { CallApiCliASync } from '../fetcher/fetcherCli';
 import { globals } from '../libClient/clientGlobals';
 
-// import { DisclaimerApp  } from '../vsn/disclaimer';
-// import { themeSchemesApp } from '../vsn/themes';
+// import { DisclaimerApp  } from '../vzn/disclaimer';
+// import { themeSchemesApp } from '../vzn/themes';
 // export const imgAppHub = null; // vzn
-// export const menuTypeHub = MenuType.barraSuperior; // vzn
-// import { pagesApp, apisApp } from '../vsn/endPoints';
-// import { LoggedUser } from '../vsn/loggedUser';
-// import { MenuEntriesApp } from '../vsn/menuEntries';
-// import { CmdApi_User } from '../pages/api/vsn/user/types';
-// import { CmdApi_ControlledAccess } from '../pages/api/vsn/controlledAccess/types';
-// export const ControlledAccessCheckHub = async () => {
-//   return await CallApiCliASync(apisApp.notLoggedApis.apiPath, globals.windowId, { cmd: CmdApi_ControlledAccess.controlledAccessCheckAllowed });
-// };
-// export const ControlledAccessClaimHub = async (info: string) => {
-//   return CallApiCliASync(apisApp.notLoggedApis.apiPath, globals.windowId, { cmd: CmdApi_ControlledAccess.controlledAccessClaimAccess, info });
-// };
-// export const routerConfirmLoginHub = { pathname: pagesApp.welcome.pagePath, query: { confirmUserLogged: 'x' } };
+// import { pagesApp, apisApp } from '../vzn/endPoints';
+// import { LoggedUser } from '../vzn/loggedUser';
+// import { MenuEntriesApp } from '../vzn/menuEntries';
+// import { CmdApi_User } from '../pages/api/vzn/user/types';
 
 
 const DisclaimerApp = null;
 import { themeSchemesApp } from '../appCydag/themes';
 export const imgAppHub = '/appCydag/logo.png';
-//export const menuTypeHub = MenuType.lateral;
 import { pagesApp, apisApp } from '../appCydag/endPoints';
 import { LoggedUser } from '../appCydag/loggedUser';
 import { MenuEntriesApp } from '../appCydag/menuEntries';
