@@ -78,13 +78,13 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
           for (const changedLine of changedLines) {
             const dataEdit = changedLine.dataEdit;
-            const ValoresTransferData = {
+            const ValoresTransferData = ValoresTransfer.fill({
               valMeses: dataEdit.valMeses.map((x) => amountParse(x, configCydag.decimalsValsInput)),
-            } as ValoresTransfer;
+            });
             const someInf = ValoresTransferData.valMeses.reduce((prev, curr) => prev || curr != null, false);
-            const key = {
+            const key = ValoresTransfer.fill({
               ano, revisao, localidadeOrigem, localidadeDestino: changedLine.key.localidadeDestino,
-            } as ValoresTransfer;
+            });
             if (someInf)
               await ValoresTransferModel.findOneAndUpdate(key, { valMeses: ValoresTransferData.valMeses, lastUpdated: agora }, { upsert: true });
             else

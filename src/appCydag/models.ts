@@ -26,7 +26,6 @@ collectionsDef.push({
 });
 interface ProcessoOrcamentarioMd extends mongoose.Document<ObjectId, any, ProcessoOrcamentario>, ProcessoOrcamentario { }
 export const ProcessoOrcamentarioModel = (() => {
-  csd('ProcessoOrcamentarioModel');
   const modelName = modelNameProcessoOrcamentario;
   const mongoose = MongooseSlot().mongoose;
   const schema = new mongoose.Schema({

@@ -1,6 +1,6 @@
 # variáveis que podem ser iguais em vários ambientes
 SITE_SESSION_USER={ "psw": "E7773B18CA9E74E5CF9C542DC2192E7773B18CA9E74E5CF9C542" }
-SITE_EMAIL_CONFIG={ "host": "smtp.gmail.com", "port": 465, "secure": true, "auth": { "user": "cydag.suporte@gmail.com", "pass": "tqgoezgdljevxnsm", "name": "Cydag Suporte" } }
+SITE_EMAIL_CONFIG={ "host": "smtp.gmail.com", "port": 465, "secure": true, "auth": { "user": "cydag.suporte.01@gmail.com", "pass": "tllimpeczzahbmbp", "name": "Cydag Suporte" } }
 NEXT_PUBLIC_MSAL_CONFIG={ "client_id": "9a92c7e4-7e64-452f-81bc-4b1f758e7e7a", "authority": "https://login.microsoftonline.com/bb24ffdd-87d9-46b8-9d3f-d8bf25bd0ef1" }
 
 # em ms: wait => wait maximo (força o erro) ; alert => limite para emitir alertas de que está proximo ao wait
@@ -9,9 +9,6 @@ NEXT_PUBLIC_API_TIMEOUT={ "exec": 230000 , "alertCallFromCli": 300000 , "waitCal
 # para bloquear o sistema em um deploy
 NEXT_PUBLIC_BLOCK_MSG='Manutenção em andamento, previsão de liberação as 20 hrs'
 
-# outras variáveis
-NEXT_PUBLIC_NIVEL_LOG={ "api":0, "db":0, "email":0, "test":0, "commom":0 }
-
 # ------------------------------------------------------------------
 # as variáveis abaixo DEVEM ser redefinidas para cada ambiente
 
@@ -19,7 +16,7 @@ NEXT_PUBLIC_NIVEL_LOG={ "api":0, "db":0, "email":0, "test":0, "commom":0 }
 NEXT_PUBLIC_AMB='dev'
 
 # identificação do tipo de tecnologia do host (valores monitorados: localhost, vercel, azure)
-SITE_PLATAFORM='azure'
+NEXT_PUBLIC_PLATAFORM='azure' 
 
 # para "mode_auth" use "azure" (integração com AD) ou qualquer outro valor para autenticação normal por usuário e senha
 NEXT_PUBLIC_DEPLOY_CONFIG={ "front_end": true, "back_end": true, "domain": "", "app_url": "http://localhost:3008", "api_url": "*/api", "mode_auth": "azure" }

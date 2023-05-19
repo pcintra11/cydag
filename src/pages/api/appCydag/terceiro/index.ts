@@ -145,20 +145,20 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             let terceiroData: Terceiro = null;
             if (changedLine.lineState === LineState.inserted ||
               changedLine.lineState === LineState.updated) {
-              terceiroData = {
+              terceiroData = Terceiro.fill({
                 nome: terceirosEdit.nome,
                 fornecedor: terceirosEdit.fornecedor,
                 funcaoTerceiros: terceirosEdit.funcaoTerceiros,
                 valMeses: terceirosEdit.valMeses.map((x) => amountParse(x, configCydag.decimalsValsInput)),
                 lastUpdated: agora,
-              } as Terceiro;
+              });
             }
             if (changedLine.lineState === LineState.inserted)
               await TerceiroModel.create({ ano, revisao, centroCusto, refer, ...terceiroData, created: agora });
             else if (changedLine.lineState === LineState.updated)
-              await TerceiroModel.updateOne({ ano, revisao, centroCusto, refer } as Terceiro, terceiroData);
+              await TerceiroModel.updateOne(Terceiro.fill({ ano, revisao, centroCusto, refer }), terceiroData);
             else if (changedLine.lineState === LineState.deleted)
-              await TerceiroModel.deleteOne({ ano, revisao, centroCusto, refer } as Terceiro);
+              await TerceiroModel.deleteOne(Terceiro.fill({ ano, revisao, centroCusto, refer }));
             else
               throw new Error(`lineState inválido (${changedLine.lineState})`);
           }

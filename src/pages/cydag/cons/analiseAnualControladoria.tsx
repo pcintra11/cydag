@@ -248,6 +248,7 @@ export default function PageAnaliseAnualControladoria() {
       estrutHier === EstrutHier.categRegionalFator ? (x: ValoresAnaliseAnual) => x.categRegional != null :
         estrutHier === EstrutHier.categRegionalUNFator ? (x: ValoresAnaliseAnual) => x.categRegional != null && x.unidadeNegocio != null :
           estrutHier === EstrutHier.categRegionalUNDirFator ? (x: ValoresAnaliseAnual) => x.categRegional != null && x.unidadeNegocio != null && x.diretoria != null :
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             (dummy: ValoresAnaliseAnual) => false;
     setValsInf(nodes, valoresAnaliseAnual.filter(filterVals), estrutHier);
 

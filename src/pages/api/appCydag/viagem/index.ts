@@ -137,9 +137,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
               // }
             }
             else if (changedLine.lineState === LineState.updated)
-              await ViagemModel.updateOne({ ano, revisao, centroCusto, _id: new ObjectId(key._id) } as Viagem, viagemData);
+              await ViagemModel.updateOne(Viagem.fill({ ano, revisao, centroCusto, _id: new ObjectId(key._id) }), viagemData);
             else if (changedLine.lineState === LineState.deleted)
-              await ViagemModel.deleteOne({ ano, revisao, centroCusto, _id: new ObjectId(key._id) } as Viagem);
+              await ViagemModel.deleteOne(Viagem.fill({ ano, revisao, centroCusto, _id: new ObjectId(key._id) }));
             else
               throw new Error(`lineState inválido (${changedLine.lineState})`);
           }

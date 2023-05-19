@@ -321,7 +321,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                     messages.push({ level: MessageLevelUpload.ok, message: `Linha ${index + 1} - config ${documentCsvDb.centroCusto} inclusão validada` });
                   }
                   else if (cmd == UploadCsvCmd.upd) {
-                    await ProcessoOrcamentarioCentroCustoModel.updateOne({ ano, centroCusto: documentCsvDb.centroCusto } as ProcessoOrcamentarioCentroCusto, dataUpdate);
+                    await ProcessoOrcamentarioCentroCustoModel.updateOne(ProcessoOrcamentarioCentroCusto.fill({ ano, centroCusto: documentCsvDb.centroCusto }), dataUpdate);
                     messages.push({ level: MessageLevelUpload.ok, message: `Linha ${index + 1} - config ${documentCsvDb.centroCusto} alterada` });
                   }
                   else if (cmd == UploadCsvCmd.del) {

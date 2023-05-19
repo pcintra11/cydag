@@ -83,11 +83,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
           for (const changedLine of changedLines) {
             const someInf = changedLine.valMeses.reduce((prev, curr) => prev || curr != null, false) || changedLine.ativa;
-            const key = {
+            const key = ValoresPremissa.fill({
               ano, revisao,
               premissa: changedLine.key.premissa, tipoSegmCentroCusto: changedLine.key.tipoSegmCentroCusto, segmTipoClb: changedLine.key.segmTipoClb,
               empresa: changedLine.key.empresa, agrupPremissas: changedLine.key.agrupPremissas, tipoColaborador: changedLine.key.tipoColaborador,
-            } as ValoresPremissa;
+            });
             if (someInf)
               await ValoresPremissaModel.findOneAndUpdate(key, { ativa: changedLine.ativa, valMeses: changedLine.valMeses, lastUpdated: agora }, { upsert: true });
             else

@@ -77,7 +77,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
       else if (parm.cmd == CmdApi.insert) {
         const data = parm.data;
-        const documentConflict = await UserModel.findOne({ email: data.email } as User).lean();
+        const documentConflict = await UserModel.findOne(User.fill({ email: data.email })).lean();
         if (documentConflict != null) // @!!!!!! padrão para nome
           throw new ErrorPlus('Email já cadastrado.', { data: { fldName: User.F.email } });
         const fldError = ValidateObjectFirstError({ ...data }, crudValidations);

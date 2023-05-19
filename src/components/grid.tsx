@@ -79,7 +79,7 @@ export interface IFldChange {
 /**
  * Controles globais para todas as celulas
  */
-export interface IGridEditMainCtrl {
+export interface IGridEditMainCtrl { // #!!!!!!!!!!!!!!! class + fill
   /**
    * valores originais
    */
@@ -94,7 +94,7 @@ export interface IGridEditMainCtrl {
 /**
  * Controle para cada celula editada
  */
-export interface IGridEditFldCtrl {
+export interface IGridEditFldCtrl { // #!!!!!!!!!!!!!!! class + fill
   fld: string;
   arrayItens?: number;
   valueType?: ValueType;

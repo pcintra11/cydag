@@ -32,6 +32,7 @@ import { CmdApi_Playg } from './playg_types';
 
 const databaseTst = 'tst';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const apiSelf = apisTst.playg;
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
@@ -215,7 +216,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
         const junkData: Junk = { key: `${idProc}-${item}`, date: agora, textField: textItem };
         const dontWaitPromiseNow = item == dontWaitPromise;
         dbgX(1, `${procIndex} - item startado`);
-        const sendEmailParams = { to: sysEmailSupport, subject: textItem, ...forceErrorsMail(item) } as ISendEmailParams;
+        const sendEmailParams = { to: sysEmailSupport, subject: textItem, ...forceErrorsMail(item) } as ISendEmailParams;  //@!!!!!!!!!!!!!!!!! usar fill
         const logFnMail = async (resultOk, resultError) => await SentMessageLogASync({ userId: null, type: 'email', target: sysEmailSupport, message: sendEmailParams.subject }, resultOk, resultError, ctrlApiExec.ctrlContext);
         if (tipoExec == 'N') {
           if (toDo == 'M' || toDo == 'MD') {

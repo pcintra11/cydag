@@ -1,5 +1,3 @@
-import _ from 'underscore';
-
 import { LoggedUserBase } from '../app_base/modelTypes';
 
 import { dbgError } from '../libCommon/dbg';

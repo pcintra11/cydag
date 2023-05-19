@@ -21,7 +21,7 @@ export class MenuEntry {
   // public get isGroup() { return this.type == 'group'; } //@@!!!!!
   // public get isPagePath() { return this.type == 'pagePath' };
   static Group(content: React.ReactNode, groupItens: MenuEntry[]) {
-    return { type: MenuEntryType.group, content, groupItens } as MenuEntry;
+    return { type: MenuEntryType.group, content, groupItens } as MenuEntry; //@!!!!!!!!!!!!!! usar fill
   }
   static PagePath(pageDef: PageDef, contentUse: React.ReactNode = null, query?: IGenericObject) {
     if (pageDef?.pagePath == null)

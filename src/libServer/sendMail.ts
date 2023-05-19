@@ -22,7 +22,7 @@ interface IEmailSend {
   secure: boolean;
 }
 
-export interface ISendEmailParams {
+export interface ISendEmailParams { //#!!!!!!!!!!!!! class + fill
   to: string | Mail.Address;
   bcc?: string;
   subject: string;

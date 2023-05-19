@@ -79,7 +79,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       ctrlApiExec.ctrlContext.checkElapsed(`pre ${parm.cmd}`);
 
       if (parm.cmd == CmdApi.signIn) {
-        let loggedUserNow = null;
+        let loggedUserNow: LoggedUser = null;
         //let roles = null;
         // if (parm.email == 'gestor@cyrela.com.br' ||
         //   parm.email == 'planejador@cyrela.com.br') {

@@ -248,6 +248,7 @@ export default function PageComparativoAnualControladoria() {
       estrutHier === EstrutHier.categRegionalFator ? (x: ValoresComparativoAnual) => x.categRegional != null :
         estrutHier === EstrutHier.categRegionalUNFator ? (x: ValoresComparativoAnual) => x.categRegional != null && x.unidadeNegocio != null :
           estrutHier === EstrutHier.categRegionalUNDirFator ? (x: ValoresComparativoAnual) => x.categRegional != null && x.unidadeNegocio != null && x.diretoria != null :
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             (dummy: ValoresComparativoAnual) => false;
     setValsInf(nodes, valoresComparativoAnual.filter(filterVals), estrutHier);
 

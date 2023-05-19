@@ -2,7 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 
 import { ConnectDbASync, CloseDbASync } from '../../../../libServer/dbMongo';
 
-import { BinSearchItem, ConcatArrays, ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
+import { BinSearchItem, ConcatArrays, ErrorPlus, OnlyPropsInClass, SleepMsDevRandom } from '../../../../libCommon/util';
 import { csd } from '../../../../libCommon/dbg';
 import { FromCsvUpload, IUploadMessage, MessageLevelUpload } from '../../../../libCommon/uploadCsv';
 import { CheckRoleAllowed } from '../../../../libCommon/endPoints';
@@ -87,8 +87,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             const salario = Funcionario.unscrambleSalario(funcionarioRevisao.salario_messy, funcionario.centroCusto, funcionario.refer);
             const salarioPromo = Funcionario.unscrambleSalario(funcionarioRevisao.salarioPromo_messy, funcionario.centroCusto, funcionario.refer);
             const result = FuncionarioClient.fill({
-              ...funcionario,
-              ...funcionarioRevisao,
+              ...OnlyPropsInClass(funcionario, FuncionarioClient.new()),
+              ...OnlyPropsInClass(funcionarioRevisao, FuncionarioClient.new()),
               salarioLegado,
               salario,
               salarioPromo,
@@ -170,7 +170,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             let funcionarioData: Funcionario = null;
             if (changedLine.lineState === LineState.inserted ||
               changedLine.lineState === LineState.updated) {
-              funcionarioData = {
+              funcionarioData = Funcionario.fill({
                 nome: dataEdit.nome,
                 idVaga: dataEdit.idVaga,
                 tipoColaborador: dataEdit.tipoColaborador,
@@ -190,14 +190,14 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                   despsRecorr: dataEdit.despsRecorr,
                 },
                 lastUpdated: agora,
-              } as Funcionario;
+              });
             }
             if (changedLine.lineState === LineState.inserted)
               await FuncionarioModel.create({ ano, centroCusto, origem, refer, ...funcionarioData, created: agora });
             else if (changedLine.lineState === LineState.updated)
-              await FuncionarioModel.updateOne({ ano, centroCusto, origem, refer } as Funcionario, funcionarioData);
+              await FuncionarioModel.updateOne(Funcionario.fill({ ano, centroCusto, origem, refer }), funcionarioData); //#!!!!!!!!!!!!
             else if (changedLine.lineState === LineState.deleted)
-              await FuncionarioModel.deleteOne({ ano, centroCusto, origem, refer } as Funcionario);
+              await FuncionarioModel.deleteOne(Funcionario.fill({ ano, centroCusto, origem, refer }));
             else
               throw new Error(`lineState inválido (${changedLine.lineState})`);
           }
@@ -330,9 +330,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
               error.writeErrors.forEach((x) => messages.push({ level: MessageLevelUpload.error, message: `Erro ao inserir em lote: ${x.err.errmsg}` }));
             }
             if (deleteAllBefore)
-              await ProcessoOrcamentarioModel.updateOne({ _id: processoOrcamentario._id }, { horaLoadFuncFull: agora, horaLoadFuncIncr: null } as ProcessoOrcamentario);
+              await ProcessoOrcamentarioModel.updateOne({ _id: processoOrcamentario._id }, ProcessoOrcamentario.fill({ horaLoadFuncFull: agora, horaLoadFuncIncr: null }));
             else
-              await ProcessoOrcamentarioModel.updateOne({ _id: processoOrcamentario._id }, { horaLoadFuncIncr: agora } as ProcessoOrcamentario);
+              await ProcessoOrcamentarioModel.updateOne({ _id: processoOrcamentario._id }, ProcessoOrcamentario.fill({ horaLoadFuncIncr: agora }));
           }
           else
             messages.push({ level: MessageLevelUpload.error, message: 'Nada a carregar' });

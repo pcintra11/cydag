@@ -335,7 +335,7 @@ export class ResumoApi { // @@@@!!!! nome!
     return {
       statusCode: this.#_statusCode,
       data: this.#_data,
-    } as IApiResultProc;
+    } as IApiResultProc;  //@!!!!!!!!!!!!!!!!! usar fill
   }
 }
 
@@ -373,7 +373,7 @@ export function ValidateObjectFirstError(data: IGenericObject, schema: yup.Objec
     return {
       fldName: error.path,
       msg: error.message,
-    } as IFldError;
+    } as IFldError;  //@!!!!!!!!!!!!!!!!! usar fill
   }
 }
 

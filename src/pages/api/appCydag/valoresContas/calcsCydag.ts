@@ -138,7 +138,7 @@ export function FuncionariosForCalc(centroCusto: string, premissaDissidioVals: I
       tipoColaboradorMeses,
       despsRecorr: funcionarioRevisao.despsRecorr,
       obs: [],
-    } as IFuncionarioForCalc;
+    } as IFuncionarioForCalc; //#!!!!!!!!!!!!!!!!!!!!!!
     funcionarioForCalc.obs.push(`tipoClb: ${funcionario.tipoColaborador}, sal: ${Funcionario.unscrambleSalario(funcionarioRevisao.salario_messy, funcionario.centroCusto, funcionario.refer)}`);
     if (funcionarioRevisao.mesPromo != null)
       funcionarioForCalc.obs.push(`promo: mes ${funcionarioRevisao.mesPromo}, tipoClb: ${funcionarioRevisao.tipoColaboradorPromo}, sal: ${Funcionario.unscrambleSalario(funcionarioRevisao.salarioPromo_messy, funcionario.centroCusto, funcionario.refer)}`);
@@ -168,7 +168,7 @@ const calcContaSalario = (tipoCalc: string, funcionariosForCalc: IFuncionarioFor
     (showCalcUse && anyValueFunc) && memoriaCalcDets.push(memoriaCalcFunc);
     anyValue = anyValue || anyValueFunc;
   }
-  return { tipoCalc, valMeses, countMeses, anyValue, memoriaCalcDets } as IValsContaCalc;
+  return { tipoCalc, valMeses, countMeses, anyValue, memoriaCalcDets } as IValsContaCalc;  //#!!!!!!!!!!!!!!!!!!!!!!
 };
 const calcContaAvisoPrevio = (funcionariosForCalc: IFuncionarioForCalc[], showCalcFunc = false) => {
   const showCalcUse = showCalcFunc && isAmbDev();

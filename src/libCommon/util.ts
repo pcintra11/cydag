@@ -997,8 +997,13 @@ export const ObjUpdAllProps = <T>(objTarget: T, objSource: object, config?: IObj
   }
 };
 
+/**
+ * atualiza todas as propriedades de uma classe e reclama se for passado propriedade que não pertence a classe
+ * @param objTarget 
+ * @param objSource 
+ * @returns 
+ */
 export const FillClassProps = <T>(objTarget: T, objSource: object) => {
-  // atualiza todas as propriedades de uma classe e reclama se for passado propriedade que não pertence a classe
   const propsError = [];
   Object.keys(objSource).forEach((prop) => {
     if (Object.keys(objTarget).includes(prop))
@@ -1009,6 +1014,20 @@ export const FillClassProps = <T>(objTarget: T, objSource: object) => {
   if (propsError.length > 0)
     dbgError('FillClassProps', 'prop(s) inexistentes na estrutura do objeto:', propsError.join('; '), { objTarget, objSource });
   return objTarget;
+};
+
+/**
+ * Retorna objeto com apenas as propriedades da classe de referência
+ * @param values 
+ * @param refClass 
+ */
+export const OnlyPropsInClass = (values: IGenericObject, refClass: IGenericObject) => {
+  const result: any = {};
+  Object.keys(refClass).forEach((prop) => {
+    if (Object.keys(values).includes(prop))
+      result[prop] = values[prop];
+  });
+  return result;
 };
 
 /**

@@ -245,7 +245,7 @@ export class User {
     }
     if (emailSigned != userMd.email)
       rolesUse.push(roleSimulateUserDyn);
-    return {
+    return LoggedUser.fill({
       sessionIdStr: null,
       userIdStr: userMd._id.toString(),
       email: userMd.email,
@@ -256,7 +256,7 @@ export class User {
       lastReSignIn,
       lastActivity,
       //ttlSeconds,
-    } as LoggedUser;
+    });
   }
 }
 //#endregion

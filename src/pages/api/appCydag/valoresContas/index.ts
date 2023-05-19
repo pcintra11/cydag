@@ -161,9 +161,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             //   throw new Error('type inválido em valoresImputadosSet');
             const someInf = changedLine.valMeses.reduce((prev, curr) => prev || curr != null, false);
             if (someInf)
-              await ValoresImputadosModel.findOneAndUpdate({ ano, revisao, centroCusto, classeCusto: changedLine.key.classeCusto, idDetalhe: changedLine.key.idDetalhe } as ValoresImputados, { descr: changedLine.descr, valMeses: changedLine.valMeses, lastUpdated: agora }, { upsert: true });
+              await ValoresImputadosModel.findOneAndUpdate(ValoresImputados.fill({ ano, revisao, centroCusto, classeCusto: changedLine.key.classeCusto, idDetalhe: changedLine.key.idDetalhe }), { descr: changedLine.descr, valMeses: changedLine.valMeses, lastUpdated: agora }, { upsert: true });
             else
-              await ValoresImputadosModel.deleteOne({ ano, revisao, centroCusto, classeCusto: changedLine.key.classeCusto, idDetalhe: changedLine.key.idDetalhe } as ValoresImputados);
+              await ValoresImputadosModel.deleteOne(ValoresImputados.fill({ ano, revisao, centroCusto, classeCusto: changedLine.key.classeCusto, idDetalhe: changedLine.key.idDetalhe }));
           }
           resumoApi.jsonData({});
         }
@@ -356,7 +356,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
               }
               if (valsOk.length !== 0) {
                 //if (errosImport.length == 0) {
-                const resultDel = await ValoresRealizadosModel.deleteMany({ ano } as ProcessoOrcamentario);
+                const resultDel = await ValoresRealizadosModel.deleteMany(ValoresRealizados.fill({ ano }));
                 //resultProc.push(`Valores anteriores removidos: ${resultDel.deletedCount}`);
                 const resultIncl = await ValoresRealizadosModel.insertMany(valsOk.map((x) => ({
                   ..._.pick(x, ['ano', 'centroCusto', 'classeCusto']),
@@ -547,7 +547,7 @@ const GetValsPlanejadosTotAno = async (processoOrcamentario: ProcessoOrcamentari
     let valsDets = await ValoresPlanejadosHistoricoGet(processoOrcamentario, centroCustoArray, sumarizaCCs);
     if (!incluiContasCalc)
       valsDets = valsDets.filter((x) => !classeCustoCalcArray.includes(x.classeCusto));
-    vals = valsDets.map((x) => ({ centroCusto: x.centroCusto, classeCusto: x.classeCusto, tot: x.valMeses.reduce((prev, curr) => prev + curr, 0) } as ValoresTotCentroCustoClasseCusto));
+    vals = valsDets.map((x) => (ValoresTotCentroCustoClasseCusto.fill({ centroCusto: x.centroCusto, classeCusto: x.classeCusto, tot: x.valMeses.reduce((prev, curr) => prev + curr, 0) })));
   }
   else {
     vals = await ValoresImputadosModel.aggregate([
@@ -577,7 +577,7 @@ const GetValsPlanejadosTotAno = async (processoOrcamentario: ProcessoOrcamentari
     if (incluiContasCalc) {
       const valsContasCalc = await ValoresPlanejadosCalc(processoOrcamentario, revisao, centroCustoArray, false, false, ctrlApiExec);
       //contasCalc.valoresCalc.forEach(x => vals.push({ classeCusto: x.classeCusto, tot: x.valMeses.reduce((prev, curr) => prev + curr, 0) }));
-      vals = [...vals, ...valsContasCalc.vals.map(x => ({ centroCusto: x.centroCusto, classeCusto: x.classeCusto, tot: x.valMeses.reduce((prev, curr) => prev + curr, 0) } as ValoresTotCentroCustoClasseCusto))];
+      vals = [...vals, ...valsContasCalc.vals.map(x => ValoresTotCentroCustoClasseCusto.fill({ centroCusto: x.centroCusto, classeCusto: x.classeCusto, tot: x.valMeses.reduce((prev, curr) => prev + curr, 0) }))];
       //needSort = true;
     }
   }
@@ -702,7 +702,7 @@ const getValPremissa = (premissaCod: string, premissas: Premissa[], premissasVal
   if (valoresPrior1.length + valoresPrior2.length == 0)
     return null;
   else
-    return { premissa, valoresPrior1, valoresPrior2 } as IPremissaValores;
+    return { premissa, valoresPrior1, valoresPrior2 } as IPremissaValores; //#!!!!!!!!!!!!!!!!!!!
 };
 
 //#ctrlContext
@@ -734,11 +734,11 @@ export const ValoresPlanejadosCalc = async (processoOrcamentario: ProcessoOrcame
     const viagens = await ViagemModel.find({ ano, revisao, ...filtroCC }).lean().sort({ centroCusto: 1 });
     const pushVals = (centroCusto, classeCusto, idDetalhe, descr, valsContaCalc: IValsContaCalc, infoMemoriaCalc = {}, showCalc = showCalcGlobal) => {
       if (valsContaCalc.anyValue) {
-        vals.push({
+        vals.push(ValoresPlanejadosDetalhes.fill({ //#!!!!!!!!!!!!!!!!!!
           centroCusto, classeCusto, idDetalhe, descr,
           valMeses: valsContaCalc.valMeses,
           //...mesesFld.reduce((prev, curr, index) => ({ ...prev, [curr]: valsContaCalc.valMeses[index] }), {})
-        } as ValoresPlanejadosDetalhes);
+        }));
         if (showCalc)
           memoriaCalc.push({ classeCusto, tipoCalc: valsContaCalc.tipoCalc, ...infoMemoriaCalc, memoriaCalcDets: valsContaCalc.memoriaCalcDets });
       }
