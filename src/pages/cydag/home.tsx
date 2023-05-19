@@ -10,8 +10,8 @@ import { AbortProc, LogErrorUnmanaged } from '../../components';
 
 import { pagesApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
-import { Env } from '../../libCommon/envs';
-import { isAmbPrd } from '../../libCommon/isAmb';
+import { Env, isAmbPrd } from '../../app_base/envs';
+import { configApp } from '../../app_hub/appConfig';
 
 const pageSelf = pagesApp.home;
 export default function PageHome() {
@@ -20,10 +20,10 @@ export default function PageHome() {
 
   React.useEffect(() => {
     if (!router.isReady || isLoadingUser) return;
-    dbg({ level: 1, context: 'index' }, 'loggedUser cydag (by hook)', loggedUser);
+    //dbg({ level: 1, context: 'index' }, 'loggedUser cydag (by hook)', loggedUser);
   }, [router.isReady, isLoadingUser, loggedUser?.email]);
 
-  const nomeSistema ='CYDAG';
+  const nomeSistema = 'CYDAG';
   const emailSuporte = 'cydag@cyrela.com.br';
 
   const folderManuais = '/appCydag/manuais'; // em public
@@ -79,7 +79,7 @@ export default function PageHome() {
           </Box>
 
           <Stack direction='row' gap={1} justifyContent='end' mt={1}>
-            <Box>Versão {Env('appVersion')}</Box>
+            <Box>Versão {configApp.appVersion}</Box>
             {!isAmbPrd() &&
               <Box>(ambiente {Env('amb')})</Box>
             }

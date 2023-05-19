@@ -1,12 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import _ from 'underscore';
 
-import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
-import { NotifyAdmASync } from '../../../../base/notifyAdm';
+import { ConnectDbASync, CloseDbASync } from '../../../../libServer/dbMongo';
+import { NotifyAdmASync } from '../../../../libServer/notifyAdm';
 
 import { BinSearchIndex, BinSearchItem, BinSearchProp, compareForBinSearch, compareForBinSearchArray, CtrlCollect, DateDisp, ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
-import { csd, dbgError, dbgWarn } from '../../../../libCommon/dbg';
-import { isAmbNone } from '../../../../libCommon/isAmb';
+import { csd, dbgError } from '../../../../libCommon/dbg';
 import { CallApiSvrASync } from '../../../../fetcher/fetcherSvr';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
@@ -31,13 +30,14 @@ import { anoAdd, mesesFld, roundInterface, sumValMeses } from '../../../../appCy
 import { accessAllCCs, ccsAuthArray, CheckProcCentroCustosAuth, IAuthCC, procsCentroCustosConfigAuthAllYears } from '../../../../appCydag/utilServer';
 
 import { CmdApi_ValoresContas as CmdApi, IChangedLine } from './types';
-import { calcContaDespCorr, contasCalc, FuncionariosForCalc, premissaCod, PremissaValores, ValsContaCalc } from './calcsCydag';
+import { calcContaDespCorr, contasCalc, FuncionariosForCalc, premissaCod, IPremissaValores, IValsContaCalc } from './calcsCydag';
+import { isAmbNone } from '../../../../app_base/envs';
 
 const apiSelf = apisApp.valoresContas;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['ano']);  // #!!!! filter
 
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
@@ -46,11 +46,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   const resumoApi = new ResumoApi(ctrlApiExec);
   const agora = new Date();
   let deleteIfOk = false;
-  await SleepMsDevRandom(null, ctrlApiExec.context());
+  await SleepMsDevRandom(null, ctrlApiExec.ctrlContext, 'main');
 
   try {
-    await ConnectDbASync({ ctrlApiExec });
-    await ConnectDbASync({ ctrlApiExec, database: databaseInterfaceSap });
+    await ConnectDbASync({ ctrlContext: ctrlApiExec.ctrlContext });
+    await ConnectDbASync({ ctrlContext: ctrlApiExec.ctrlContext, database: databaseInterfaceSap });
     const apiLogProc = await ApiLogStart(ctrlApiExec, loggedUserReq);
 
     try {
@@ -284,9 +284,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
         await ValoresRealizadosInterfaceSapModel.deleteMany({});
 
-        const apiReturn = await CallApiSvrASync(interfaceSapRealizado.url, ctrlApiExec, null, { conf: {} }, { auth: { username: interfaceSapRealizado.auth.user, password: interfaceSapRealizado.auth.pass } });
+        const apiReturn = await CallApiSvrASync(interfaceSapRealizado.url, ctrlApiExec.ctrlContext, null, { conf: {} }, { auth: { username: interfaceSapRealizado.auth.user, password: interfaceSapRealizado.auth.pass } });
         const info: any = { resultSap: apiReturn };
-        const ctrlInterfaceMd = await CtrlInterfaceModel.create({
+        const ctrlInterfaceMd = (await CtrlInterfaceModel.create({
           categ: InterfaceSapCateg.importReal,
           dag_run_id: apiReturn.dag_run_id,
           started: agora,
@@ -294,7 +294,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           status: apiReturn.state,
           pending: true,
           info,
-        });
+        }) as any)._doc as CtrlInterface;
 
         resumoApi.jsonData({ value: { ctrlInterfaceMd } });
         deleteIfOk = true;
@@ -309,7 +309,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         if (ctrlInterfaceMdArray.length === 1) {
           ctrlInterfaceMd = ctrlInterfaceMdArray[0];
           const interfaceSapRealizado = EnvSvrInterfaceSapRealizadoConfig();
-          const apiReturn = await CallApiSvrASync(interfaceSapRealizado.url, ctrlApiExec, null, { params: [ctrlInterfaceMd.dag_run_id] }, { method: 'getParams', auth: { username: interfaceSapRealizado.auth.user, password: interfaceSapRealizado.auth.pass } });
+          const apiReturn = await CallApiSvrASync(interfaceSapRealizado.url, ctrlApiExec.ctrlContext, null, { params: [ctrlInterfaceMd.dag_run_id] }, { method: 'getParams', auth: { username: interfaceSapRealizado.auth.user, password: interfaceSapRealizado.auth.pass } });
           const info: any = { resultSap: apiReturn };
           const errosImport = [];
           let inseridos = 0;
@@ -377,7 +377,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             await ValoresRealizadosInterfaceSapModel.deleteMany({});
           }
           else if (apiReturn.state === InterfaceSapStatus.failed)
-            await NotifyAdmASync('interfaceSapRealizado-carga', `dag_run_id ${ctrlInterfaceMd.dag_run_id}`, ctrlApiExec, apiReturn);
+            await NotifyAdmASync('interfaceSapRealizado-carga', `dag_run_id ${ctrlInterfaceMd.dag_run_id}`, ctrlApiExec.ctrlContext, apiReturn);
           const pending = !(apiReturn.state === InterfaceSapStatus.success || apiReturn.state === InterfaceSapStatus.failed);
           ctrlInterfaceMd = await CtrlInterfaceModel.findOneAndUpdate({ _id: ctrlInterfaceMd._id }, { status: apiReturn.state, pending, info, lastChecked: agora }, { new: true }).lean();
         }
@@ -491,8 +491,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     await ApiLogFinish(apiLogProc, resumoApi.resultProc(), deleteIfOk);
-    await CloseDbASync({ ctrlApiExec, database: databaseInterfaceSap });
-    await CloseDbASync({ ctrlApiExec });
+    await CloseDbASync({ ctrlContext: ctrlApiExec.ctrlContext, database: databaseInterfaceSap });
+    await CloseDbASync({ ctrlContext: ctrlApiExec.ctrlContext });
   } catch (error) {
     const { httpStatusCode, jsonErrorData } = await ApiStatusDataByErrorASync(error, 'throw 2', parm, ctrlApiExec);
     resumoApi.status(httpStatusCode).jsonData(jsonErrorData);
@@ -516,7 +516,7 @@ export const GetValsPlanejados = async (processoOrcamentario: ProcessoOrcamentar
     vals = await ValoresImputadosGet(processoOrcamentario, revisao, centroCustoArray, sumarizaCCs, withDetails);
     const valoresDespr = vals.filter((x) => classeCustoCalcArray.includes(x.classeCusto));
     if (valoresDespr.length > 0) {
-      dbgError('valores inputados desprezados, por serem da origem calc', valoresDespr);
+      dbgError('GetValsPlanejados', 'valores inputados desprezados, por serem da origem calc', valoresDespr);
       vals = vals.filter((x) => !classeCustoCalcArray.includes(x.classeCusto));
     }
     //let needSort = false;
@@ -570,7 +570,7 @@ const GetValsPlanejadosTotAno = async (processoOrcamentario: ProcessoOrcamentari
     ]);
     const valoresDespr = vals.filter((x) => classeCustoCalcArray.includes(x.classeCusto));
     if (valoresDespr.length > 0) {
-      dbgError(`valores inputados (tot ano ${ano}) desprezados, por serem da origem calc`, valoresDespr);
+      dbgError('GetValsPlanejadosTotAno', `valores inputados (tot ano ${ano}) desprezados, por serem da origem calc`, valoresDespr);
       vals = vals.filter((x) => !classeCustoCalcArray.includes(x.classeCusto));
     }
     //let needSort = false;
@@ -632,7 +632,7 @@ export const ValoresImputadosGet = async (processoOrcamentario: ProcessoOrcament
   if (withDetails) {
     const db = await ValoresImputadosModel.find(filterDb, { _id: 0, lastUpdated: 0 })
       .lean().sort({ centroCusto: 1, classeCusto: 1, idDetalhe: 1 });
-    vals = db.map((x) => (new ValoresPlanejadosDetalhes()).Fill(x));
+    vals = db.map((x) => ValoresPlanejadosDetalhes.fill(x));
   }
   else {
     const db = await ValoresImputadosModel.aggregate([
@@ -656,7 +656,7 @@ export const ValoresImputadosGet = async (processoOrcamentario: ProcessoOrcament
       },
       { $sort: { centroCusto: 1, classeCusto: 1 } },
     ]);
-    vals = db.map((x) => (new ValoresPlanejadosDetalhes()).Fill(x));
+    vals = db.map((x) => ValoresPlanejadosDetalhes.fill(x));
   }
 
   if (sumarizaCCs)
@@ -672,7 +672,7 @@ export const ValoresPlanejadosHistoricoGet = async (processoOrcamentario: Proces
   let vals: ValoresPlanejadosDetalhes[] = [];
   const db = await ValoresPlanejadosHistoricoModel.find(filterDb, { _id: 0 })
     .lean().sort({ centroCusto: 1, classeCusto: 1 });
-  vals = db.map((x) => (new ValoresPlanejadosDetalhes()).Fill(x));
+  vals = db.map((x) => ValoresPlanejadosDetalhes.fill(x));
   if (sumarizaCCs)
     vals = (new CtrlCollect<ValoresPlanejadosDetalhes>(['classeCusto'], { fldsSum: [{ fld: 'valMeses', arrayLen: mesesFld.length }] }, vals)).getArray();
   return vals;
@@ -702,9 +702,10 @@ const getValPremissa = (premissaCod: string, premissas: Premissa[], premissasVal
   if (valoresPrior1.length + valoresPrior2.length == 0)
     return null;
   else
-    return { premissa, valoresPrior1, valoresPrior2 } as PremissaValores;
+    return { premissa, valoresPrior1, valoresPrior2 } as IPremissaValores;
 };
 
+//#ctrlContext
 export const ValoresPlanejadosCalc = async (processoOrcamentario: ProcessoOrcamentario, revisao: RevisaoValor, centroCustoArray: string[], withDetails: boolean, showCalcGlobal: boolean, ctrlApiExec: CtrlApiExec) => {
   const ano = processoOrcamentario.ano;
   const filtroCC = centroCustoArray.length > 0 ? { centroCusto: { $in: centroCustoArray } } : {};
@@ -715,7 +716,7 @@ export const ValoresPlanejadosCalc = async (processoOrcamentario: ProcessoOrcame
       withDetails === false &&
       showCalcGlobal === false)) {
     const valsCalc = await ValoresPlanejadosCalcModel.find({ ano, revisao, ...filtroCC }).lean().sort({ centroCusto: 1, classeCusto: 1 });
-    valsCalc.forEach((x) => vals.push(new ValoresPlanejadosDetalhes().Fill(x)));
+    valsCalc.forEach((x) => vals.push(ValoresPlanejadosDetalhes.fill(x)));
   }
   else {
     // premissas
@@ -731,7 +732,7 @@ export const ValoresPlanejadosCalc = async (processoOrcamentario: ProcessoOrcame
     const funcionarios = await FuncionarioModel.find({ ano, ...filtroCC }).lean().sort({ centroCusto: 1 });
     const terceiros = await TerceiroModel.find({ ano, revisao, ...filtroCC }).lean().sort({ centroCusto: 1 });
     const viagens = await ViagemModel.find({ ano, revisao, ...filtroCC }).lean().sort({ centroCusto: 1 });
-    const pushVals = (centroCusto, classeCusto, idDetalhe, descr, valsContaCalc: ValsContaCalc, infoMemoriaCalc = {}, showCalc = showCalcGlobal) => {
+    const pushVals = (centroCusto, classeCusto, idDetalhe, descr, valsContaCalc: IValsContaCalc, infoMemoriaCalc = {}, showCalc = showCalcGlobal) => {
       if (valsContaCalc.anyValue) {
         vals.push({
           centroCusto, classeCusto, idDetalhe, descr,
@@ -801,17 +802,17 @@ export const ValoresPlanejadosCalc = async (processoOrcamentario: ProcessoOrcame
 
         pushVals(processoOrcamentarioCentroCusto.centroCusto, contasCalc.vt.classeCusto, null, null, contasCalc.vt.calc(funcionariosForCalc, showCalcFunc));
 
-        interface ValsContaCalcDets { classeCusto: string; idDetalhe: string; descr?: string, valsContaCalc: ValsContaCalc }
+        interface IValsContaCalcDets { classeCusto: string; idDetalhe: string; descr?: string, valsContaCalc: IValsContaCalc }
 
         const premissas_despCorr_vals: any = {}; // 5200502003 = tel ramal; 5200504020 = SAP (dois tipos de premissas)
-        const valsDespRecorrArray: ValsContaCalcDets[] = [];
+        const valsDespRecorrArray: IValsContaCalcDets[] = [];
         premissas.filter(x => x.despRecorrFunc).forEach(premissa => {
           const premissa_despCorr_vals = getValPremissa(premissa.cod, premissas, valoresPremissas, processoOrcamentarioCentroCusto);
           premissas_despCorr_vals[premissa.cod] = premissa_despCorr_vals;
           valsDespRecorrArray.push({ classeCusto: premissa.classeCusto, idDetalhe: premissa.cod, descr: premissa.descrDespRecorrFunc, valsContaCalc: calcContaDespCorr(premissa.cod, funcionariosForCalc, premissa_despCorr_vals, showCalcFunc) });
         });
         //csd('valsDespRecorrArray', JSON.stringify(valsDespRecorrArray,null,2));
-        let valsDespRecorrFinalArray: ValsContaCalcDets[] = [];
+        let valsDespRecorrFinalArray: IValsContaCalcDets[] = [];
         if (!withDetails) {
           valsDespRecorrArray.forEach(valsDespRecorr => {
             const item = valsDespRecorrFinalArray.find(valsClasse => valsClasse.classeCusto == valsDespRecorr.classeCusto);
@@ -885,13 +886,13 @@ const GetValoresAnaliseAnual = async (processoOrcamentario: ProcessoOrcamentario
         unidadeNegocioMd = null;
         ccConfig = BinSearchItem(centroCustoConfigMdArray, val.centroCusto, 'centroCusto', false);
         if (ccConfig == null)
-          dbgError(`Centro de Custo ${val.centroCusto} não configurado para o ano (plan)`);
+          dbgError('GetValoresAnaliseAnual', `Centro de Custo ${val.centroCusto} não configurado para o ano (plan)`);
         else {
           if (analiseControladoria &&
             ccConfig.unidadeNegocio != null) {
             unidadeNegocioMd = BinSearchItem(unidadeNegocioMdArray, ccConfig.unidadeNegocio, 'cod', false);
             if (unidadeNegocioMd == null)
-              dbgError(`Unidade Negocio ${ccConfig.unidadeNegocio} não cadastrada (plan)`);
+              dbgError('GetValoresAnaliseAnual', `Unidade Negocio ${ccConfig.unidadeNegocio} não cadastrada (plan)`);
           }
         }
         lastCentroCusto = val.centroCusto;
@@ -900,7 +901,7 @@ const GetValoresAnaliseAnual = async (processoOrcamentario: ProcessoOrcamentario
         (ccConfig?.diretoria == null &&
           unidadeNegocioMd?.categRegional == null))
         continue;
-      valsTot.push(new ValoresAnaliseAnual().Fill({
+      valsTot.push(ValoresAnaliseAnual.fill({
         categRegional: unidadeNegocioMd?.categRegional,
         unidadeNegocio: ccConfig?.unidadeNegocio,
         diretoria: ccConfig?.diretoria,
@@ -928,13 +929,13 @@ const GetValoresAnaliseAnual = async (processoOrcamentario: ProcessoOrcamentario
         unidadeNegocioMd = null;
         ccConfig = BinSearchItem(centroCustoConfigMdArray, val.centroCusto, 'centroCusto', false);
         if (ccConfig == null)
-          dbgError(`Centro de Custo ${val.centroCusto} não configurado para o ano (reais)`);
+          dbgError('GetValoresAnaliseAnual', `Centro de Custo ${val.centroCusto} não configurado para o ano (reais)`);
         else {
           if (analiseControladoria &&
             ccConfig.unidadeNegocio != null) {
             unidadeNegocioMd = BinSearchItem(unidadeNegocioMdArray, ccConfig.unidadeNegocio, 'cod', false);
             if (unidadeNegocioMd == null)
-              dbgError(`Unidade Negocio ${ccConfig.unidadeNegocio} não cadastrada (reais)`);
+              dbgError('GetValoresAnaliseAnual', `Unidade Negocio ${ccConfig.unidadeNegocio} não cadastrada (reais)`);
           }
         }
         lastCentroCusto = val.centroCusto;
@@ -943,7 +944,7 @@ const GetValoresAnaliseAnual = async (processoOrcamentario: ProcessoOrcamentario
         (ccConfig?.diretoria == null &&
           unidadeNegocioMd?.categRegional == null))
         continue;
-      valsTot.push(new ValoresAnaliseAnual().Fill({
+      valsTot.push(ValoresAnaliseAnual.fill({
         categRegional: unidadeNegocioMd?.categRegional,
         unidadeNegocio: ccConfig?.unidadeNegocio,
         diretoria: ccConfig?.diretoria,
@@ -984,12 +985,12 @@ const GetValoresComparativoAnual = async (processoOrcamentarioAtu: ProcessoOrcam
         unidadeNegocioMd = null;
         ccConfig = BinSearchItem(centroCustoConfigMdArray, val.centroCusto, 'centroCusto', false);
         if (ccConfig == null)
-          dbgError(`Centro de Custo ${val.centroCusto} não configurado para o ano (plan)`);
+          dbgError('GetValoresComparativoAnual', `Centro de Custo ${val.centroCusto} não configurado para o ano (plan)`);
         else {
           if (ccConfig.unidadeNegocio != null) {
             unidadeNegocioMd = BinSearchItem(unidadeNegocioMdArray, ccConfig.unidadeNegocio, 'cod', false);
             if (unidadeNegocioMd == null)
-              dbgError(`Unidade Negocio ${ccConfig.unidadeNegocio} não cadastrada (plan)`);
+              dbgError('GetValoresComparativoAnual', `Unidade Negocio ${ccConfig.unidadeNegocio} não cadastrada (plan)`);
           }
         }
         lastCentroCusto = val.centroCusto;
@@ -1002,7 +1003,7 @@ const GetValoresComparativoAnual = async (processoOrcamentarioAtu: ProcessoOrcam
         planAnt = val.valMeses.reduce((prev, curr) => prev + curr, 0);
       else
         planAtu = val.valMeses.reduce((prev, curr) => prev + curr, 0);
-      valsTot.push(new ValoresComparativoAnual().Fill({
+      valsTot.push(ValoresComparativoAnual.fill({
         categRegional: unidadeNegocioMd?.categRegional,
         unidadeNegocio: ccConfig?.unidadeNegocio,
         diretoria: ccConfig?.diretoria,
@@ -1028,12 +1029,12 @@ const GetValoresComparativoAnual = async (processoOrcamentarioAtu: ProcessoOrcam
         unidadeNegocioMd = null;
         ccConfig = BinSearchItem(centroCustoConfigMdArray, val.centroCusto, 'centroCusto', false);
         if (ccConfig == null)
-          dbgError(`Centro de Custo ${val.centroCusto} não configurado para o ano (reais)`);
+          dbgError('GetValoresComparativoAnual', `Centro de Custo ${val.centroCusto} não configurado para o ano (reais)`);
         else {
           if (ccConfig.unidadeNegocio != null) {
             unidadeNegocioMd = BinSearchItem(unidadeNegocioMdArray, ccConfig.unidadeNegocio, 'cod', false);
             if (unidadeNegocioMd == null)
-              dbgError(`Unidade Negocio ${ccConfig.unidadeNegocio} não cadastrada (reais)`);
+              dbgError('GetValoresComparativoAnual', `Unidade Negocio ${ccConfig.unidadeNegocio} não cadastrada (reais)`);
           }
         }
         lastCentroCusto = val.centroCusto;
@@ -1041,7 +1042,7 @@ const GetValoresComparativoAnual = async (processoOrcamentarioAtu: ProcessoOrcam
       if ((ccConfig?.diretoria == null &&
         unidadeNegocioMd?.categRegional == null))
         continue;
-      valsTot.push(new ValoresComparativoAnual().Fill({
+      valsTot.push(ValoresComparativoAnual.fill({
         categRegional: unidadeNegocioMd?.categRegional,
         unidadeNegocio: ccConfig?.unidadeNegocio,
         diretoria: ccConfig?.diretoria,

@@ -1,14 +1,16 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 
-import { Box, Stack, useTheme } from '@mui/material';
+import { Box, Divider, Stack, useTheme } from '@mui/material';
 
 import { PageDef } from '../../libCommon/endPoints';
 
-import { MenuEntry, MenuEntryType, MenuFloat, routerPageDef } from '..';
+import { preserveStateContext } from '../../pages/_appResources';
+
+import { MenuEntry, MenuEntryType, MenuFloat, routerPageDef, Typo } from '..';
 
 // @!!!! ao acionar o item de menu atualizar a hora da ultima atividade !!!
-// menuEntriesBlock1 = transações principais e mais usadas, mais visiveis, ficam a esquerda
+// menuEntriesBlock1 = transações principais e mais usadas, mais visíveis, ficam a esquerda
 // menuEntriesBlock2 = transações eventuais, ficam a direita
 interface IMenuBarraSuperiorProps {
   menuEntriesLeft: MenuEntry[];
@@ -19,6 +21,7 @@ interface IMenuBarraSuperiorProps {
 
 // export const MenuLateral: React.FC<IMenuLateralProps> = ({ children }) => { @@!!!!! React.FC
 export const MenuBarraSuperior = ({ menuEntriesLeft, menuEntriesRight, pageDefCurr, children }: IMenuBarraSuperiorProps) => {
+  const { preserveStateResetAll } = React.useContext(preserveStateContext);
   const router = useRouter();
   const marginItens = '1rem';
   const themePlus = useTheme();
@@ -30,16 +33,16 @@ export const MenuBarraSuperior = ({ menuEntriesLeft, menuEntriesRight, pageDefCu
         return (<MenuFloat key={i} anchor={menuEntry.content} itens={menuEntry.groupItens} style={style} pageDefCurr={pageDefCurr} />);
       else if (menuEntry.type == MenuEntryType.pagePath) {
         const isPageCurrent = pageDefCurr == menuEntry.pageDef && !pageDefCurr?.pagePath.endsWith('dummy');
-        const handlePagePath = (menuEntry: MenuEntry) => routerPageDef(menuEntry.pageDef, router, menuEntry.query, pageDefCurr);
-        const renderComp = isPageCurrent ? <b>{menuEntry.content}</b> : <>{menuEntry.content}</>;
-        return (<div key={i} onClick={() => handlePagePath(menuEntry)} style={style}>{renderComp}</div>);
+        const handlePagePath = (menuEntry: MenuEntry) => { preserveStateResetAll(); routerPageDef(menuEntry.pageDef, router, menuEntry.query, pageDefCurr); };
+        const renderComp = (isPageCurrent && typeof menuEntry.content === 'string') ? <Typo bold variant='inherit'>{menuEntry.content}</Typo> : <>{menuEntry.content}</>;
+        return (<Box key={i} onClick={() => handlePagePath(menuEntry)} style={style}>{renderComp}</Box>);
       }
       else if (menuEntry.type == MenuEntryType.onlyShow)
-        return (<div key={i} style={style}>{menuEntry.content}</div>);
+        return (<Box key={i} style={style}>{menuEntry.content}</Box>);
       else if (menuEntry.type == MenuEntryType.divider)
-        return (<div key={i} style={style}>|</div>);
+        return (<Box key={i} style={style}>|</Box>);
       else
-        return (<div key={i} style={style}>???</div>);
+        return (<Box key={i} style={style}>???</Box>);
     })}
   </>);
 
@@ -63,39 +66,16 @@ export const MenuBarraSuperior = ({ menuEntriesLeft, menuEntriesRight, pageDefCu
 
   return (
     <Stack gap={1} height='100%'>
-      <Box className={'menuLine'} sx={menuSxProps}>
-        {/* área para a aplicação (home e paginas dinamicas em função dousuario logado) */}
-        <div className='itensMenu'>
+      <Stack direction='row' alignItems='center' gap={1}
+        sx={menuSxProps} p={1} divider={<Divider orientation="vertical" flexItem />}>
+        {/* área para a aplicação (home e paginas dinâmicas em função do usuário logado) */}
+        <Stack direction='row' alignItems='center' gap={1} divider={<Divider orientation="vertical" flexItem />} sx={{ flexGrow: 1 }}>
           {menuBlock(menuEntriesLeft, 'l')}
-        </div>
-        <div className='itensMenu right'>
+        </Stack>
+        <Stack direction='row' alignItems='center' gap={1} divider={<Divider orientation="vertical" flexItem />}>
           {menuBlock(menuEntriesRight, 'r')}
-        </div>
-      </Box>
-      <style jsx global>{`
-        .menuLine {
-          width: 100%;
-          display: flex;
-          flex-direction: row;
-          align-items: center;
-          height: auto;
-          padding-top: 0.5rem;
-          padding-bottom: 0.5rem;
-          padding-left: 1rem;
-          padding-right: 1rem;
-        }       
-        .itensMenu {
-          display: flex;
-          flex-direction: row;
-          align-items: center;  
-          @media (max-width: 720px) {
-            XXflex-direction: column;  /* falta hamburger menu para os itens horizontais @@@! */
-          }
-        }
-        .right {
-          margin-left: auto;
-        }
-      `}</style>
+        </Stack>
+      </Stack>
       <Box flex={1} overflow='hidden'>
         {children}
       </Box>

@@ -1,11 +1,12 @@
-import { dbg, dbgError, ScopeDbg } from '../libCommon/dbg';
+import { CtrlContext } from '../libCommon/ctrlContext';
+import { dbg, ScopeDbg } from '../libCommon/dbg';
 
-export interface promiseCtrl {
+export interface IPromiseCtrl {
   promise: Promise<any>; //  | Query<any, any, any>
   point: string;
 }
 
-const promisesDb: promiseCtrl[] = [];
+const promisesDb: IPromiseCtrl[] = [];
 //export function NewOperAsyncDb(operDb: Promise<any>, txt: string) {
 export function NewPromiseExecUntilCloseDb(promise: Promise<any>, point: string) { //  | Query<any, any, any>
   // if (ctrl.status === status_closed ||
@@ -21,11 +22,11 @@ export function NewPromiseExecUntilCloseDb(promise: Promise<any>, point: string)
   });
   return promise; // permite ao chamador utilizar o resultado (com await)
 }
-export async function ResolvePromisesExecUntilCloseDb(context: string) {
-  await ResolvePromises(context, 'db', promisesDb);
+export async function ResolvePromisesExecUntilCloseDb(ctrlContext: CtrlContext) {
+  await ResolvePromises(ctrlContext, 'db', promisesDb);
 }
 
-const promisesResponse: promiseCtrl[] = [];
+const promisesResponse: IPromiseCtrl[] = [];
 //export function NewOperAsyncDb(operDb: Promise<any>, txt: string) {
 export function NewPromiseExecUntilResponse(promise: Promise<any>, point: string) {
   promisesResponse.push({
@@ -34,14 +35,14 @@ export function NewPromiseExecUntilResponse(promise: Promise<any>, point: string
   });
   return promise;
 }
-export async function ResolvePromisesExecUntilResponse(context: string) {
-  await ResolvePromises(context, 'response', promisesResponse);
+export async function ResolvePromisesExecUntilResponse(ctrlContext: CtrlContext) {
+  await ResolvePromises(ctrlContext, 'response', promisesResponse);
 }
 
-async function ResolvePromises(context: string, categ: string, promisesCtrl: promiseCtrl[]) {
-  const dbgT = (level: number, ...params) => dbg({ level, levelScope: ScopeDbg.t, context }, `==> ResolvePromises (${categ})`, ...params);
+async function ResolvePromises(ctrlContext: CtrlContext, categ: string, promisesCtrl: IPromiseCtrl[]) {
+  const dbgX = (level: number, ...params) => dbg({ level, point: 'ResolvePromises', scopeMsg: ScopeDbg.x, ctrlContext }, categ, ...params);
   if (promisesCtrl.length > 0) {
-    dbgT(1, 'opers', promisesCtrl.length);
+    dbgX(1, 'opers', promisesCtrl.length);
     //let countDone = 0;
     let ciclo = 0;
     //while (opersDbAsync.length > countDone) { // alguma promise liberada pode provocar a inclusão de novas promises !
@@ -49,15 +50,12 @@ async function ResolvePromises(context: string, categ: string, promisesCtrl: pro
       ciclo++;
       const opersExecJa = [...promisesCtrl];
       promisesCtrl.length = 0;
-      //dbg(nivelLogOpersDbMedium, dbgContext, 'CloseDb-wait', `ciclo ${ciclo}`, `${opersDbAsync.length - countDone} promises`);
-      dbgT(2, 'operASync', `ciclo ${ciclo}`, 'pends', opersExecJa.map(x => x.point));
+      dbgX(2, 'operASync', `ciclo ${ciclo}`, 'pends', opersExecJa.map(x => x.point));
       //countDone += opersDbAsync.length;
       await Promise.all(opersExecJa.map(x => x.promise
-        .then(data => dbgT(1, `'${x.point}' ok:`, data))
-        .catch(error => dbgT(1, `'${x.point}' err:`, error.message))));
-      //dbg(0, dbgContext, 'opersDbAsync', `ciclo ${ciclo}`, 'pos', opersExecJa);
+        .then(data => dbgX(1, `'${x.point}' ok:`, data))
+        .catch(error => dbgX(1, `'${x.point}' err:`, error.message))));
     }
-    //dbg3(0, dbgContext, 'CloseDb-waiting', `connectCount pos: ${ctrl.cnnCount}`);
-    dbgT(2, 'operASync', 'allDone');
+    dbgX(2, 'operASync', 'allDone');
   }
 }

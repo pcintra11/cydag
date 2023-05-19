@@ -1,32 +1,31 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import _ from 'underscore';
 
 import Box from '@mui/material/Box';
 import { Stack, useTheme } from '@mui/material';
 
-import { BinSearchProp, CalcExecTime, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../../libCommon/util';
-import { csd, dbgError } from '../../../libCommon/dbg';
+import { BinSearchProp, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../../libCommon/util';
+import { csd } from '../../../libCommon/dbg';
 import { IGenericObject } from '../../../libCommon/types';
 import { PageDef } from '../../../libCommon/endPoints';
+import { CalcExecTime } from '../../../libCommon/calcExectime';
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
-
-import { globals } from '../../../libClient/clientGlobals';
 
 import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, SnackBarError, fontSizeGrid, fontSizeIconsInGrid } from '../../../components';
 import { GridCellEdit, GridCell, IFldChange, IGridEditFldCtrl, IGridEditMainCtrl, ValueType } from '../../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 //import { GlobalState, useGlobalState } from '../../hooks/useGlobalState';
 
+import { configApp } from '../../../app_hub/appConfig';
+
 import { IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, SelAno, SelEntity, SelRevisao } from '../../../appCydag/components';
 import { apisApp, pagesApp } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
 import { amountToStr, mesesFld, mesesHdr } from '../../../appCydag/util';
-import { configApp } from '../../../appCydag/config';
 import { CentroCusto, FuncaoTerceiro, Funcionario, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto, Terceiro } from '../../../appCydag/modelTypes';
 import { CentroCustoConfigOption, IAnoCentroCustos, ProcCentrosCustoConfig, RevisaoValor, ProcessoOrcamentarioStatusMd, OperInProcessoOrcamentario } from '../../../appCydag/types';
-
 import { CmdApi_Terceiro as CmdApi, IChangedLine, DataEdit, LineState } from '../../api/appCydag/terceiro/types';
+import { configCydag } from '../../../appCydag/configCydag';
 
 enum Phase {
   initiating = 'initiating',
@@ -73,7 +72,7 @@ class FrmFilter {
 }
 
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.terceiro.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.terceiro.apiPath, parm) };
 const pageSelf = pagesApp.terceiro;
 
 const statesCompsSubord = { setMainStatesFilter: null, setMainStatesData1: null, setMainStatesData2: null, setStatePreReservedItens: null };
@@ -334,7 +333,7 @@ export default function PageTerceiroCrud() {
 
       if (lineState === LineState.reserved) return (<></>);
 
-      const dataOriginal = terceiro != null ? terceiro : (new Terceiro()).Fill({
+      const dataOriginal = terceiro != null ? terceiro : Terceiro.fill({
         refer: `incl. ${indexPreReserve + 1}`,
         valMeses: new Array(mesesFld.length).fill(undefined),
       });
@@ -370,7 +369,7 @@ export default function PageTerceiroCrud() {
         nome: { fld: 'nome', mandatory: true } as IGridEditFldCtrl,
         fornecedor: { fld: 'fornecedor', mandatory: true } as IGridEditFldCtrl,
         funcaoTerceiros: { fld: 'funcaoTerceiros', valueType: ValueType.options, options: mainStates.funcaoTerceirosArray.map((x) => new SelOption(x.cod, x.descr)), mandatory: true } as IGridEditFldCtrl,
-        valMeses: { fld: 'valMeses', valueType: ValueType.amount, decimals: configApp.decimalsValsInput, arrayItens: mesesFld.length } as IGridEditFldCtrl,
+        valMeses: { fld: 'valMeses', valueType: ValueType.amount, decimals: configCydag.decimalsValsInput, arrayItens: mesesFld.length } as IGridEditFldCtrl,
       };
       //#endregion
 
@@ -455,7 +454,7 @@ export default function PageTerceiroCrud() {
           <GridCell textAlign='left'><Box>{BinSearchProp(mainStates.funcaoTerceirosArray, dataOriginal.funcaoTerceiros, 'descr', 'cod')}</Box></GridCell>
 
           {mesesFld.map((_, index) => <GridCell key={index} textAlign='right'>
-            {amountToStr(dataOriginal.valMeses[index], configApp.decimalsValsInput)}
+            {amountToStr(dataOriginal.valMeses[index], configCydag.decimalsValsInput)}
           </GridCell>)
           }
         </>);

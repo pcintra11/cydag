@@ -3,13 +3,12 @@ import { useRouter } from 'next/router';
 
 import { Box, FormControl, FormControlLabel, FormHelperText, FormLabel, MenuItem, Radio, RadioGroup, Stack, TextField, useTheme } from '@mui/material';
 
-import { IsErrorManaged, ObjUpdAllProps, ErrorPlus, ObjDiff, CalcExecTime, ForceWait } from '../../../libCommon/util';
+import { IsErrorManaged, ObjUpdAllProps, ErrorPlus, ObjDiff, ForceWait } from '../../../libCommon/util';
 import { IGenericObject } from '../../../libCommon/types';
+import { CalcExecTime } from '../../../libCommon/calcExectime';
 import { PageDef } from '../../../libCommon/endPoints';
 
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
-
-import { globals } from '../../../libClient/clientGlobals';
 
 import { AlertMy, FrmSetError, PopupMsg, SnackBarError } from '../../../components';
 import { Btn, BtnLine, WaitingObs } from '../../../components';
@@ -18,11 +17,11 @@ import { FrmError, FrmInput } from '../../../components';
 import { ColGridConfig, TableGrid } from '../../../components';
 import { FrmDefaultValues, FrmSetValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 
-import { configApp } from '../../../appCydag/config';
+import { configApp } from '../../../app_hub/appConfig';
+
 import { BtnCrud, IconButtonAppCrud, IconButtonAppSearch } from '../../../appCydag/components';
 import { pagesApp, apisApp } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
-
 import { Entity_Crud, CmdApi_Crud as CmdApi, crudValidations } from '../../api/appCydag/classeCusto/types';
 import { ClasseCusto, FatorCusto } from '../../../appCydag/modelTypes';
 import { OrigemClasseCusto, OrigemClasseCustoMd } from '../../../appCydag/types';
@@ -46,7 +45,7 @@ class FrmFilter {
   searchTerms: string;
 }
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.classeCusto.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.classeCusto.apiPath, parm) };
 const pageSelf = pagesApp.classeCusto;
 export default function PageClasseCustoCrud() {
   const frmFilter = useFrm<FrmFilter>({
@@ -149,7 +148,7 @@ export default function PageClasseCustoCrud() {
     if (!router.isReady || isLoadingUser) return;
     if (!PageDef.IsUserAuthorized(pageSelf, loggedUser?.roles)) throw new ErrorPlus('Não autorizado.');
     setMainStatesCache({ phase: Phase.list, filter: { searchTerms: '' }, filterApplyed: false, listing: { searching: false, dataRows: [] } });
-    CallApiCliASync<any>(apisApp.diversos.apiPath, globals.windowId, { cmd: CmdApi_Diversos.listFatorCusto })
+    CallApiCliASync<any>(apisApp.diversos.apiPath, { cmd: CmdApi_Diversos.listFatorCusto })
       .then(async (apiReturn) => {
         const fatorCustoArray = (apiReturn.value.documents as IGenericObject[]).map((data) => FatorCusto.deserialize(data));
         setMainStatesCache({ fatorCustoArray });
@@ -167,7 +166,7 @@ export default function PageClasseCustoCrud() {
       if (phase == Phase.list)
         setMainStatesCache({ phase: Phase.list, data: null, index: null });
       else {
-        const data = phase === Phase.insert ? new Entity_Crud() : mainStates.listing.dataRows[index];
+        const data = phase === Phase.insert ? Entity_Crud.new(true) : mainStates.listing.dataRows[index];
         FrmSetValues(frmData, FrmDefaultValues(new FrmData(), data));
         setMainStatesCache({ phase, data, index });
       }

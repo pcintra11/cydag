@@ -1,9 +1,9 @@
 import Cookies from 'js-cookie';
 
 //import { dbg } from './dbg';
-import { AssertIsClient } from '../libCommon/util';
+import { AssertIsClient } from '../libCommon/sideProc';
 
-export interface CookieOptions {
+export interface ICookieOptions {
   expires?: Date; // default : NÂO deleta ao fechar o browser!
   path?: string;
 }
@@ -13,7 +13,7 @@ function getAll() {
 }
 
 function get(name: string) {  // não recupera os que foram setados no server !
-  AssertIsClient('cookieCli', { name });
+  AssertIsClient('cookieCli get', { name });
   return Cookies.get(name);
 }
 function getJSON(name: string) {
@@ -30,11 +30,11 @@ function getJSON(name: string) {
   return result;
 }
 
-function set(name: string, value: string, options: CookieOptions = null) {
-  AssertIsClient('cookieCli', { name, value });
+function set(name: string, value: string, options: ICookieOptions = null) {
+  AssertIsClient('cookieCli set', { name, value });
   return Cookies.set(name, value, options);
 }
-function setJSON(name: string, value: object, options: CookieOptions = null) {
+function setJSON(name: string, value: object, options: ICookieOptions = null) {
   return set(name, JSON.stringify(value), options);
 }
 

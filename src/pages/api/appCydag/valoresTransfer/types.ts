@@ -1,5 +1,3 @@
-import _ from 'underscore';
-
 import { mesesFld } from '../../../../appCydag/util';
 
 enum CmdApi_ValoresTransfer {

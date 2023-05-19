@@ -6,11 +6,13 @@ import * as yup from 'yup';
 import jwtThen from 'jwt-then';
 import { v1 as uuidv1 } from 'uuid';
 
-import { EnvDeployConfig } from '../libCommon/envs';
-import { AddToDate, CalcExecTime, CompareDates, DateFromStrISO, DateToStrISO, ErrorPlus, FilterRelevantWordsForSearch, LanguageSearch, SleepMs, StrLeft } from '../libCommon/util';
-import { csd, csl, dbg, dbgError, dbgWarn, NivelLog, ScopeDbg, SetNivelLog } from '../libCommon/dbg';
+import { EnvDeployConfig, EnvSvrCtrlLog } from '../app_base/envs';
+import { AddToDate, CompareDates, DateFromStrISO, DateToStrISO, ErrorPlus, FilterRelevantWordsForSearch, LanguageSearch, SleepMs, StrLeft } from '../libCommon/util';
+import { colorsMsg, csd, dbg, dbgError, dbgWarn, ScopeDbg } from '../libCommon/dbg';
 import { HttpStatusCode, IdByTime, DispAbrev } from '../libCommon/util';
 import { IGenericObject } from '../libCommon/types';
+import { CalcExecTime } from '../libCommon/calcExectime';
+import { CtrlContext } from '../libCommon/ctrlContext';
 
 export type LogSentMessagesFn = (resultOk: string, resultError: string) => Promise<void>;
 
@@ -21,50 +23,46 @@ export type LogSentMessagesFn = (resultOk: string, resultError: string) => Promi
 //   return _protocolHost;
 // }
 
+let colorDestaqSeq = 1;  // entre uma chamada HTTP e outra essa variável global vai manter o valor e somar ?
 export class CtrlApiExec {
   req: NextApiRequest;
   res: NextApiResponse;
   url: string;
   referer: string;
-  originHost: string;
+  //originHost: string;
   horaStartHttp?: Date;
-  apiHost: string; // com a porta
-  apiHostname: string; // sem a porta
-  apiHostnameAbrev?: string;
+  //apiHost: string; // com a porta
+  //apiHostname: string; // sem a porta
+  //apiHostnameAbrev?: string;
   //apiProtocol?: string;
-  apiProtocolAndHost?: string;
+  //apiProtocolAndHost?: string;
   ip?: string;
   ipVersion?: number;
   parm?: IGenericObject;
   //page: null,
   //seq: 0,
-  apiPath?: string; // api
-  callId?: string;  // link com o chamador da API
-  execId?: string;  // identificação única para a chamada
-  calcExecTime: CalcExecTime;
-  lastElapsed: number;
-  paramsTypeVariant?: string; // principais parametros para identificar a chamada, como o 'cmd', type, etc, tudo que identifica o tipo de processamento
+  apiPath?: string;
+  sideCall?: string;  // de onde foi chamado: client ou server
+  callSeq?: string;  // seq no chamador da API
+  browserId?: string;  // para diferenciar vários navegadores no mesmo dispositivo
+  ctrlLogCaller?: string;
+  execId?: string;  // identificação única para a chamada (gerada sequencialmente em cada chamada, pelo chamado)
+  paramsTypeVariant?: string; // principais parâmetros para identificar a chamada, como o 'cmd', type, etc, tudo que identifica o tipo de processamento
   paramsTypeKey?: string; // identificadores para o processamento específico, como chaves, etc
-  colorDestaq?: number;
   // parmPlus: {
   //   loggedUser?: LoggedUser;
   //   nivelLog?: string;
   // }
-  context() {
-    const prefix = this.callId != null ? `(${this.callId})->` : '';
-    const sufix = this.execId != null ? `(${this.execId})` : '';
-    return `${prefix}${this.apiPath}${sufix}`;
-  }
-  checkElapsed(point: string, showAlways = false) {
-    const elapsedTot = this.calcExecTime.elapsedMs();
-    const gap = elapsedTot - this.lastElapsed;
-    if (showAlways || gap > 1000)
-      csl(this.apiPath, point, `elapsed tot ${elapsedTot}ms, gap ${gap}ms ${gap > 1000 ? '- **********' : ''}`);
-    this.lastElapsed = elapsedTot;
-  }
+  ctrlContext: CtrlContext;
+  // checkElapsed(point: string, showAlways = false) {
+  //   const elapsedTot = this.calcExecTime.elapsedMs();
+  //   const gap = elapsedTot - this.lastElapsed;
+  //   if (showAlways || gap > 1000)
+  //     csl(this.apiPath, point, `elapsed tot ${elapsedTot}ms, gap ${gap}ms ${gap > 1000 ? '- **********' : ''}`);
+  //   this.lastElapsed = elapsedTot;
+  // }
 }
 
-let colorDestaqSeq = 1;
 let seqApi = 0;
 
 const ReqParm = (req: NextApiRequest) => {
@@ -76,7 +74,7 @@ export const ReqNoParm = (req: NextApiRequest) => {
   else return false;
 };
 
-let ctrlApiExecGlobal: CtrlApiExec = null;
+//let ctrlApiExecGlobal: CtrlApiExec = null;
 export function GetCtrlApiExec(req: NextApiRequest, res: NextApiResponse, paramsTypeVariantSel: string[] = ['cmd'], paramsTypeKeySel: string[] = []) {
   if (EnvDeployConfig().back_end == false)
     throw new Error('Não está habilitado o back-end');
@@ -85,10 +83,8 @@ export function GetCtrlApiExec(req: NextApiRequest, res: NextApiResponse, params
 
     ctrlApiExec.req = req;
     ctrlApiExec.res = res;
-    ctrlApiExec.callId = null;
+    ctrlApiExec.callSeq = null;
     ctrlApiExec.execId = `${++seqApi}${IdByTime()}`;
-    ctrlApiExec.calcExecTime = new CalcExecTime();
-    ctrlApiExec.lastElapsed = 0;
 
     ctrlApiExec.horaStartHttp = new Date();
 
@@ -100,33 +96,33 @@ export function GetCtrlApiExec(req: NextApiRequest, res: NextApiResponse, params
     //   delete ctrlApiExec.referer.referers;
     //csl('referer' , ctrlApiExec.referer);
 
-    ctrlApiExec.originHost = null;
-    if (req.headers?.origin != null) {
-      const urlOriginParsed = URLParse(req.headers?.origin);
-      ctrlApiExec.originHost = urlOriginParsed.host;
-    } // conferir todos os logs, se estão gravando corretamente @!!!!!!
+    // ctrlApiExec.originHost = null;
+    // if (req.headers?.origin != null) {
+    //   const urlOriginParsed = URLParse(req.headers?.origin);
+    //   ctrlApiExec.originHost = urlOriginParsed.host;
+    // }
 
-    ctrlApiExec.apiHost = req.headers?.host; // with port !
+    //ctrlApiExec.apiHost = req.headers?.host; // with port !
     // usar URL do node https://nodejs.org/api/url.html#constructing-a-url-from-component-parts-and-getting-the-constructed-string @@@!!!!!    
     const urlApiParsed = URLParse(ctrlApiExec.url); // url só tem a parte apos a porta !!!! 
-    ctrlApiExec.apiHostname = req.headers?.host != null ? req.headers.host.split(':')[0] : ''; // despreza a porta (não dá problema se não tiver a porta)
+    ///ctrlApiExec.apiHostname = req.headers?.host != null ? req.headers.host.split(':')[0] : ''; // despreza a porta (não dá problema se não tiver a porta)
 
-    const protocol = 'http'; // urlApiParsed.protocol != '' ? urlApiParsed.protocol : 'http'; // @@!!!!! usar apenas no local da necessidade!
-    ctrlApiExec.apiProtocolAndHost = `${protocol}://${ctrlApiExec.apiHost}`; // mesmo se o acesso original for https não dá problema (chamada server x server)
+    //const protocol = 'http'; // urlApiParsed.protocol != '' ? urlApiParsed.protocol : 'http'; // @@!!!!! usar apenas no local da necessidade!
+    //ctrlApiExec.apiProtocolAndHost = `${protocol}://${ctrlApiExec.apiHost}`; // mesmo se o acesso original for https não dá problema (chamada server x server)
 
-    let apiHostnameAbrev = ctrlApiExec.apiHostname;
-    apiHostnameAbrev = apiHostnameAbrev.replace(/-test.netlify.app/, '-nlfT'); //@@@ testar netlify
-    apiHostnameAbrev = apiHostnameAbrev.replace(/.netlify.app/, '-nlfP');
-    apiHostnameAbrev = apiHostnameAbrev.replace(/-git-test-pcintra11.vercel.app/, '-vclT');
-    apiHostnameAbrev = apiHostnameAbrev.replace(/.vercel.app/, '-vclP');
-    apiHostnameAbrev = apiHostnameAbrev.replace(/localhost/, 'locH');
-    apiHostnameAbrev = apiHostnameAbrev.replace(/127.0.0.1/, 'locH');
-    ctrlApiExec.apiHostnameAbrev = apiHostnameAbrev;
+    // let apiHostnameAbrev = ctrlApiExec.apiHostname; 
+    // apiHostnameAbrev = apiHostnameAbrev.replace(/-test.netlify.app/, '-nlfT'); //@@@ testar netlify
+    // apiHostnameAbrev = apiHostnameAbrev.replace(/.netlify.app/, '-nlfP');
+    // apiHostnameAbrev = apiHostnameAbrev.replace(/-git-test-pcintra11.vercel.app/, '-vclT');
+    // apiHostnameAbrev = apiHostnameAbrev.replace(/.vercel.app/, '-vclP');
+    // apiHostnameAbrev = apiHostnameAbrev.replace(/localhost/, 'locH');
+    // apiHostnameAbrev = apiHostnameAbrev.replace(/127.0.0.1/, 'locH');
+    // ctrlApiExec.apiHostnameAbrev = apiHostnameAbrev;
+    //ctrlApiExec.apiHostnameAbrev = `${Env('plataform')}-${Env('amb')}`;
 
     ctrlApiExec.ip = RequestIp.getClientIp(req);
     ctrlApiExec.ipVersion = ipVersion(ctrlApiExec.ip);
     ctrlApiExec.apiPath = urlApiParsed.pathname.replace(/^\/api\//, '');
-    ctrlApiExec.colorDestaq = colorDestaqSeq++; // (colorSeq++ % colorsDestaq.length) + 1;
     //ctrlApiExec.page = urlParsed.pathname.substring(1); // em SSR URL não é estável !
 
     //_protocolHost = ctrlApiExec.protocolHost;
@@ -159,7 +155,7 @@ export function GetCtrlApiExec(req: NextApiRequest, res: NextApiResponse, params
     //dispApiComps.push(`s:${varsHttp.seq}`);
 
     //dispApiComps.push(`(${varsHttp.execId}) *start*`);
-    dispApiComps.push('===start===');
+    //dispApiComps.push('===start===');
     if (ctrlApiExec.paramsTypeVariant != '')
       dispApiComps.push(`variante '${ctrlApiExec.paramsTypeVariant}'`);
     if (ctrlApiExec.paramsTypeKey != '')
@@ -172,14 +168,12 @@ export function GetCtrlApiExec(req: NextApiRequest, res: NextApiResponse, params
 
     if (ctrlApiExec.parm._parmPlus != null) {
       //parmPlus.loggedUser = varsHttp.parm._parmPlus.loggedUser != null ? LoggedUser.deserialize(varsHttp.parm._parmPlus.loggedUser) : null;
-      ctrlApiExec.callId = ctrlApiExec.parm._parmPlus.callId;
-      //parmPlus.nivelLogX = varsHttp.parm._parmPlus.nivelLogX;
-      if (ctrlApiExec.parm._parmPlus.nivelLogA != null && Number(ctrlApiExec.parm._parmPlus.nivelLogA) != NivelLog(ScopeDbg.a)) SetNivelLog(Number(ctrlApiExec.parm._parmPlus.nivelLogA), ScopeDbg.a);
-      if (ctrlApiExec.parm._parmPlus.nivelLogD != null && Number(ctrlApiExec.parm._parmPlus.nivelLogD) != NivelLog(ScopeDbg.d)) SetNivelLog(Number(ctrlApiExec.parm._parmPlus.nivelLogD), ScopeDbg.d);
-      if (ctrlApiExec.parm._parmPlus.nivelLogE != null && Number(ctrlApiExec.parm._parmPlus.nivelLogE) != NivelLog(ScopeDbg.e)) SetNivelLog(Number(ctrlApiExec.parm._parmPlus.nivelLogE), ScopeDbg.e);
-      if (ctrlApiExec.parm._parmPlus.nivelLogT != null && Number(ctrlApiExec.parm._parmPlus.nivelLogT) != NivelLog(ScopeDbg.t)) SetNivelLog(Number(ctrlApiExec.parm._parmPlus.nivelLogT), ScopeDbg.t);
-      if (ctrlApiExec.parm._parmPlus.nivelLogX != null && Number(ctrlApiExec.parm._parmPlus.nivelLogX) != NivelLog(ScopeDbg.x)) SetNivelLog(Number(ctrlApiExec.parm._parmPlus.nivelLogX), ScopeDbg.x);
+      ctrlApiExec.sideCall = ctrlApiExec.parm._parmPlus.sideCall;
+      ctrlApiExec.callSeq = ctrlApiExec.parm._parmPlus.callSeq;
+      ctrlApiExec.browserId = ctrlApiExec.parm._parmPlus.browserId;
+      ctrlApiExec.ctrlLogCaller = ctrlApiExec.parm._parmPlus.ctrlLog;
       parmPlus = ctrlApiExec.parm._parmPlus;
+      //csd({ parmPlus });
       delete ctrlApiExec.parm._parmPlus;
     }
 
@@ -199,16 +193,38 @@ export function GetCtrlApiExec(req: NextApiRequest, res: NextApiResponse, params
 
     const dispApi = dispApiComps.join('; ');
 
-    const dbgA = (level: number, ...params) => dbg({ level, levelScope: ScopeDbg.a, context: ctrlApiExec.context(), color: ctrlApiExec.colorDestaq }, ...params);
+    const context = (() => {
+      const prefix = ctrlApiExec.callSeq != null ? `(${ctrlApiExec.callSeq})->` : '';
+      const sufix = ctrlApiExec.execId != null ? `(${ctrlApiExec.execId})` : '';
+      return `${prefix}${ctrlApiExec.apiPath}${sufix}`;
+    })();
 
-    dbgA(1, dispApi);
+    // busca o maior nivel log em todas as origens possíveis 
+    // mescla todos os scopes
+    let levelMinShow = 0;
+    let scopesShow = '';
+    if (EnvSvrCtrlLog() != '') {
+      const { ctrlLogLevel, ctrlLogScopes } = CtrlContext.ProcCtrlLogStr(EnvSvrCtrlLog());
+      levelMinShow = Math.max(levelMinShow, ctrlLogLevel);
+      scopesShow = CtrlContext.CtrlLogJoinScopes(scopesShow, ctrlLogScopes);
+    }
+    if (ctrlApiExec.ctrlLogCaller != null) {
+      const { ctrlLogLevel, ctrlLogScopes } = CtrlContext.ProcCtrlLogStr(ctrlApiExec.ctrlLogCaller);
+      levelMinShow = Math.max(levelMinShow, ctrlLogLevel);
+      scopesShow = CtrlContext.CtrlLogJoinScopes(scopesShow, ctrlLogScopes);
+    }
+    ctrlApiExec.ctrlContext = new CtrlContext(context, { ctrlLog: `${levelMinShow} ${scopesShow}`, colorContext: colorDestaqSeq++, callSeq: ctrlApiExec.callSeq });
+
+    const dbgA = (level: number, point: string, ...params) => dbg({ level, scopeMsg: ScopeDbg.a, ctrlContext: ctrlApiExec.ctrlContext, point }, ...params);
+
+    dbgA(1, 'start', dispApi);
     dbgA(3, 'parm', JSON.stringify(ctrlApiExec.parm));
-    dbgA(3, 'parmPlus', JSON.stringify(parmPlus));
+    dbgA(4, 'parmPlus', JSON.stringify(parmPlus));
 
-    if (ctrlApiExecGlobal == null)
-      ctrlApiExecGlobal = ctrlApiExec;
-    // else // no vercel tb reaproveita a compilação e a variável fica com o valor da ultima execução
-    //   dbgWarn(`vars varsHttpGlobal já estava setada! (esse: ${VarsHttp.apiCmdCallIdStatic(varsHttp)}) (setada: ${VarsHttp.apiCmdCallIdStatic(varsHttpGlobal)})`);
+    // if (ctrlApiExecGlobal == null)
+    //   ctrlApiExecGlobal = ctrlApiExec;
+    // // else // no vercel tb reaproveita a compilação e a variável fica com o valor da ultima execução
+    // //   dbgWarn(`vars varsHttpGlobal já estava setada! (esse: ${VarsHttp.apiCmdCallIdStatic(varsHttp)}) (setada: ${VarsHttp.apiCmdCallIdStatic(varsHttpGlobal)})`);
     return ctrlApiExec;
   }
   catch (error) {
@@ -252,7 +268,7 @@ export const SearchTermsForFindPtBr = (textSearch?: string, codesSearch?: string
 //   return NumberOrDef(ServerVarEnv(env), def);
 // }
 
-export interface ApiResultProc {
+export interface IApiResultProc {
   statusCode: HttpStatusCode;
   data: IGenericObject;
 }
@@ -287,9 +303,8 @@ export class ResumoApi { // @@@@!!!! nome!
     res.status(HttpStatusCode.badRequest).json({ _ErrorPlusObj: new ErrorPlus('Nenhum parâmetro informado') });
   }
   json() {
-    const context = this.#_ctrlApiExec.context();
     let elapsedMs = null;
-    const dbgA = (level: number, ...params) => dbg({ level, levelScope: ScopeDbg.a, context, color: this.#_ctrlApiExec.colorDestaq }, ...params);
+    const dbgA = (level: number, ...params) => dbg({ level, scopeMsg: ScopeDbg.a, ctrlContext: this.#_ctrlApiExec.ctrlContext, point: 'json' }, ...params);
 
     const statusCodeUse = this.#_statusCode || HttpStatusCode.ok;
     if (this.#_data == null)
@@ -299,31 +314,32 @@ export class ResumoApi { // @@@@!!!! nome!
     // if (!isSerializable(this.#_data))
     //   csl('json data not serializable', this.#_data);
     this.#_ctrlApiExec.res.status(statusCodeUse).json(this.#_data);
-    elapsedMs = this.#_ctrlApiExec.calcExecTime?.elapsedMs();
-    dbgA(1, '==> json', `${elapsedMs}ms`, `status(${statusCodeUse}).json(${DispAbrev(JSON.stringify(this.#_data), 500)})`);
+    elapsedMs = this.#_ctrlApiExec.ctrlContext.calcExecTime?.elapsedMs();
+    dbgA(2, '==> json', `${elapsedMs}ms`, `status(${statusCodeUse}).json(${DispAbrev(JSON.stringify(this.#_data), 500)})`);
     // if (this.#_ctrlApiExec.calcExecTime != null) {
-    //   dbgA(1, '==> json', `tempo total api: ${elapsedMs}ms`);
+    //   dbgA(3, '==> json', `tempo total api: ${elapsedMs}ms`);
     // }
     return elapsedMs;
   }
   redirect() {
+    const dbgA = (level: number, ...params) => dbg({ level, scopeMsg: ScopeDbg.a, ctrlContext: this.#_ctrlApiExec.ctrlContext, point: 'json' }, ...params);
     //csl('redirecionando para', this.#_redirectUrl);
     if (this.#_statusCode != null)
       throw new Error('ResumoApi.redirect with statusCode.');
     if (this.#_redirectUrl == null)
       throw new Error('ResumoApi.redirect without redirectUrl.');
     this.#_ctrlApiExec.res.status(HttpStatusCode.redirect).redirect(this.#_redirectUrl);
-    dbg({ level: 2, levelScope: ScopeDbg.a }, 'res.redirect');
+    dbgA(2, 'res.redirect');
   }
   resultProc() {
     return {
       statusCode: this.#_statusCode,
       data: this.#_data,
-    } as ApiResultProc;
+    } as IApiResultProc;
   }
 }
 
-interface FldError {
+interface IFldError {
   fldName: string;
   msg?: string;
   msgs?: string[];
@@ -357,7 +373,7 @@ export function ValidateObjectFirstError(data: IGenericObject, schema: yup.Objec
     return {
       fldName: error.path,
       msg: error.message,
-    } as FldError;
+    } as IFldError;
   }
 }
 
@@ -381,25 +397,25 @@ export function RegExprTextSearchMongo(text: string) {
 
 const locks: { point: string, obj: IGenericObject }[] = [];
 //const locksCtrl = HoraDebug();
-export async function LockObjASync(obj: { id: string }, context: string, point: string, debug = false) { // nem sempre as execuçãoes de APIs compartilham a mesma área global!!
+export async function LockObjASync(obj: { id: string }, ctrlContext: CtrlContext, point2: string, debug = false) { // nem sempre as execuçãoes de APIs compartilham a mesma área global!!
   let count = 0;
   //dbg(5, 'LockObj pre', point, locks);
-  const dbgT = (level: number, ...params) => { if (debug) dbg({ level, levelScope: ScopeDbg.t, context, color: 6 }, `lockObj ${obj?.id}`, `point ${point}`, ...params); };
+  const dbgX = (level: number, ...params) => { if (debug) dbg({ level, point: 'LockObj', scopeMsg: ScopeDbg.x, ctrlContext, colorMsg: colorsMsg.lock }, obj?.id, `point ${point2}`, ...params); };
   const calcExecTime = new CalcExecTime();
-  dbgT(3, '(attempt)');
+  dbgX(3, '(attempt)');
   //dbgX(3, 'compilação', locksCtrl);
   let lock: IGenericObject = {};
   while (lock != null) {
     lock = locks.find((x) => x.obj == obj);
     if (lock == null) {
-      dbgT(2, '(locked successfully)');
-      locks.push({ obj, point });
+      dbgX(2, '(locked successfully)');
+      locks.push({ obj, point: point2 });
     }
     else {
-      dbgT(1, `(is locked by ${lock.point}) (try ${++count}, elapsed ${calcExecTime.elapsedMs()}ms)`);
+      dbgX(1, `(is locked by ${lock.point}) (try ${++count}, elapsed ${calcExecTime.elapsedMs()}ms)`);
       if (calcExecTime.elapsedMs() > 2000) {
         const msg = `LockObj '${obj.id}' excedeu o tempo limite de espera após ${count} tentativas`;
-        dbgError(msg);
+        dbgError('LockObjASync', msg);
         //if (count >= 1000)
         //break;
         // SystemMsg(CategMsgSystem.alert, point, msg); //@@@@!!!
@@ -412,13 +428,13 @@ export async function LockObjASync(obj: { id: string }, context: string, point: 
   }
   //dbg(5, 'LockObj pos', point, locks);
 }
-export function UnLockObj(obj: { id: string }, context: string, point: string, debug = false) {
-  const dbgT = (level: number, ...params) => { if (debug) dbg({ level, levelScope: ScopeDbg.t, context, color: 6 }, `unlockObj ${obj?.id}`, `point ${point}`, ...params); };
+export function UnLockObj(obj: { id: string }, ctrlContext: CtrlContext, point2: string, debug = false) {
+  const dbgX = (level: number, ...params) => { if (debug) dbg({ level, point: 'UnLockObj', scopeMsg: ScopeDbg.x, ctrlContext, colorMsg: colorsMsg.lock }, obj?.id, `point ${point2}`, ...params); };
   const lockIndex = locks.findIndex((x) => x.obj == obj);
   if (lockIndex == -1)
-    dbgWarn(`'${obj.id}' not locked!`);
+    dbgWarn('UnLockObj', `'${obj.id}' not locked!`);
   else {
-    dbgT(2, '(unlocked)');
+    dbgX(2, '(unlocked)');
     locks.splice(lockIndex, 1);
   }
 }

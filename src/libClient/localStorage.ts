@@ -1,13 +1,13 @@
 import store from 'store2';
 
-import { AssertIsClient } from '../libCommon/util';
+import { AssertIsClient } from '../libCommon/sideProc';
 
 function getAll() {
   return store.getAll();
 }
 
 function get(name: string) {  // não recupera os que foram setados no server !
-  AssertIsClient('localStorage', { name });
+  AssertIsClient('localStorage get', { name });
   return store.get(name);
 }
 function getJSON(name: string) {
@@ -25,7 +25,7 @@ function getJSON(name: string) {
 }
 
 function set(name: string, value: string) {
-  AssertIsClient('localStorage', { name, value });
+  AssertIsClient('localStorage set', { name, value });
   //store.session.set(name, value);
   return store.set(name, value);
 }

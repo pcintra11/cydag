@@ -1,64 +1,70 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import queryString from 'query-string';
 
-import { EnvDeployConfig } from '../libCommon/envs';
+import { EnvDeployConfig } from '../app_base/envs';
 
-import { csd, dbg, NivelLog, ScopeDbg } from '../libCommon/dbg';
+import { csd, dbg, dbgError, ScopeDbg } from '../libCommon/dbg';
 import { IGenericObject } from '../libCommon/types';
-import { CalcExecTime, ErrorPlus, HttpStatusCode, OnServer, CtrlRecursion, HoraDebug } from '../libCommon/util';
+import { ErrorPlus, HttpStatusCode } from '../libCommon/util';
+import { OnServer } from '../libCommon/sideProc';
+import { CalcExecTime } from '../libCommon/calcExectime';
+import { CtrlContext } from '../libCommon/ctrlContext';
+import { CtrlRecursion } from '../libCommon/ctrlRecursion';
 
-let seqCtrl = 0;
+//let seqCtrl = 0;
 
 const _ctrlRecursion: { func: string, ctrlRecursion: CtrlRecursion }[] = [];
 const GetCtrlRecursion = (func: string) => {
   let item = _ctrlRecursion.find((x) => x.func == func);
   if (item == null)
     _ctrlRecursion.push(item = { func, ctrlRecursion: new CtrlRecursion(`fetcher->${func}`, 10) });
-  //csl(`callApi ctrlRecursion`, _ctrlRecursion.map((x) => `${x.context}: ${x.ctrlRecursion.status()}`));
   return item.ctrlRecursion;
 };
 
-export interface FetchOptions {
+export interface IFetchOptions {
   method?: 'post' | 'get' | 'getParams';
   timeOut?: number;
   withCredentials?: boolean;
-  fetchAndForget?: boolean; // verificar todas as chamadas, incluindo o client (ex: logout)
+  fetchAndForget?: boolean; // todo o tratamento para erro será feito nas funções centrais e não no chamador
   debug?: boolean;
   auth?: { username: string, password: string };
+  forceError?: string;
 }
 
-export async function CallApiASync(apiPath: string, context: string, callId: string = null, parm: IGenericObject = null, // loggedUser: LoggedUser = null,
-  origin: 'client' | 'server',
+export async function CallApiASync(apiPath: string, ctrlContext: CtrlContext, callSeq: string, browserId: string = null, parm: IGenericObject = null, // loggedUser: LoggedUser = null,
+  sideCall: 'client' | 'server',
   info = null,
-  fetchOptions: FetchOptions = {},
-  serverOptions: { protocolHost?: string } = {}) {
+  fetchOptions: IFetchOptions = {}) {
+  //serverOptions: { protocolHost?: string } = {}
   //SetNivelLog(3);
 
   const ctrlRecursion = GetCtrlRecursion('CallApiASync');
-  if (origin == 'client')
-    if (ctrlRecursion.inExceeded(apiPath)) return;
+  let thisCallCtrl = null;
+  if (sideCall == 'client')
+    //if (ctrlRecursion.inExceeded(apiPath)) return;
+    if ((thisCallCtrl = ctrlRecursion.in(apiPath)) == null) return;
 
   //let seqDbg = 1; , `msg-${seqDbg++}`
-  let contextFetch = `${++seqCtrl}`; // , from ${origin}
-  if (callId != null)
-    contextFetch += `, callId ${callId}`;
-  const dbgA = (level: number, ...params) => dbg({ level, levelScope: ScopeDbg.a, context }, `==>Fetch(${contextFetch})`, `${info || ''}(${HoraDebug()})`, ...params);
+  //let contextFetch = `${++seqCtrl}`; // , from ${origin}
+  // if (callId != null)
+  //   contextFetch += `, callId ${callId}`;
+  const dbgA = (level: number, point: string, ...params) => dbg({ level, scopeMsg: ScopeDbg.a, ctrlContext, point: `==>Fetch(${callSeq})-${point}` }, ...params);
 
   try {
 
     const { internalApi, urlApi } = UrlApi(apiPath);
 
-    dbgA(1, urlApi); // , JSON.stringify(parm)
-    dbgA(2, 'parm', parm);
-    dbgA(3, 'fetchOptions', fetchOptions);
-    dbgA(3, 'serverOptions', serverOptions);
-
     const method = fetchOptions?.method || 'post';
+
+    dbgA(1, 'api', urlApi, method, info); // , JSON.stringify(parm)
+    dbgA(3, 'parm', parm);
+    dbgA(4, 'fetchOptions', fetchOptions);
+
     const axiosRequestConfig: AxiosRequestConfig = {};
 
-    if (fetchOptions?.fetchAndForget != true)
-      if (fetchOptions?.timeOut != null)
-        axiosRequestConfig.timeout = fetchOptions?.timeOut;
+    //if (fetchOptions?.fetchAndForget != true)
+    if (fetchOptions?.timeOut != null)
+      axiosRequestConfig.timeout = fetchOptions?.timeOut;
     // else
     //   config.timeout = NumberOrDef(EnvIApiTimeout().wait);
 
@@ -70,17 +76,12 @@ export async function CallApiASync(apiPath: string, context: string, callId: str
 
     let response: AxiosResponse = null;
 
-    const _parmPlus: any = { callId }; // { loggedUser };
-    if (internalApi) {
-      //&& _parmPlus.nivelLog == null)
-      _parmPlus.nivelLogA = NivelLog(ScopeDbg.a);
-      _parmPlus.nivelLogD = NivelLog(ScopeDbg.d);
-      _parmPlus.nivelLogE = NivelLog(ScopeDbg.e);
-      _parmPlus.nivelLogT = NivelLog(ScopeDbg.t);
-      _parmPlus.nivelLogX = NivelLog(ScopeDbg.x);
-    }
+    const _parmPlus: any = { sideCall, callSeq, browserId, ctrlLog: ctrlContext.ctrlLog }; // { loggedUser };
+    //dbgA(5, '_parmPlus', _parmPlus);
 
     const parmFull = internalApi ? { ...parm, _parmPlus } : parm;
+    dbgA(5, 'parmFull', parmFull);
+    dbgA(5, 'axiosRequestConfig', axiosRequestConfig);
 
     const calcExecTimeApiCall = new CalcExecTime();
     let axiosCall: () => any = null;
@@ -91,8 +92,7 @@ export async function CallApiASync(apiPath: string, context: string, callId: str
       axiosCall = () => axios.get(urlWithParams, axiosRequestConfig);
     }
     else if (method == 'getParams') {
-      if (!Array.isArray(parm.params))
-        throw new Error(`CallApi getParams parm não é { params: array }: ${JSON.stringify(parm)}`);
+      if (!Array.isArray(parm.params)) throw new Error(`CallApi getParams parm não é { params: array }: ${JSON.stringify(parm)}`);
       const params = parm.params as [];
       const urlWithParams = params.reduce((prev, curr) => prev + '/' + curr, urlApi);
       //csd({ urlWithParams });
@@ -102,38 +102,43 @@ export async function CallApiASync(apiPath: string, context: string, callId: str
     else
       axiosCall = () => axios.post(urlApi, parmFull, axiosRequestConfig);
 
-    if (fetchOptions?.fetchAndForget == true) {
-      // if (agora.getSeconds() < 30)  
-      axiosCall()
-        .catch((error) => csd(`CallApiASync ${apiPath} error`, error.message)); // para localhost deve ser assim !! e vercel ?? @!!!!!
-      // else
-      //   axiosCall()
-      //     .then((x) => dbgA(1, 'ok %%%%%%%%%%%%%%'))
-      //     .catch((error) => dbgA(1, 'error %%%%%%%%%%%%%%', error.message)); // no vercel essa situação produz erro !! (apenas no caso de erro, como timeOut)
-      dbgA(3, 'fetchAndForget!');
-      return;
-    }
+    // if (fetchOptions?.fetchAndForget == true) {
+    //   // if (agora.getSeconds() < 30)  
+    //   axiosCall()
+    //     .catch((error) => csd(`CallApiASync ${apiPath} error`, error.message)); // para localhost deve ser assim !! e vercel ?? @!!!!!
+    //   // else
+    //   //   axiosCall()
+    //   //     .then((x) => dbgA(1, 'ok %%%%%%%%%%%%%%'))
+    //   //     .catch((error) => dbgA(1, 'error %%%%%%%%%%%%%%', error.message)); // no vercel essa situação produz erro !! (apenas no caso de erro, como timeOut)
+    //   dbgA(3, 'fetchAndForget!');
+    //   if (sideCall == 'client') ctrlRecursion.out();
+    //   return;
+    // }
+
+    if (fetchOptions.forceError === 'errorCall') throw new Error('errorCall em CallApiASync'); //@!!!!!!!!
 
     response = await axiosCall();
+
+    dbgA(2, 'fetchCompleted', `status ${response.status}, ${calcExecTimeApiCall.elapsedMs()}ms`);
 
     // if (options.debug == true)
     //   throw new Error('sssss');
     //await SleepMsDevFetch(`fetch:apiPath`);
 
     // qquer status fora da faixa do 200 vai cair no catch !
-    dbgA(1, 'ok, status', response.status, `${calcExecTimeApiCall.elapsedMs()}ms`); // parm?.id, 
-    dbgA(3, 'data', response.data);
+    dbgA(3, 'dataReturned', response.data);
 
     //csl('CallApi data', url, JSON.stringify(parm), JSON.stringify(result.data));
     // if (!IsTypeResultApi(result.data))
     //   throw new Error('resultado da api com tipo inválido')
     //return result.data.result  as ResultTy;
 
-    if (origin == 'client')
-      ctrlRecursion.out();
+    if (sideCall == 'client') ctrlRecursion.out(thisCallCtrl);
 
     return response.data; // == '' ? null : result.data;
   } catch (error) {
+    //dbgA(0, 'fetch error', error.message);
+
     //csd({ error });
     //if (clientOptions?.debug)
     //dbgA(3, 'error full', apiPath, error);
@@ -148,7 +153,7 @@ export async function CallApiASync(apiPath: string, context: string, callId: str
         message = error.message;
         httpStatusCode = HttpStatusCode.timeOut;
       }
-      else { 
+      else {
         if (httpStatusCode === HttpStatusCode.payloadTooLarge) {
           message = 'a quantidade de dados enviados ao servidor é demasiadamente grande';
           managed = true;
@@ -179,8 +184,8 @@ export async function CallApiASync(apiPath: string, context: string, callId: str
     // }
     // else
 
-    if (origin == 'client')
-      ctrlRecursion.out();
+    if (sideCall == 'client')
+      ctrlRecursion.out(thisCallCtrl);
     throw new ErrorPlus(message, { data, httpStatusCode, managed, logged });
   }
 
@@ -190,9 +195,9 @@ export async function CallApiASync(apiPath: string, context: string, callId: str
       urlResult = { internalApi: false, urlApi: apiPath };
     else if (OnServer()) {
       //const varsReq = (await import('../libServer/util')).varsReq;
-      if (serverOptions?.protocolHost == null)
-        throw new Error('CallApi onServer sem passar serverOptions.protocolHost');
-      urlResult = { internalApi: true, urlApi: `${serverOptions.protocolHost}/api/${apiPath}` };
+      //if (serverOptions?.protocolHost == null) throw new Error('CallApi onServer sem passar serverOptions.protocolHost');
+      //urlResult = { internalApi: true, urlApi: `${serverOptions.protocolHost}/api/${apiPath}` };
+      urlResult = { internalApi: true, urlApi: `${EnvDeployConfig().api_url}/${apiPath}` };
     }
     else // if (Env('apiUrl') != null)
       urlResult = { internalApi: true, urlApi: `${EnvDeployConfig().api_url}/${apiPath}` };
@@ -257,3 +262,16 @@ export async function CallApiASync(apiPath: string, context: string, callId: str
 //     return ResultErr(error);
 //   }
 // }
+
+export async function getRedirectedUrl(url: string) {
+  try {
+    const response = await axios({
+      method: 'GET', url, params: {}
+    });
+    return response.request._redirectable._options.href;
+  }
+  catch (error) {
+    dbgError('getRedirectedUrl', error.message);
+    return null;
+  }
+}

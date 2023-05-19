@@ -1,6 +1,6 @@
 import * as msal from '@azure/msal-browser';
 import { csd } from './libCommon/dbg';
-import { EnvDeployConfig, EnvMSalConfig } from './libCommon/envs';
+import { EnvDeployConfig, EnvMSalConfig } from './app_base/envs';
 
 const msalConfig = {
   auth: {

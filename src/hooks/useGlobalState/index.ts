@@ -3,12 +3,13 @@ import React from 'react';
 import { dbg, dbgWarn, ScopeDbg } from '../../libCommon/dbg';
 
 import { GlobalState } from './globalState';
+import { ctrlContextFromGlobals } from '../../libClient/clientGlobals';
 
 // vide https://dev.to/yezyilomo/global-state-management-in-react-with-global-variables-and-hooks-state-management-doesn-t-have-to-be-so-hard-2n2c
 
 const colorDbg = 5;
 
-let mount;
+let mount = false;
 export function useGlobalState(globalState: GlobalState, config?: { reRender?: boolean, id?: string, debug?: boolean }) { // reRender : false => para componentes que são subordinados a um pai que será renderizado evita a dupla renderização
   const reRender = config?.reRender != null ? config.reRender : true;
   const caller = config?.id != null ? config.id : '_semId_';
@@ -19,7 +20,7 @@ export function useGlobalState(globalState: GlobalState, config?: { reRender?: b
   const isLoading = globalState.isLoading();
   const isDefaultValue = globalState.isDefaultValue();
 
-  const dbgX = (level: number, ...params) => { debug && dbg({ level, levelScope: ScopeDbg.x, context: `useGlobalState(${caller})`, color: colorDbg }, ...params); };
+  const dbgX = (level: number, ...params) => { debug && dbg({ level, point: 'useGlobalState', scopeMsg: ScopeDbg.x, ctrlContext: ctrlContextFromGlobals(caller, colorDbg) }, ...params); };
 
   function localReRender() { // isNewValue: boolean
     dbgX(1, 'localReRender');
@@ -39,7 +40,7 @@ export function useGlobalState(globalState: GlobalState, config?: { reRender?: b
       const currentValue = globalState.getValue();
       if (currentValue !== value) // numa situação limite o valor foi alterado antes da subscrição ser registrada
       {
-        dbgWarn(`useGS (${caller})`, 'valor alterado antes da subscrição, reRender forçado');
+        dbgWarn('useGlobalState', caller, 'valor alterado antes da subscrição, reRender forçado');
         localReRender();
       }
       // });

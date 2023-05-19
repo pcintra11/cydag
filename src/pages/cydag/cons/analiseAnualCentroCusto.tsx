@@ -1,17 +1,16 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import _ from 'underscore';
 
 import Box from '@mui/material/Box';
 import { Stack, useTheme } from '@mui/material';
 
-import { BinSearchItem, BinSearchProp, CalcExecTime, compareForBinSearch, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../../libCommon/util';
+import { BinSearchItem, BinSearchProp, compareForBinSearch, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../../libCommon/util';
+import { CalcExecTime } from '../../../libCommon/calcExectime';
 import { csd, dbgError } from '../../../libCommon/dbg';
 import { IGenericObject } from '../../../libCommon/types';
 import { PageDef } from '../../../libCommon/endPoints';
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
 
-import { globals } from '../../../libClient/clientGlobals';
 import { cssTextNoWrapEllipsis } from '../../../libClient/util';
 
 import { AbortProc, SelOption, PopupMsg, SwitchMy, WaitingObs, SnackBarError, fontSizeGrid, fontSizeIconsInGrid, FakeLink } from '../../../components';
@@ -19,14 +18,16 @@ import { HierNode } from '../../../components/hier';
 import { GridCell } from '../../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 
+import { configApp } from '../../../app_hub/appConfig';
+
 import { IconApp, IconButtonAppSearch, propsColorHeader, propsColorByTotLevel, SelEntity, SelAno, SelMes, propsColorByCompRealPlan } from '../../../appCydag/components';
 import { apisApp, pagesApp } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
 import { amountToStr, percToStr, mesDefault } from '../../../appCydag/util';
-import { configApp } from '../../../appCydag/config';
 import { CentroCusto, ClasseCusto, FatorCusto, ProcessoOrcamentario } from '../../../appCydag/modelTypes';
 import { CentroCustoConfigOption, IAnoCentroCustos, ProcCentrosCustoConfig, ValoresAnaliseAnual, ColValsAnaliseAnual } from '../../../appCydag/types';
 import { CmdApi_ValoresContas as CmdApi } from '../../api/appCydag/valoresContas/types';
+import { configCydag } from '../../../appCydag/configCydag';
 
 enum Phase {
   initiating = 'initiating',
@@ -72,7 +73,7 @@ class FrmFilter {
 //#endregion
 
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, parm) };
 const pageSelf = pagesApp.analiseAnualRxOCentroCusto;
 
 const statesCompsSubord = { setMainStatesFilter: null, setMainStatesData1: null, setMainStatesData2: null, showConta: false, setShowConta: null };
@@ -181,11 +182,11 @@ export default function PageAnaliseAnualCentroCusto() {
       while (idPaiSum != null) {
         const nodePai = BinSearchItem(valsHierNode, idPaiSum, 'id');
         if (nodePai == null) {
-          dbgError(`nodePai ${idPaiSum} não encontrada na hierarquia (1)`);
+          dbgError('sumHierUp', `nodePai ${idPaiSum} não encontrada na hierarquia (1)`);
           break;
         }
         if (nodePai.nodeContent.vals == null) {
-          dbgError('Valores para nível totalizado não inicializados:', nodePai.id); // #!!!!!
+          dbgError('sumHierUp', 'Valores para nível totalizado não inicializados:', nodePai.id); // #!!!!!
           break;
         }
         if (vals != null)
@@ -199,11 +200,11 @@ export default function PageAnaliseAnualCentroCusto() {
         const keys = [valores.fatorCusto, valores.classeCusto];
         const id = HierNode.nodeId(nodeType, keys);
         const node = BinSearchItem(nodes, id, 'id');
-        if (node == null) dbgError(`${id} não encontrada na hierarquia (setValsInf)`);
-        else if (node.group) dbgError(`${id} está na hierarquia como um agrupamento`);
+        if (node == null) dbgError('setValsInf', `${id} não encontrada na hierarquia (setValsInf)`);
+        else if (node.group) dbgError('setValsInf', `${id} está na hierarquia como um agrupamento`);
         else {
-          ColValsAnaliseAnual.sumVals(node.nodeContent.vals, valores.vals());
-          sumHierUp(nodes, node.idPai, valores.vals());
+          ColValsAnaliseAnual.sumVals(node.nodeContent.vals, valores); // .vals()
+          sumHierUp(nodes, node.idPai, valores);
         }
       });
     };
@@ -422,19 +423,19 @@ export default function PageAnaliseAnualCentroCusto() {
         return (<>
           <GridCell {...propsColorLevel}><Box pl={paddingLeft}>{descrUse}</Box></GridCell>
 
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planTot, configApp.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(realProj, configApp.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right' {...propsColorVarRealProj}>{amountToStr(varRealProjAbs, configApp.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planTot, configCydag.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(realProj, configCydag.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right' {...propsColorVarRealProj}>{amountToStr(varRealProjAbs, configCydag.decimalsValsCons)}</GridCell>
           <GridCell textAlign='right'>{percToStr(varRealProjPerc)}</GridCell>
 
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planYTD, configApp.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.realYTD, configApp.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right' {...propsColorVarYTD}>{amountToStr(varYTDAbs, configApp.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planYTD, configCydag.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.realYTD, configCydag.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right' {...propsColorVarYTD}>{amountToStr(varYTDAbs, configCydag.decimalsValsCons)}</GridCell>
           <GridCell textAlign='right'>{percToStr(varYTDPerc)}</GridCell>
 
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planMes, configApp.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.realMes, configApp.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right' {...propsColorVarMes}>{amountToStr(varMesAbs, configApp.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planMes, configCydag.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.realMes, configCydag.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right' {...propsColorVarMes}>{amountToStr(varMesAbs, configCydag.decimalsValsCons)}</GridCell>
           <GridCell textAlign='right'>{percToStr(varMesPerc)}</GridCell>
         </>);
       };

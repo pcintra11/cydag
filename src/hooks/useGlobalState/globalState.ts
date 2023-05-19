@@ -1,7 +1,8 @@
 import { dbg, ScopeDbg } from '../../libCommon/dbg';
-import { OnClient } from '../../libCommon/util';
+import { OnClient } from '../../libCommon/sideProc';
 
 import { LogErrorUnmanaged } from '../../components';
+import { ctrlContextFromGlobals } from '../../libClient/clientGlobals';
 
 const colorDbg = 5;
 
@@ -26,7 +27,12 @@ export class GlobalState {
   #id: string;
   #debug: boolean;
 
-  dbgT(level: number, ...params) { this.#debug && dbg({ level, levelScope: ScopeDbg.x, context: `GlobalState(${this.#id})`, color: colorDbg }, ...params); }
+  dbgT(level: number, ...params) {
+    this.#debug && dbg({
+      level, scopeMsg: ScopeDbg.x, point: 'GlobalState',
+      ctrlContext: ctrlContextFromGlobals(this.#id, colorDbg)
+    }, ...params);
+  }
 
   constructor({ defaultValue, defaultValueAsyncFunction, loadingStateWaitExternal, id, debug }: IGlobalState) {
     //AssertIsClient(`GlobalState - cookie: ${cookieName} ; defaultValue: ${defaultValue}`);
@@ -52,13 +58,13 @@ export class GlobalState {
             this.#isLoading = false;
             this.#currentValue = value;
             //this.dbgX(1, `subscribers async finished 1 ${this.#subscribers.length}, value: ${value}`);
-            this.#triggerSubscribeds();
+            this._triggerSubscribeds();
             //this.dbgX(1, `subscribers async finished 2 ${this.#subscribers.length}`);
           })
           .catch(error => {
             //this.dbgX(1, `subscribers async error ${error.message}`);
             this.#isLoading = false;
-            this.#triggerSubscribeds();
+            this._triggerSubscribeds();
             LogErrorUnmanaged(error, `GlobalState(${id}) - getDefault async`);
           });
       }
@@ -85,10 +91,10 @@ export class GlobalState {
     }
     this.dbgT(1, `setValue ${value} ; trigger ${trigger} ; caller ${caller}`);
     if (trigger != '')
-      this.#triggerSubscribeds();
+      this._triggerSubscribeds();
   }
 
-  #triggerSubscribeds() {
+  _triggerSubscribeds() { //@!!!!!!! era prefixado por # para tornar private !
     this.#subscribers.forEach(subscriber => {
       // Notify subscribers that the global state has changed
       subscriber(this.#currentValue);

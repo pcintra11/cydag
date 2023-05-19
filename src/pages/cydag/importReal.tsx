@@ -1,18 +1,18 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import _ from 'underscore';
 
 import { Box, Stack } from '@mui/material';
 
-import { CalcExecTime, DateDisp, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../libCommon/util';
-import { csd, dbgError } from '../../libCommon/dbg';
+import { DateDisp, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../libCommon/util';
+import { CalcExecTime } from '../../libCommon/calcExectime';
+import { csd } from '../../libCommon/dbg';
 import { PageDef } from '../../libCommon/endPoints';
 import { CallApiCliASync } from '../../fetcher/fetcherCli';
 
-import { globals } from '../../libClient/clientGlobals';
-
 import { AbortProc, WaitingObs, SnackBarError, Btn, BtnLine } from '../../components';
 import { JsonShow } from '../../components/jsonShow';
+
+import { configApp } from '../../app_hub/appConfig';
 
 //import { SelAno } from '../../appCydag/components';
 import { apisApp, pagesApp } from '../../appCydag/endPoints';
@@ -22,7 +22,6 @@ import { CtrlInterface } from '../../appCydag/modelTypes';
 //import { CmdApi_ProcessoOrcamentario } from '../api/appCydag/processoOrcamentario/types';
 import { CmdApi_ValoresContas } from '../api/appCydag/valoresContas/types';
 import { InterfaceSapStatus } from '../../appCydag/types';
-import { configApp } from '../../appCydag/config';
 
 //#region ok
 enum Phase {
@@ -39,7 +38,7 @@ enum Phase {
 let mount; let mainStatesCache;
 const apis = {
   //getProcsOrc: () => CallApiCliASync(apisApp.processoOrcamentario.apiPath, globals.windowId, { cmd: CmdApi_ProcessoOrcamentario.list }),
-  interfaceRealizado: (cmd: CmdApi_ValoresContas) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, globals.windowId, { cmd }),
+  interfaceRealizado: (cmd: CmdApi_ValoresContas) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, { cmd }),
 };
 const pageSelf = pagesApp.importReal;
 export default function PageImportReal() {

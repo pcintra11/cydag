@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import { ObjectId } from 'mongodb';
 
-import { MongooseSlot, AddIndex, CollectionDef } from '../base/db/functions';
+import { MongooseSlot, AddIndex, ICollectionDef } from '../libServer/dbMongo';
 
 import { csd } from '../libCommon/dbg';
 
@@ -12,7 +12,7 @@ import { CategRegional, InterfaceSapStatus, InterfaceSapCateg, OrigemClasseCusto
 
 export const databaseInterfaceSap = 'interfaceSap';
 
-export const collectionsDef: CollectionDef[] = [];
+export const collectionsDef: ICollectionDef[] = [];
 
 //#region ProcessoOrcamentario User
 //#region ProcessoOrcamentario
@@ -24,7 +24,7 @@ collectionsDef.push({
     { fields: { status: 1 }, options: { name: 'status', unique: false } },
   ],
 });
-export interface ProcessoOrcamentarioMd extends mongoose.Document<ObjectId, any, ProcessoOrcamentario>, ProcessoOrcamentario { }
+interface ProcessoOrcamentarioMd extends mongoose.Document<ObjectId, any, ProcessoOrcamentario>, ProcessoOrcamentario { }
 export const ProcessoOrcamentarioModel = (() => {
   csd('ProcessoOrcamentarioModel');
   const modelName = modelNameProcessoOrcamentario;
@@ -55,7 +55,7 @@ collectionsDef.push({
     { fields: { ano: 1, centroCusto: 1 }, options: { name: 'procCentroCusto', unique: true } },
   ],
 });
-export interface ProcessoOrcamentarioCentroCustoMd extends mongoose.Document<ObjectId, any, ProcessoOrcamentarioCentroCusto>, ProcessoOrcamentarioCentroCusto { }
+interface ProcessoOrcamentarioCentroCustoMd extends mongoose.Document<ObjectId, any, ProcessoOrcamentarioCentroCusto>, ProcessoOrcamentarioCentroCusto { }
 export const ProcessoOrcamentarioCentroCustoModel = (() => {
   const modelName = modelNameProcessoOrcamentarioCentroCusto;
   const mongoose = MongooseSlot().mongoose;
@@ -127,7 +127,7 @@ collectionsDef.push({
     { fields: { searchTerms: 1 }, options: { name: 'searchTerms', unique: false } },
   ],
 });
-export interface AgrupPremissasMd extends mongoose.Document<ObjectId, any, AgrupPremissas>, AgrupPremissas { }
+interface AgrupPremissasMd extends mongoose.Document<ObjectId, any, AgrupPremissas>, AgrupPremissas { }
 export const AgrupPremissasModel = (() => {
   const modelName = modelNameAgrupPremissas;
   const mongoose = MongooseSlot().mongoose;
@@ -179,7 +179,7 @@ collectionsDef.push({
     { fields: { searchTerms: 1 }, options: { name: 'searchTerms', unique: false } },
   ],
 });
-export interface DiretoriaMd extends mongoose.Document<ObjectId, any, Diretoria>, Diretoria { }
+interface DiretoriaMd extends mongoose.Document<ObjectId, any, Diretoria>, Diretoria { }
 export const DiretoriaModel = (() => {
   const modelName = modelNameDiretoria;
   const mongoose = MongooseSlot().mongoose;
@@ -204,7 +204,7 @@ collectionsDef.push({
     { fields: { searchTerms: 1 }, options: { name: 'searchTerms', unique: false } },
   ],
 });
-export interface EmpresaMd extends mongoose.Document<ObjectId, any, Empresa>, Empresa { }
+interface EmpresaMd extends mongoose.Document<ObjectId, any, Empresa>, Empresa { }
 export const EmpresaModel = (() => {
   const modelName = modelNameEmpresa;
   const mongoose = MongooseSlot().mongoose;
@@ -228,7 +228,7 @@ collectionsDef.push({
     { fields: { cod: 1 }, options: { name: 'cod', unique: true } },
   ],
 });
-export interface FuncaoTerceiroMd extends mongoose.Document<ObjectId, any, FuncaoTerceiro>, FuncaoTerceiro { }
+interface FuncaoTerceiroMd extends mongoose.Document<ObjectId, any, FuncaoTerceiro>, FuncaoTerceiro { }
 export const FuncaoTerceiroModel = (() => {
   const modelName = modelNameFuncaoTerceiro;
   const mongoose = MongooseSlot().mongoose;
@@ -250,7 +250,7 @@ collectionsDef.push({
     { fields: { searchTerms: 1 }, options: { name: 'searchTerms', unique: false } },
   ],
 });
-export interface GerenciaMd extends mongoose.Document<ObjectId, any, Gerencia>, Gerencia { }
+interface GerenciaMd extends mongoose.Document<ObjectId, any, Gerencia>, Gerencia { }
 export const GerenciaModel = (() => {
   const modelName = modelNameGerencia;
   const mongoose = MongooseSlot().mongoose;
@@ -275,7 +275,7 @@ collectionsDef.push({
     { fields: { searchTerms: 1 }, options: { name: 'searchTerms', unique: false } },
   ],
 });
-export interface LocalidadeMd extends mongoose.Document<ObjectId, any, Localidade>, Localidade { }
+interface LocalidadeMd extends mongoose.Document<ObjectId, any, Localidade>, Localidade { }
 export const LocalidadeModel = (() => {
   const modelName = modelNameLocalidade;
   const mongoose = MongooseSlot().mongoose;
@@ -300,7 +300,7 @@ collectionsDef.push({
     { fields: { searchTerms: 1 }, options: { name: 'searchTerms', unique: false } },
   ],
 });
-export interface UnidadeNegocioMd extends mongoose.Document<ObjectId, any, UnidadeNegocio>, UnidadeNegocio { }
+interface UnidadeNegocioMd extends mongoose.Document<ObjectId, any, UnidadeNegocio>, UnidadeNegocio { }
 export const UnidadeNegocioModel = (() => {
   const modelName = modelNameUnidadeNegocio;
   const mongoose = MongooseSlot().mongoose;
@@ -328,7 +328,7 @@ collectionsDef.push({
     { fields: { fatorCusto: 1 }, options: { name: 'fatorCusto', unique: true } },
   ],
 });
-export interface FatorCustoMd extends mongoose.Document<ObjectId, any, FatorCusto>, FatorCusto { }
+interface FatorCustoMd extends mongoose.Document<ObjectId, any, FatorCusto>, FatorCusto { }
 export const FatorCustoModel = (() => {
   const modelName = modelNameFatorCusto;
   const mongoose = MongooseSlot().mongoose;
@@ -349,7 +349,7 @@ collectionsDef.push({
     { fields: { classeCusto: 1 }, options: { name: 'classeCusto', unique: true } },
   ],
 });
-export interface ClasseCustoMd extends mongoose.Document<ObjectId, any, ClasseCusto>, ClasseCusto { }
+interface ClasseCustoMd extends mongoose.Document<ObjectId, any, ClasseCusto>, ClasseCusto { }
 export const ClasseCustoModel = (() => {
   const modelName = modelNameClasseCusto;
   const mongoose = MongooseSlot().mongoose;
@@ -376,7 +376,7 @@ collectionsDef.push({
     { fields: { classeCusto: 1 }, options: { name: 'classeCusto', unique: true } },
   ],
 });
-export interface ClasseCustoRestritaMd extends mongoose.Document<ObjectId, any, ClasseCustoRestrita>, ClasseCustoRestrita { }
+interface ClasseCustoRestritaMd extends mongoose.Document<ObjectId, any, ClasseCustoRestrita>, ClasseCustoRestrita { }
 export const ClasseCustoRestritaModel = (() => {
   const modelName = modelNameClasseCustoRestrita;
   const mongoose = MongooseSlot().mongoose;
@@ -404,7 +404,7 @@ collectionsDef.push({
     { fields: { cod: 1 }, options: { name: 'cod', unique: true } },
   ],
 });
-export interface PremissaMd extends mongoose.Document<ObjectId, any, Premissa>, Premissa { }
+interface PremissaMd extends mongoose.Document<ObjectId, any, Premissa>, Premissa { }
 export const PremissaModel = (() => {
   const modelName = modelNamePremissa;
   const mongoose = MongooseSlot().mongoose;
@@ -439,7 +439,7 @@ collectionsDef.push({
     { fields: { ano: 1, revisao: 1, premissa: 1, tipoSegmCentroCusto: 1, segmTipoClb: 1, empresa: 1, agrupPremissas: 1, tipoColaborador: 1 }, options: { name: 'primaryKey', unique: true } },
   ],
 });
-export interface ValoresPremissaMd extends mongoose.Document<ObjectId, any, ValoresPremissa>, ValoresPremissa { }
+interface ValoresPremissaMd extends mongoose.Document<ObjectId, any, ValoresPremissa>, ValoresPremissa { }
 export const ValoresPremissaModel = (() => {
   const modelName = modelNameValoresPremissa;
   const mongoose = MongooseSlot().mongoose;
@@ -469,7 +469,7 @@ collectionsDef.push({
     { fields: { ano: 1, revisao: 1, localidade: 1 }, options: { name: 'primaryKey', unique: true } },
   ],
 });
-export interface ValoresLocalidadeMd extends mongoose.Document<ObjectId, any, ValoresLocalidade>, ValoresLocalidade { }
+interface ValoresLocalidadeMd extends mongoose.Document<ObjectId, any, ValoresLocalidade>, ValoresLocalidade { }
 export const ValoresLocalidadeModel = (() => {
   const modelName = modelNameValoresLocalidade;
   const mongoose = MongooseSlot().mongoose;
@@ -493,7 +493,7 @@ collectionsDef.push({
     { fields: { ano: 1, revisao: 1, localidadeOrigem: 1, localidadeDestino: 1 }, options: { name: 'primaryKey', unique: true } },
   ],
 });
-export interface ValoresTransferMd extends mongoose.Document<ObjectId, any, ValoresTransfer>, ValoresTransfer { }
+interface ValoresTransferMd extends mongoose.Document<ObjectId, any, ValoresTransfer>, ValoresTransfer { }
 export const ValoresTransferModel = (() => {
   const modelName = modelNameValoresTransfer;
   const mongoose = MongooseSlot().mongoose;
@@ -521,7 +521,7 @@ collectionsDef.push({
     { fields: { ano: 1, revisao: 1, centroCusto: 1, classeCusto: 1, idDetalhe: 1 }, options: { name: 'primaryKey', unique: true } },
   ],
 });
-export interface ValoresImputadosMd extends mongoose.Document<ObjectId, any, ValoresImputados>, ValoresImputados { }
+interface ValoresImputadosMd extends mongoose.Document<ObjectId, any, ValoresImputados>, ValoresImputados { }
 export const ValoresImputadosModel = (() => {
   const modelName = modelNameValoresImputados;
   const mongoose = MongooseSlot().mongoose;
@@ -548,7 +548,7 @@ collectionsDef.push({
     { fields: { ano: 1, revisao: 1, centroCusto: 1, classeCusto: 1 }, options: { name: 'primaryKey', unique: true } },
   ],
 });
-export interface ValoresPlanejadosCalcMd extends mongoose.Document<ObjectId, any, ValoresPlanejadosCalc>, ValoresPlanejadosCalc { }
+interface ValoresPlanejadosCalcMd extends mongoose.Document<ObjectId, any, ValoresPlanejadosCalc>, ValoresPlanejadosCalc { }
 export const ValoresPlanejadosCalcModel = (() => {
   const modelName = modelNameValoresPlanejadosCalc;
   const mongoose = MongooseSlot().mongoose;
@@ -572,7 +572,7 @@ collectionsDef.push({
     { fields: { ano: 1, centroCusto: 1, classeCusto: 1 }, options: { name: 'primaryKey', unique: true } },
   ],
 });
-export interface ValoresPlanejadosHistoricoMd extends mongoose.Document<ObjectId, any, ValoresPlanejadosHistorico>, ValoresPlanejadosHistorico { }
+interface ValoresPlanejadosHistoricoMd extends mongoose.Document<ObjectId, any, ValoresPlanejadosHistorico>, ValoresPlanejadosHistorico { }
 export const ValoresPlanejadosHistoricoModel = (() => { // valores de anos anteriores (imputados e calculados) (sem detalhes, no nível de carga ao SAP)
   const modelName = modelNameValoresPlanejadosHistorico;
   const mongoose = MongooseSlot().mongoose;
@@ -595,7 +595,7 @@ collectionsDef.push({
     { fields: { ano: 1, centroCusto: 1, classeCusto: 1 }, options: { name: 'primaryKey', unique: true } },
   ],
 });
-export interface ValoresRealizadosMd extends mongoose.Document<ObjectId, any, ValoresRealizados>, ValoresRealizados { }
+interface ValoresRealizadosMd extends mongoose.Document<ObjectId, any, ValoresRealizados>, ValoresRealizados { }
 export const ValoresRealizadosModel = (() => {
   const modelName = modelNameValoresRealizados;
   const mongoose = MongooseSlot().mongoose;
@@ -621,7 +621,7 @@ collectionsDef.push({
     { fields: { ano: 1, centroCusto: 1, origem: 1, refer: 1 }, options: { name: 'primaryKey', unique: true } },
   ],
 });
-export interface FuncionarioMd extends mongoose.Document<ObjectId, any, Funcionario>, Funcionario { }
+interface FuncionarioMd extends mongoose.Document<ObjectId, any, Funcionario>, Funcionario { }
 export const FuncionarioModel = (() => {
   const modelName = modelNameFuncionario;
   const mongoose = MongooseSlot().mongoose;
@@ -657,7 +657,7 @@ collectionsDef.push({
     // { fields: { ano: 1, revisao: 1, centroCusto: 1, localidadeDestino: 1, funcId: 1 }, options: { name: 'primaryKey', unique: true } }
   ],
 });
-export interface ViagemMd extends mongoose.Document<ObjectId, any, Viagem>, Viagem { }
+interface ViagemMd extends mongoose.Document<ObjectId, any, Viagem>, Viagem { }
 export const ViagemModel = (() => {
   const modelName = modelNameViagem;
   const mongoose = MongooseSlot().mongoose;
@@ -688,7 +688,7 @@ collectionsDef.push({
     { fields: { ano: 1, revisao: 1, centroCusto: 1, refer: 1 }, options: { name: 'primaryKey', unique: true } },
   ],
 });
-export interface TerceiroMd extends mongoose.Document<ObjectId, any, Terceiro>, Terceiro { }
+interface TerceiroMd extends mongoose.Document<ObjectId, any, Terceiro>, Terceiro { }
 export const TerceiroModel = (() => {
   const modelName = modelNameTerceiro;
   const mongoose = MongooseSlot().mongoose;
@@ -721,7 +721,7 @@ collectionsDef.push({
     { fields: { categ: 1, status: 1 }, options: { name: 'status', unique: false } },
   ],
 });
-export interface CtrlInterfaceMd extends mongoose.Document<ObjectId, any, CtrlInterface>, CtrlInterface { }
+interface CtrlInterfaceMd extends mongoose.Document<ObjectId, any, CtrlInterface>, CtrlInterface { }
 export const CtrlInterfaceModel = (() => {
   const modelName = modelNameCtrlInterface;
   const mongoose = MongooseSlot().mongoose;
@@ -748,7 +748,7 @@ collectionsDef.push({
     { fields: { ano: 1, centroCusto: 1, classeCusto: 1 }, options: { name: 'primaryKey', unique: true } },
   ],
 });
-export interface ValoresRealizadosInterfaceSapMd extends mongoose.Document<ObjectId, any, ValoresRealizadosInterfaceSap>, ValoresRealizadosInterfaceSap { }
+interface ValoresRealizadosInterfaceSapMd extends mongoose.Document<ObjectId, any, ValoresRealizadosInterfaceSap>, ValoresRealizadosInterfaceSap { }
 export const ValoresRealizadosInterfaceSapModel = (() => {
   const modelName = modelNameValoresRealizadosInterfaceSap;
   const mongoose = MongooseSlot(databaseInterfaceSap).mongoose;

@@ -1,8 +1,5 @@
-import { Env } from '../libCommon/envs';
-import { isAmbDev } from '../libCommon/isAmb';
 import { AmountPtBrFormat, AmountPtBrParse, RoundDecs } from '../libCommon/util';
-
-import { configApp } from './config';
+import { configCydag } from './configCydag';
 
 export const mesesFld = [
   'jan', 'fev', 'mar', 'abr',
@@ -42,14 +39,14 @@ export const multiplyValMeses = (valMesesTrg: number[], mult: number[]) => {
 };
 
 export const sumRound = (val1: number, val2: number) => {
-  return RoundDecs(val1 + val2, configApp.decimalsValsCalc);
+  return RoundDecs(val1 + val2, configCydag.decimalsValsCalc);
 };
 export const multiplyRound = (val: number, mult: number) => {
-  return RoundDecs(val * mult, configApp.decimalsValsCalc);
+  return RoundDecs(val * mult, configCydag.decimalsValsCalc);
 };
 export const roundInterface = (val: number | null) => {
   if (val == null) return null;
-  else return RoundDecs(val, configApp.decimalsValsCalc);
+  else return RoundDecs(val, configCydag.decimalsValsCalc);
 };
 
 export const amountToStr = (val: number, decimals: number) => {
@@ -65,7 +62,7 @@ export const amountParse = (valStr: string, decimals: number) => { //  = configA
   return AmountPtBrParse(valStr, decimals, true);
 };
 export const amountParseValsCalc = (valStr: string) => {
-  return RoundDecs(AmountPtBrParse(valStr, 2, true), configApp.decimalsValsCalc);
+  return RoundDecs(AmountPtBrParse(valStr, 2, true), configCydag.decimalsValsCalc);
 };
 
 export const anoAdd = (ano: string, add: number) => (Number(ano) + add).toString();

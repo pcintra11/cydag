@@ -1,8 +1,7 @@
-import { csd, dbgError } from '../../../../libCommon/dbg';
-import { FillClass } from '../../../../libCommon/util';
+import { csd } from '../../../../libCommon/dbg';
+import { CutUndef, FillClassProps } from '../../../../libCommon/util';
 
 import { TipoPlanejViagem } from '../../../../appCydag/types';
-import { IGenericObject } from '../../../../libCommon/types';
 
 enum CmdApi_Viagem {
   crudInitialization = 'crudInitialization',
@@ -24,14 +23,16 @@ export enum LineState {
 }
 
 export class DataEdit {
-  tipoPlanejViagem: TipoPlanejViagem;
-  localidadeDestino: string;
-  funcId: string;
-  qtdViagens: string;
-  mediaPernoites: string;
-  obs: string;
-  valor: string;
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  tipoPlanejViagem?: TipoPlanejViagem;
+  localidadeDestino?: string;
+  funcId?: string;
+  qtdViagens?: string;
+  mediaPernoites?: string;
+  obs?: string;
+  valor?: string;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new DataEdit(); }
+  static fill(values: DataEdit, init = false) { return CutUndef(FillClassProps(DataEdit.new(init), values)); }
 }
 export interface IChangedLine {
   //key: { tipoPlanejViagem: TipoPlanejViagem; localidadeDestino?: string; funcId?: string; _id?: string };

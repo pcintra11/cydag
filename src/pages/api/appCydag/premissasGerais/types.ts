@@ -1,5 +1,3 @@
-import _ from 'underscore';
-
 import { IGenericObject } from '../../../../libCommon/types';
 
 enum CmdApi_PremissaGeral {

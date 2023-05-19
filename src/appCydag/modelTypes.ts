@@ -1,25 +1,30 @@
 import { ObjectId } from 'mongodb';
+import _ from 'underscore';
 
 import { csd, dbgError } from '../libCommon/dbg';
-import { AmountPtBrParse, BinSearchProp, ConcatArrays, DateDisp, DateFromStrISO, DateToStrISO, ErrorPlus, FillClass, RandomNumber, Scramble, Unscramble } from '../libCommon/util';
+import { AmountPtBrParse, BinSearchProp, ConcatArrays, CutUndef, DateDisp, DateFromStrISO, DateToStrISO, ErrorPlus, FillClassProps, RandomNumber, Scramble, Unscramble } from '../libCommon/util';
 import { IGenericObject } from '../libCommon/types';
 import { FldCsvDef, FldsCsvAll } from '../libCommon/uploadCsv';
 import { BooleanToSN, SNToBoolean, SearchTermsForDbSavePtBr, StrToNumber } from '../libCommon/util';
-import { isAmbDev } from '../libCommon/isAmb';
+
+import { isAmbDev } from '../app_base/envs';
+import { configApp } from '../app_hub/appConfig';
 
 import { UserMd } from './models';
 import { LoggedUser } from './loggedUser';
 import { rolesApp, roleSimulateUserDyn } from './endPoints';
-import { configApp } from './config';
 import { amountParse, amountParseValsCalc } from './util';
 import { CategRegional, CategRegionalMd, InterfaceSapStatus, InterfaceSapCateg, OrigemClasseCusto, OrigemFunc, ProcessoOrcamentarioStatus, RevisaoValor, RevisaoValorMd, TipoColaborador, TipoColaboradorMd, TipoParticipPerOrcam, TipoParticipPerOrcamMd, TipoPlanejViagem, TipoSegmCentroCusto, TipoSegmCentroCustoMd } from './types';
+import { configCydag } from './configCydag';
+
+export const ignoreMongoProps = (values: any) => _.omit(values, ['__v', 'createdAt', 'updatedAt']);
 
 //#region ProcessoOrcamentario User
 export class ProcessoOrcamentario {
   _id?: ObjectId;
-  ano: string;
+  ano?: string;
   //versao?: string;
-  status: ProcessoOrcamentarioStatus;
+  status?: ProcessoOrcamentarioStatus;
   //percLimiteFarois?: number;
   //revisaoInicialJa?: boolean;
   //events: any[]; // carga usuarios, etc
@@ -36,11 +41,13 @@ export class ProcessoOrcamentario {
       ano: 'ano' as 'ano',
     };
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ProcessoOrcamentario(); }
+  static fill(values: ProcessoOrcamentario, init = false) { return CutUndef(FillClassProps(ProcessoOrcamentario.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new ProcessoOrcamentario().Fill({
-        ...values,
+      return FillClassProps(ProcessoOrcamentario.new(), {
+        ...ignoreMongoProps(values),
         horaLoadFuncFull: DateFromStrISO(values.horaLoadFuncFull),
         horaLoadFuncIncr: DateFromStrISO(values.horaLoadFuncIncr),
         horaPreCalcValoresPlanejados: DateFromStrISO(values.horaPreCalcValoresPlanejados),
@@ -51,8 +58,8 @@ export class ProcessoOrcamentario {
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em ProcessoOrcamentario.deserialize', error.message, values);
-      return new ProcessoOrcamentario();
+      dbgError('ProcessoOrcamentario.deserialize', error.message, values);
+      return ProcessoOrcamentario.new(true);
     }
   }
   obsArray?() {
@@ -103,17 +110,19 @@ export class ProcessoOrcamentarioCentroCusto {
       'permiteNovosClb',
     ];
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ProcessoOrcamentarioCentroCusto(); }
+  static fill(values: ProcessoOrcamentarioCentroCusto, init = false) { return CutUndef(FillClassProps(ProcessoOrcamentarioCentroCusto.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new ProcessoOrcamentarioCentroCusto().Fill({
-        ...values,
+      return FillClassProps(ProcessoOrcamentarioCentroCusto.new(), {
+        ...ignoreMongoProps(values),
         created: DateFromStrISO(values.created),
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em ProcessoOrcamentarioCentroCusto.deserialize', error.message, values);
-      return new ProcessoOrcamentarioCentroCusto();
+      dbgError('ProcessoOrcamentarioCentroCusto.deserialize', error.message, values);
+      return ProcessoOrcamentarioCentroCusto.new(true);
     }
   }
   static get fldsCsvDefCrud() {
@@ -148,11 +157,6 @@ export class User {
   created?: Date;
   lastUpdated?: Date;
   //_idSuperior?: ObjectId;
-  constructor() {
-    this.ativo = true;
-    this.roles = [];
-    this.rolesControlled = [];
-  }
   static get F() {
     return {
       email: 'email' as 'email',
@@ -169,17 +173,26 @@ export class User {
     if (documentInsOrUpd.email != undefined) { textsUpd.push(documentInsOrUpd.email.replace(/@.*/, '')); } else if (documentDb != null) textsUpd.push(documentDb.email.replace(/@.*/, ''));
     return SearchTermsForDbSavePtBr(textsUpd);
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  static new(init?: boolean) {
+    const obj = new User();
+    if (init) {
+      obj.ativo = true;
+      obj.roles = [];
+      obj.rolesControlled = [];
+    }
+    return obj;
+  }
+  static fill(values: User, init = false) { return CutUndef(FillClassProps(User.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new User().Fill({
-        ...values,
+      return FillClassProps(User.new(), {
+        ...ignoreMongoProps(values),
         created: DateFromStrISO(values.created),
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em User.deserialize', error.message, values);
-      return new User();
+      dbgError('User.deserialize', error.message, values);
+      return User.new(true);
     }
   }
   toCsvCrud?() {
@@ -196,7 +209,7 @@ export class User {
         perfilCargaFunc: BooleanToSN(entity.roles.includes(rolesApp.cargaFunc)),
       };
     } catch (error) {
-      dbgError('Erro em User.toCsvCrud', error.message, entity);
+      dbgError('User.toCsvCrud', error.message, entity);
       return null;
     }
   }
@@ -205,13 +218,13 @@ export class User {
     try {
       return { email: entity.email, nome: entity.nome };
     } catch (error) {
-      dbgError('Erro em User.toCsv', error.message, entity);
+      dbgError('User.toCsv', error.message, entity);
       return null;
     }
   }
   static get fldsCsvDefUpload() {
     const agora = new Date();
-    return FldsCsvAll(new User(), [
+    return FldsCsvAll(User.new(true), [
       new FldCsvDef('ativo', { down: (data: User) => BooleanToSN(data.ativo), up: (data: IGenericObject) => SNToBoolean(data.ativo.trim().toLowerCase()) }),
       new FldCsvDef('roles', { down: (data: User) => data.roles.join(','), up: (data: IGenericObject) => data.roles.split(',').map((x) => x.trim().toLowerCase()) }),
       new FldCsvDef('rolesControlled', { suppressColumn: true }),
@@ -220,7 +233,7 @@ export class User {
       new FldCsvDef('lastUpdated', { down: (data: User) => DateToStrISO(data.lastUpdated), up: (data: IGenericObject) => DateFromStrISO(data.lastUpdated) || agora, def: () => new Date() }),
     ]);
   }
-  static loggedUser(userMd: UserMd, emailSigned: string, firstSignIn: Date, lastReSignIn: Date, lastActivity: Date, hasSomeCCResponsavel: boolean, hasSomeCCPlanejador: boolean, hasSomeCCConsulta: boolean, ttlSeconds?: number) {
+  static loggedUser(userMd: UserMd, emailSigned: string, firstSignIn: Date, lastReSignIn: Date, lastActivity: Date, hasSomeCCResponsavel: boolean, hasSomeCCPlanejador: boolean, hasSomeCCConsulta: boolean) { // , ttlSeconds?: number
     const rolesUse = ConcatArrays(userMd.roles, userMd.rolesControlled);
     if (hasSomeCCResponsavel) rolesUse.push(rolesApp.dyn_responsCC);
     if (hasSomeCCPlanejador) rolesUse.push(rolesApp.dyn_planejCC);
@@ -242,7 +255,7 @@ export class User {
       firstSignIn,
       lastReSignIn,
       lastActivity,
-      ttlSeconds,
+      //ttlSeconds,
     } as LoggedUser;
   }
 }
@@ -271,17 +284,19 @@ export class AgrupPremissas {
     if (documentInsOrUpd.descr != undefined) { textsUpd.push(documentInsOrUpd.descr); } else if (documentDb != null) textsUpd.push(documentDb.descr);
     return SearchTermsForDbSavePtBr(textsUpd);
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new AgrupPremissas(); }
+  static fill(values: AgrupPremissas, init = false) { return CutUndef(FillClassProps(AgrupPremissas.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new AgrupPremissas().Fill({
-        ...values,
+      return FillClassProps(AgrupPremissas.new(), {
+        ...ignoreMongoProps(values),
         created: DateFromStrISO(values.created),
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em AgrupPremissas.deserialize', error.message, values);
-      return new AgrupPremissas();
+      dbgError('AgrupPremissas.deserialize', error.message, values);
+      return AgrupPremissas.new(true);
     }
   }
   toCsv?() {
@@ -289,13 +304,13 @@ export class AgrupPremissas {
     try {
       return { cod: entity.cod, descr: entity.descr };
     } catch (error) {
-      dbgError('Erro em AgrupPremissas.toCsv', error.message, entity);
+      dbgError('AgrupPremissas.toCsv', error.message, entity);
       return null;
     }
   }
   static get fldsCsvDefUpload() {
     const agora = new Date();
-    return FldsCsvAll(new AgrupPremissas(), [
+    return FldsCsvAll(AgrupPremissas.new(), [
       new FldCsvDef('searchTerms', { suppressColumn: true, def: (data: IGenericObject) => AgrupPremissas.SearchTermsGen(data) }),
       new FldCsvDef('created', { down: (data: AgrupPremissas) => DateToStrISO(data.created), up: (data: IGenericObject) => DateFromStrISO(data.created) || agora, def: () => new Date() }),
       new FldCsvDef('lastUpdated', { down: (data: AgrupPremissas) => DateToStrISO(data.lastUpdated), up: (data: IGenericObject) => DateFromStrISO(data.lastUpdated) || agora, def: () => new Date() }),
@@ -328,17 +343,19 @@ export class CentroCusto {
     if (documentInsOrUpd.descr != undefined) { textsUpd.push(documentInsOrUpd.descr); } else if (documentDb != null) textsUpd.push(documentDb.descr);
     return SearchTermsForDbSavePtBr(textsUpd);
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new CentroCusto(); }
+  static fill(values: CentroCusto, init = false) { return CutUndef(FillClassProps(CentroCusto.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new CentroCusto().Fill({
-        ...values,
+      return FillClassProps(CentroCusto.new(), {
+        ...ignoreMongoProps(values),
         created: DateFromStrISO(values.created),
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em CentroCusto.deserialize', error.message, values);
-      return new CentroCusto();
+      dbgError('CentroCusto.deserialize', error.message, values);
+      return CentroCusto.new(true);
     }
   }
   toCsv?() {
@@ -346,13 +363,13 @@ export class CentroCusto {
     try {
       return { cod: entity.cod, descr: entity.descr };
     } catch (error) {
-      dbgError('Erro em CentroCusto.toCsv', error.message, entity);
+      dbgError('CentroCusto.toCsv', error.message, entity);
       return null;
     }
   }
   static get fldsCsvDefUpload() {
     const agora = new Date();
-    return FldsCsvAll(new CentroCusto(), [
+    return FldsCsvAll(CentroCusto.new(), [
       new FldCsvDef('searchTerms', { suppressColumn: true, def: (data: IGenericObject) => CentroCusto.SearchTermsGen(data) }),
       new FldCsvDef('created', { down: (data: CentroCusto) => DateToStrISO(data.created), up: (data: IGenericObject) => DateFromStrISO(data.created) || agora, def: () => new Date() }),
       new FldCsvDef('lastUpdated', { down: (data: CentroCusto) => DateToStrISO(data.lastUpdated), up: (data: IGenericObject) => DateFromStrISO(data.lastUpdated) || agora, def: () => new Date() }),
@@ -361,8 +378,8 @@ export class CentroCusto {
 }
 export class Diretoria {
   _id?: ObjectId;
-  cod: string;
-  descr: string;
+  cod?: string;
+  descr?: string;
   searchTerms?: string;
   created?: Date;
   lastUpdated?: Date;
@@ -379,17 +396,19 @@ export class Diretoria {
     if (documentInsOrUpd.descr != undefined) { textsUpd.push(documentInsOrUpd.descr); } else if (documentDb != null) textsUpd.push(documentDb.descr);
     return SearchTermsForDbSavePtBr(textsUpd);
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new Diretoria(); }
+  static fill(values: Diretoria, init = false) { return CutUndef(FillClassProps(Diretoria.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new Diretoria().Fill({
-        ...values,
+      return FillClassProps(Diretoria.new(), {
+        ...ignoreMongoProps(values),
         created: DateFromStrISO(values.created),
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em Diretoria.deserialize', error.message, values);
-      return new Diretoria();
+      dbgError('Diretoria.deserialize', error.message, values);
+      return Diretoria.new(true);
     }
   }
   toCsv?() {
@@ -397,13 +416,13 @@ export class Diretoria {
     try {
       return { cod: entity.cod, descr: entity.descr };
     } catch (error) {
-      dbgError('Erro em Diretoria.toCsv', error.message, entity);
+      dbgError('Diretoria.toCsv', error.message, entity);
       return null;
     }
   }
   static get fldsCsvDefUpload() {
     const agora = new Date();
-    return FldsCsvAll(new Diretoria(), [
+    return FldsCsvAll(Diretoria.new(), [
       new FldCsvDef('searchTerms', { suppressColumn: true, def: (data: IGenericObject) => Diretoria.SearchTermsGen(data) }),
       new FldCsvDef('created', { down: (data: Diretoria) => DateToStrISO(data.created), up: (data: IGenericObject) => DateFromStrISO(data.created) || agora, def: () => new Date() }),
       new FldCsvDef('lastUpdated', { down: (data: Diretoria) => DateToStrISO(data.lastUpdated), up: (data: IGenericObject) => DateFromStrISO(data.lastUpdated) || agora, def: () => new Date() }),
@@ -432,17 +451,19 @@ export class Empresa {
     if (documentInsOrUpd.descr != undefined) { textsUpd.push(documentInsOrUpd.descr); } else if (documentDb != null) textsUpd.push(documentDb.descr);
     return SearchTermsForDbSavePtBr(textsUpd);
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new Empresa(); }
+  static fill(values: Empresa, init = false) { return CutUndef(FillClassProps(Empresa.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new Empresa().Fill({
-        ...values,
+      return FillClassProps(Empresa.new(), {
+        ...ignoreMongoProps(values),
         created: DateFromStrISO(values.created),
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em Empresa.deserialize', error.message, values);
-      return new Empresa();
+      dbgError('Empresa.deserialize', error.message, values);
+      return Empresa.new(true);
     }
   }
   toCsv?() {
@@ -450,13 +471,13 @@ export class Empresa {
     try {
       return { cod: entity.cod, descr: entity.descr };
     } catch (error) {
-      dbgError('Erro em Empresa.toCsv', error.message, entity);
+      dbgError('Empresa.toCsv', error.message, entity);
       return null;
     }
   }
   static get fldsCsvDefUpload() {
     const agora = new Date();
-    return FldsCsvAll(new Empresa(), [
+    return FldsCsvAll(Empresa.new(), [
       new FldCsvDef('searchTerms', { suppressColumn: true, def: (data: IGenericObject) => Empresa.SearchTermsGen(data) }),
       new FldCsvDef('created', { down: (data: Empresa) => DateToStrISO(data.created), up: (data: IGenericObject) => DateFromStrISO(data.created) || agora, def: () => new Date() }),
       new FldCsvDef('lastUpdated', { down: (data: Empresa) => DateToStrISO(data.lastUpdated), up: (data: IGenericObject) => DateFromStrISO(data.lastUpdated) || agora, def: () => new Date() }),
@@ -473,15 +494,17 @@ export class FuncaoTerceiro {
       descr: 'descr' as 'descr',
     };
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new FuncaoTerceiro(); }
+  static fill(values: FuncaoTerceiro, init = false) { return CutUndef(FillClassProps(FuncaoTerceiro.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new FuncaoTerceiro().Fill({
-        ...values,
+      return FillClassProps(FuncaoTerceiro.new(), {
+        ...ignoreMongoProps(values),
       });
     } catch (error) {
-      dbgError('Erro em FuncaoTerceiros.deserialize', error.message, values);
-      return new FuncaoTerceiro();
+      dbgError('FuncaoTerceiros.deserialize', error.message, values);
+      return FuncaoTerceiro.new(true);
     }
   }
   toCsv?() {
@@ -489,12 +512,12 @@ export class FuncaoTerceiro {
     try {
       return { cod: entity.cod, descr: entity.descr };
     } catch (error) {
-      dbgError('Erro em FuncaoTerceiros.toCsv', error.message, entity);
+      dbgError('FuncaoTerceiros.toCsv', error.message, entity);
       return null;
     }
   }
   static get fldsCsvDefUpload() {
-    return FldsCsvAll(new FuncaoTerceiro());
+    return FldsCsvAll(FuncaoTerceiro.new());
   }
 }
 export class Gerencia {
@@ -517,17 +540,19 @@ export class Gerencia {
     if (documentInsOrUpd.descr != undefined) { textsUpd.push(documentInsOrUpd.descr); } else if (documentDb != null) textsUpd.push(documentDb.descr);
     return SearchTermsForDbSavePtBr(textsUpd);
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new Gerencia(); }
+  static fill(values: Gerencia, init = false) { return CutUndef(FillClassProps(Gerencia.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new Gerencia().Fill({
-        ...values,
+      return FillClassProps(Gerencia.new(), {
+        ...ignoreMongoProps(values),
         created: DateFromStrISO(values.created),
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em Gerencia.deserialize', error.message, values);
-      return new Gerencia();
+      dbgError('Gerencia.deserialize', error.message, values);
+      return Gerencia.new(true);
     }
   }
   toCsv?() {
@@ -535,13 +560,13 @@ export class Gerencia {
     try {
       return { cod: entity.cod, descr: entity.descr };
     } catch (error) {
-      dbgError('Erro em Gerencia.toCsv', error.message, entity);
+      dbgError('Gerencia.toCsv', error.message, entity);
       return null;
     }
   }
   static get fldsCsvDefUpload() {
     const agora = new Date();
-    return FldsCsvAll(new Gerencia(), [
+    return FldsCsvAll(Gerencia.new(), [
       new FldCsvDef('searchTerms', { suppressColumn: true, def: (data: IGenericObject) => Gerencia.SearchTermsGen(data) }),
       new FldCsvDef('created', { down: (data: Gerencia) => DateToStrISO(data.created), up: (data: IGenericObject) => DateFromStrISO(data.created) || agora, def: () => new Date() }),
       new FldCsvDef('lastUpdated', { down: (data: Gerencia) => DateToStrISO(data.lastUpdated), up: (data: IGenericObject) => DateFromStrISO(data.lastUpdated) || agora, def: () => new Date() }),
@@ -570,17 +595,19 @@ export class Localidade {
     if (documentInsOrUpd.descr != undefined) { textsUpd.push(documentInsOrUpd.descr); } else if (documentDb != null) textsUpd.push(documentDb.descr);
     return SearchTermsForDbSavePtBr(textsUpd);
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new Localidade(); }
+  static fill(values: Localidade, init = false) { return CutUndef(FillClassProps(Localidade.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new Localidade().Fill({
-        ...values,
+      return FillClassProps(Localidade.new(), {
+        ...ignoreMongoProps(values),
         created: DateFromStrISO(values.created),
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em Localidade.deserialize', error.message, values);
-      return new Localidade();
+      dbgError('Localidade.deserialize', error.message, values);
+      return Localidade.new(true);
     }
   }
   toCsv?() {
@@ -588,13 +615,13 @@ export class Localidade {
     try {
       return { cod: entity.cod, descr: entity.descr };
     } catch (error) {
-      dbgError('Erro em Localidade.toCsv', error.message, entity);
+      dbgError('Localidade.toCsv', error.message, entity);
       return null;
     }
   }
   static get fldsCsvDefUpload() {
     const agora = new Date();
-    return FldsCsvAll(new Localidade(), [
+    return FldsCsvAll(Localidade.new(), [
       new FldCsvDef('searchTerms', { suppressColumn: true, def: (data: IGenericObject) => Localidade.SearchTermsGen(data) }),
       new FldCsvDef('created', { down: (data: Localidade) => DateToStrISO(data.created), up: (data: IGenericObject) => DateFromStrISO(data.created) || agora, def: () => new Date() }),
       new FldCsvDef('lastUpdated', { down: (data: Localidade) => DateToStrISO(data.lastUpdated), up: (data: IGenericObject) => DateFromStrISO(data.lastUpdated) || agora, def: () => new Date() }),
@@ -603,9 +630,9 @@ export class Localidade {
 }
 export class UnidadeNegocio {
   _id?: ObjectId;
-  cod: string;
-  descr: string;
-  categRegional: CategRegional;
+  cod?: string;
+  descr?: string;
+  categRegional?: CategRegional;
   searchTerms?: string;
   created?: Date;
   lastUpdated?: Date;
@@ -623,17 +650,19 @@ export class UnidadeNegocio {
     if (documentInsOrUpd.descr != undefined) { textsUpd.push(documentInsOrUpd.descr); } else if (documentDb != null) textsUpd.push(documentDb.descr);
     return SearchTermsForDbSavePtBr(textsUpd);
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new UnidadeNegocio(); }
+  static fill(values: UnidadeNegocio, init = false) { return CutUndef(FillClassProps(UnidadeNegocio.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new UnidadeNegocio().Fill({
-        ...values,
+      return FillClassProps(UnidadeNegocio.new(), {
+        ...ignoreMongoProps(values),
         created: DateFromStrISO(values.created),
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em UnidadeNegocio.deserialize', error.message, values);
-      return new UnidadeNegocio();
+      dbgError('UnidadeNegocio.deserialize', error.message, values);
+      return UnidadeNegocio.new(true);
     }
   }
   toCsv?() {
@@ -641,13 +670,13 @@ export class UnidadeNegocio {
     try {
       return { cod: entity.cod, descr: entity.descr };
     } catch (error) {
-      dbgError('Erro em UnidadeNegocio.toCsv', error.message, entity);
+      dbgError('UnidadeNegocio.toCsv', error.message, entity);
       return null;
     }
   }
   static get fldsCsvDefUpload() {
     const agora = new Date();
-    return FldsCsvAll(new UnidadeNegocio(), [
+    return FldsCsvAll(UnidadeNegocio.new(), [
       new FldCsvDef('categRegional', { mandatoryValue: false, down: (data: UnidadeNegocio) => data.categRegional.toString(), up: (data: IGenericObject) => CategRegionalMd.codeFromStr(data.categRegional) }),
       new FldCsvDef('searchTerms', { suppressColumn: true, def: (data: IGenericObject) => UnidadeNegocio.SearchTermsGen(data) }),
       new FldCsvDef('created', { down: (data: UnidadeNegocio) => DateToStrISO(data.created), up: (data: IGenericObject) => DateFromStrISO(data.created) || agora, def: () => new Date() }),
@@ -660,20 +689,24 @@ export class UnidadeNegocio {
 //#region estrutura de contas
 export class FatorCusto {
   _id?: ObjectId;
-  fatorCusto: string;
-  descr: string;
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  fatorCusto?: string;
+  descr?: string;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new FatorCusto(); }
+  static fill(values: FatorCusto, init = false) { return CutUndef(FillClassProps(FatorCusto.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new FatorCusto().Fill(values);
+      return FillClassProps(FatorCusto.new(), {
+        ...ignoreMongoProps(values),
+      });
     } catch (error) {
-      dbgError('Erro em FatorCusto.deserialize', error.message, values);
-      return new FatorCusto();
+      dbgError('FatorCusto.deserialize', error.message, values);
+      return FatorCusto.new(true);
     }
   }
   static get fldsCsvDefUpload() {
     const agora = new Date();
-    return FldsCsvAll(new FatorCusto(), []);
+    return FldsCsvAll(FatorCusto.new(), []);
   }
   static descrFator(fatorCusto: string, fatorCustoArray: FatorCusto[], abrev?: number) {
     let descr: string = BinSearchProp(fatorCustoArray, fatorCusto, 'descr', 'fatorCusto') || `Linha de Custo ${fatorCusto}`;
@@ -685,11 +718,11 @@ export class FatorCusto {
 }
 export class ClasseCusto {
   _id?: ObjectId;
-  classeCusto: string;
-  descr: string;
-  fatorCusto: string;
-  origem: OrigemClasseCusto;
-  seqApresent: number;
+  classeCusto?: string;
+  descr?: string;
+  fatorCusto?: string;
+  origem?: OrigemClasseCusto;
+  seqApresent?: number;
   searchTerms?: string;
   created?: Date;
   lastUpdated?: Date;
@@ -709,22 +742,24 @@ export class ClasseCusto {
     if (documentInsOrUpd.descr != undefined) { textsUpd.push(documentInsOrUpd.descr); } else if (documentDb != null) textsUpd.push(documentDb.descr);
     return SearchTermsForDbSavePtBr(textsUpd);
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ClasseCusto(); }
+  static fill(values: ClasseCusto, init = false) { return CutUndef(FillClassProps(ClasseCusto.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new ClasseCusto().Fill({
-        ...values,
+      return FillClassProps(ClasseCusto.new(), {
+        ...ignoreMongoProps(values),
         created: DateFromStrISO(values.created),
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em ClasseCusto.deserialize', error.message, values);
-      return new ClasseCusto();
+      dbgError('ClasseCusto.deserialize', error.message, values);
+      return ClasseCusto.new(true);
     }
   }
   static get fldsCsvDefUpload() {
     const agora = new Date();
-    return FldsCsvAll(new ClasseCusto(), [
+    return FldsCsvAll(ClasseCusto.new(), [
       new FldCsvDef('searchTerms', { suppressColumn: true, def: (data: IGenericObject) => ClasseCusto.SearchTermsGen(data) }),
       new FldCsvDef('created', { down: (data: ClasseCusto) => DateToStrISO(data.created), up: (data: IGenericObject) => DateFromStrISO(data.created) || agora, def: () => new Date() }),
       new FldCsvDef('lastUpdated', { down: (data: ClasseCusto) => DateToStrISO(data.lastUpdated), up: (data: IGenericObject) => DateFromStrISO(data.lastUpdated) || agora, def: () => new Date() }),
@@ -745,20 +780,23 @@ export class ClasseCustoRestrita {
       obs: 'obs' as 'obs',
     };
   }
-  constructor() {
-    this.centroCustoArray = [];
+  static new(init?: boolean) {
+    const obj = new ClasseCustoRestrita();
+    if (init)
+      obj.centroCustoArray = [];
+    return obj;
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  static fill(values: ClasseCustoRestrita, init = false) { return CutUndef(FillClassProps(ClasseCustoRestrita.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new ClasseCustoRestrita().Fill({
-        ...values,
+      return FillClassProps(ClasseCustoRestrita.new(), {
+        ...ignoreMongoProps(values),
         created: DateFromStrISO(values.created),
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em ClasseCustoRestrita.deserialize', error.message, values);
-      return new ClasseCustoRestrita();
+      dbgError('ClasseCustoRestrita.deserialize', error.message, values);
+      return ClasseCustoRestrita.new(true);
     }
   }
 }
@@ -782,17 +820,21 @@ export class Premissa {
   seqApresent?: number;
   anoIni?: string;
   anoFim?: string;
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new Premissa(); }
+  static fill(values: Premissa, init = false) { return CutUndef(FillClassProps(Premissa.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new Premissa().Fill(values);
+      return FillClassProps(Premissa.new(), {
+        ...ignoreMongoProps(values),
+      });
     } catch (error) {
-      dbgError('Erro em Premissa.deserialize', error.message, values);
-      return new Premissa();
+      dbgError('Premissa.deserialize', error.message, values);
+      return Premissa.new(true);
     }
   }
   static get fldsCsvDefUpload() {
-    return FldsCsvAll(new Premissa(), [
+    return FldsCsvAll(Premissa.new(), [
       new FldCsvDef('tipoSegmCentroCusto', { mandatoryValue: true, down: (data: Premissa) => data.tipoSegmCentroCusto.toString(), up: (data: IGenericObject) => TipoSegmCentroCustoMd.codeFromStr(data.tipoSegmCentroCusto) }),
       new FldCsvDef('segmTipoClb', { down: (data: Premissa) => BooleanToSN(data.segmTipoClb), up: (data: IGenericObject) => SNToBoolean(data.segmTipoClb.trim().toLowerCase()) }),
       new FldCsvDef('despRecorrFunc', { down: (data: Premissa) => BooleanToSN(data.despRecorrFunc), up: (data: IGenericObject) => SNToBoolean(data.despRecorrFunc.trim().toLowerCase()) }),
@@ -822,22 +864,24 @@ export class ValoresPremissa {
       agrupPremissas: 'agrupPremissas' as 'agrupPremissas',
     };
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ValoresPremissa(); }
+  static fill(values: ValoresPremissa, init = false) { return CutUndef(FillClassProps(ValoresPremissa.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new ValoresPremissa().Fill({
-        ...values,
+      return FillClassProps(ValoresPremissa.new(), {
+        ...ignoreMongoProps(values),
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em ValoresPremissa.deserialize', error.message, values);
-      return new ValoresPremissa();
+      dbgError('ValoresPremissa.deserialize', error.message, values);
+      return ValoresPremissa.new(true);
     }
   }
   static get fldsCsvDefUpload() {
     const maxDecimals = 4;
     const agora = new Date();
-    return FldsCsvAll(new ValoresPremissa(), [
+    return FldsCsvAll(ValoresPremissa.new(), [
       new FldCsvDef('revisao', { down: (data: ValoresPremissa) => data.revisao.toString(), up: (data: IGenericObject) => RevisaoValorMd.codeFromStr(data.revisao), def: () => RevisaoValor.atual }),
       new FldCsvDef('ativa', { down: (data: ValoresPremissa) => BooleanToSN(data.ativa), up: (data: IGenericObject) => SNToBoolean(data.ativa.trim().toLowerCase()) }),
       new FldCsvDef('tipoSegmCentroCusto', { down: (data: ValoresPremissa) => data.tipoSegmCentroCusto.toString(), up: (data: IGenericObject) => TipoSegmCentroCustoMd.codeFromStr(data.tipoSegmCentroCusto) }),
@@ -867,22 +911,24 @@ export class ValoresLocalidade {
       revisao: 'revisao' as 'revisao',
     };
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ValoresLocalidade(); }
+  static fill(values: ValoresLocalidade, init = false) { return CutUndef(FillClassProps(ValoresLocalidade.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new ValoresLocalidade().Fill({
-        ...values,
+      return FillClassProps(ValoresLocalidade.new(), {
+        ...ignoreMongoProps(values),
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em ValoresLocalid.deserialize', error.message, values);
-      return new ValoresLocalidade();
+      dbgError('ValoresLocalid.deserialize', error.message, values);
+      return ValoresLocalidade.new(true);
     }
   }
   static get fldsCsvDefUpload() {
     const maxDecimals = 2;
     const agora = new Date();
-    return FldsCsvAll(new ValoresLocalidade(), [
+    return FldsCsvAll(ValoresLocalidade.new(), [
       new FldCsvDef('revisao', { def: () => RevisaoValor.atual }),
       new FldCsvDef('valMeses', {
         suppressColumn: true,
@@ -911,28 +957,30 @@ export class ValoresTransfer {
       localidadeOrigem: 'localidadeOrigem' as 'localidadeOrigem',
     };
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ValoresTransfer(); }
+  static fill(values: ValoresTransfer, init = false) { return CutUndef(FillClassProps(ValoresTransfer.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new ValoresTransfer().Fill({
-        ...values,
+      return FillClassProps(ValoresTransfer.new(), {
+        ...ignoreMongoProps(values),
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em ValoresTransfer.deserialize', error.message, values);
-      return new ValoresTransfer();
+      dbgError('ValoresTransfer.deserialize', error.message, values);
+      return ValoresTransfer.new(true);
     }
   }
   static get fldsCsvDefUpload() {
     const agora = new Date();
-    return FldsCsvAll(new ValoresTransfer(), [
+    return FldsCsvAll(ValoresTransfer.new(), [
       new FldCsvDef('revisao', { def: () => RevisaoValor.atual }),
       new FldCsvDef('valMeses', {
         suppressColumn: true,
         def: (data: IGenericObject) => [
-          amountParse(data.m01, configApp.decimalsValsInput), amountParse(data.m02, configApp.decimalsValsInput), amountParse(data.m03, configApp.decimalsValsInput), amountParse(data.m04, configApp.decimalsValsInput),
-          amountParse(data.m05, configApp.decimalsValsInput), amountParse(data.m06, configApp.decimalsValsInput), amountParse(data.m07, configApp.decimalsValsInput), amountParse(data.m08, configApp.decimalsValsInput),
-          amountParse(data.m09, configApp.decimalsValsInput), amountParse(data.m10, configApp.decimalsValsInput), amountParse(data.m11, configApp.decimalsValsInput), amountParse(data.m12, configApp.decimalsValsInput),
+          amountParse(data.m01, configCydag.decimalsValsInput), amountParse(data.m02, configCydag.decimalsValsInput), amountParse(data.m03, configCydag.decimalsValsInput), amountParse(data.m04, configCydag.decimalsValsInput),
+          amountParse(data.m05, configCydag.decimalsValsInput), amountParse(data.m06, configCydag.decimalsValsInput), amountParse(data.m07, configCydag.decimalsValsInput), amountParse(data.m08, configCydag.decimalsValsInput),
+          amountParse(data.m09, configCydag.decimalsValsInput), amountParse(data.m10, configCydag.decimalsValsInput), amountParse(data.m11, configCydag.decimalsValsInput), amountParse(data.m12, configCydag.decimalsValsInput),
         ]
       }),
       new FldCsvDef('lastUpdated', { down: (data: ValoresTransfer) => DateToStrISO(data.lastUpdated), up: (data: IGenericObject) => DateFromStrISO(data.lastUpdated) || agora, def: () => new Date() }),
@@ -952,29 +1000,31 @@ export class ValoresImputados {
   descr?: string;
   valMeses?: number[];
   lastUpdated?: Date;
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ValoresImputados(); }
+  static fill(values: ValoresImputados, init = false) { return CutUndef(FillClassProps(ValoresImputados.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new ValoresImputados().Fill({
-        ...values,
+      return FillClassProps(ValoresImputados.new(), {
+        ...ignoreMongoProps(values),
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em ValoresImputados.deserialize', error.message, values);
-      return new ValoresImputados();
+      dbgError('ValoresImputados.deserialize', error.message, values);
+      return ValoresImputados.new(true);
     }
   }
   static get fldsCsvDefUpload() {
     const agora = new Date();
-    return FldsCsvAll(new ValoresImputados(),
+    return FldsCsvAll(ValoresImputados.new(),
       [
         new FldCsvDef('revisao', { def: () => RevisaoValor.atual }),
         new FldCsvDef('valMeses', {
           suppressColumn: true,
           def: (data: IGenericObject) => [
-            amountParse(data.m01, configApp.decimalsValsInput), amountParse(data.m02, configApp.decimalsValsInput), amountParse(data.m03, configApp.decimalsValsInput), amountParse(data.m04, configApp.decimalsValsInput),
-            amountParse(data.m05, configApp.decimalsValsInput), amountParse(data.m06, configApp.decimalsValsInput), amountParse(data.m07, configApp.decimalsValsInput), amountParse(data.m08, configApp.decimalsValsInput),
-            amountParse(data.m09, configApp.decimalsValsInput), amountParse(data.m10, configApp.decimalsValsInput), amountParse(data.m11, configApp.decimalsValsInput), amountParse(data.m12, configApp.decimalsValsInput),
+            amountParse(data.m01, configCydag.decimalsValsInput), amountParse(data.m02, configCydag.decimalsValsInput), amountParse(data.m03, configCydag.decimalsValsInput), amountParse(data.m04, configCydag.decimalsValsInput),
+            amountParse(data.m05, configCydag.decimalsValsInput), amountParse(data.m06, configCydag.decimalsValsInput), amountParse(data.m07, configCydag.decimalsValsInput), amountParse(data.m08, configCydag.decimalsValsInput),
+            amountParse(data.m09, configCydag.decimalsValsInput), amountParse(data.m10, configCydag.decimalsValsInput), amountParse(data.m11, configCydag.decimalsValsInput), amountParse(data.m12, configCydag.decimalsValsInput),
           ]
         }),
         new FldCsvDef('lastUpdated', { down: (data: ValoresImputados) => DateToStrISO(data.lastUpdated), up: (data: IGenericObject) => DateFromStrISO(data.lastUpdated) || agora, def: () => new Date() }),
@@ -988,13 +1038,17 @@ export class ValoresPlanejadosCalc {
   centroCusto?: string;
   classeCusto?: string;
   valMeses?: number[];
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ValoresPlanejadosCalc(); }
+  static fill(values: ValoresPlanejadosCalc, init = false) { return CutUndef(FillClassProps(ValoresPlanejadosCalc.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new ValoresPlanejadosCalc().Fill(values);
+      return FillClassProps(ValoresPlanejadosCalc.new(), {
+        ...ignoreMongoProps(values),
+      });
     } catch (error) {
-      dbgError('Erro em ValoresPlanejadosCalc.deserialize', error.message, values);
-      return new ValoresPlanejadosCalc();
+      dbgError('ValoresPlanejadosCalc.deserialize', error.message, values);
+      return ValoresPlanejadosCalc.new(true);
     }
   }
 }
@@ -1004,20 +1058,22 @@ export class ValoresPlanejadosHistorico {
   centroCusto?: string;
   classeCusto?: string;
   valMeses?: number[];
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ValoresPlanejadosHistorico(); }
+  static fill(values: ValoresPlanejadosHistorico, init = false) { return CutUndef(FillClassProps(ValoresPlanejadosHistorico.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new ValoresPlanejadosHistorico().Fill({
-        ...values,
+      return FillClassProps(ValoresPlanejadosHistorico.new(), {
+        ...ignoreMongoProps(values),
       });
     } catch (error) {
-      dbgError('Erro em ValoresPlanejadosHistorico.deserialize', error.message, values);
-      return new ValoresPlanejadosHistorico();
+      dbgError('ValoresPlanejadosHistorico.deserialize', error.message, values);
+      return ValoresPlanejadosHistorico.new(true);
     }
   }
   static get fldsCsvDefUpload() {
     const agora = new Date();
-    return FldsCsvAll(new ValoresPlanejadosHistorico(),
+    return FldsCsvAll(ValoresPlanejadosHistorico.new(),
       [
         new FldCsvDef('valMeses', {
           suppressColumn: true,
@@ -1042,17 +1098,21 @@ export class ValoresRealizados {
       ano: 'ano' as 'ano',
     };
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ValoresRealizados(); }
+  static fill(values: ValoresRealizados, init = false) { return CutUndef(FillClassProps(ValoresRealizados.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new ValoresRealizados().Fill(values);
+      return FillClassProps(ValoresRealizados.new(), {
+        ...ignoreMongoProps(values),
+      });
     } catch (error) {
-      dbgError('Erro em ValoresRealizados.deserialize', error.message, values);
-      return new ValoresRealizados();
+      dbgError('ValoresRealizados.deserialize', error.message, values);
+      return ValoresRealizados.new(true);
     }
   }
   static get fldsCsvDefUpload() {
-    return FldsCsvAll(new ValoresRealizados(),
+    return FldsCsvAll(ValoresRealizados.new(),
       [
         new FldCsvDef('valMeses', {
           suppressColumn: true,
@@ -1081,8 +1141,9 @@ export class FuncionarioRevisao {
   tipoColaboradorPromo?: TipoColaborador;
   salarioPromo_messy?: string;
   despsRecorr?: string[];
-
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new FuncionarioRevisao(); }
+  static fill(values: FuncionarioRevisao, init = false) { return CutUndef(FillClassProps(FuncionarioRevisao.new(init), values)); }
 }
 export class Funcionario {
   ano?: string;
@@ -1109,17 +1170,19 @@ export class Funcionario {
       centroCusto: 'centroCusto' as 'centroCusto',
     };
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new Funcionario(); }
+  static fill(values: Funcionario, init = false) { return CutUndef(FillClassProps(Funcionario.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new Funcionario().Fill({
-        ...values,
+      return FillClassProps(Funcionario.new(), {
+        ...ignoreMongoProps(values),
         created: DateFromStrISO(values.created),
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em Funcionario.deserialize', error.message, values);
-      return new Funcionario();
+      dbgError('Funcionario.deserialize', error.message, values);
+      return Funcionario.new(true);
     }
   }
   static scrambleSalario(salario: number, centroCusto: string, refer: string) {
@@ -1128,7 +1191,7 @@ export class Funcionario {
     if (isAmbDev())
       return salario.toString();
     else
-      return Scramble(''.padStart(RandomNumber(1, 20), '0') + salario.toString(), `${centroCusto}-${refer}`, true);
+      return Scramble(''.padStart(RandomNumber(1, 20), '0') + salario.toString(), { key: `${centroCusto}-${refer}`, withCrc: true });
   }
   static unscrambleSalario(valor_messy: string, centroCusto: string, refer: string) {
     if (valor_messy == null)
@@ -1138,28 +1201,28 @@ export class Funcionario {
     if (isAmbDev()) {
       let result = 0;
       if (valor_messy == null)
-        dbgError('salario_messy inválido (sem criptografia)', centroCusto, refer, valor_messy);
+        dbgError('salario_messy (sem criptografia)', centroCusto, refer, valor_messy);
       else {
         try {
-          result = StrToNumber(valor_messy, configApp.decimalsSalario);
+          result = StrToNumber(valor_messy, configCydag.decimalsSalario);
         }
         catch (error) {
-          dbgError('salario inválido (não numérico)', centroCusto, refer, valor_messy);
+          dbgError('salario (não numérico)', centroCusto, refer, valor_messy);
         }
       }
       return result;
     }
     else {
-      const salStr = Unscramble(valor_messy, `${centroCusto}-${refer}`, true);
+      const salStr = Unscramble(valor_messy, { key: `${centroCusto}-${refer}`, withCrc: true });
       let result = 0;
       if (salStr == null)
-        dbgError('salario_messy inválido (criptografia)', centroCusto, refer, valor_messy);
+        dbgError('salario_messy (criptografia)', centroCusto, refer, valor_messy);
       else {
         try {
-          result = StrToNumber(salStr, configApp.decimalsSalario);
+          result = StrToNumber(salStr, configCydag.decimalsSalario);
         }
         catch (error) {
-          dbgError('salario desmascarado inválido (não numérico)', centroCusto, refer, salStr);
+          dbgError('salario desmascarado (não numérico)', centroCusto, refer, salStr);
         }
       }
       return result;
@@ -1189,9 +1252,9 @@ export class Funcionario {
       new FldCsvDef('nome', { mandatoryValue: true }),
       new FldCsvDef('tipoColaborador', { mandatoryValue: true, down: (data: Funcionario) => data.tipoColaborador.toString(), up: (data: IGenericObject) => TipoColaboradorMd.codeFromStr(data.tipoColaborador) }),
       new FldCsvDef('funcao'),
-      new FldCsvDef('salario_messy', { mandatoryValue: true, fldDisp: 'salarioBase', down: () => null, up: (data: IGenericObject) => Funcionario.scrambleSalario(amountParse(data.salarioBase, configApp.decimalsSalario), data.centroCusto, data.cpf) }),
+      new FldCsvDef('salario_messy', { mandatoryValue: true, fldDisp: 'salarioBase', down: () => null, up: (data: IGenericObject) => Funcionario.scrambleSalario(amountParse(data.salarioBase, configCydag.decimalsSalario), data.centroCusto, data.cpf) }),
       new FldCsvDef('dependentes', { mandatoryValue: false, up: (data: IGenericObject) => StrToNumber(data.dependentes) }),
-      new FldCsvDef('valeTransp', { mandatoryValue: false, up: (data: IGenericObject) => StrToNumber(data.valeTransp, configApp.decimalsValsInput) }),
+      new FldCsvDef('valeTransp', { mandatoryValue: false, up: (data: IGenericObject) => StrToNumber(data.valeTransp, configCydag.decimalsValsInput) }),
       new FldCsvDef('idVaga'),
       new FldCsvDef('idCentroCustoRh'),
       new FldCsvDef('tipoIni', { mandatoryValue: true, up: (data: IGenericObject) => Funcionario.tipoParticipPerOrcamUpload('ini', data.tipoIni) }),
@@ -1204,10 +1267,10 @@ export class Funcionario {
 
 export class Viagem {
   _id?: ObjectId;
-  ano: string;
-  revisao: RevisaoValor;
-  centroCusto: string;
-  tipoPlanejViagem: TipoPlanejViagem;
+  ano?: string;
+  revisao?: RevisaoValor;
+  centroCusto?: string;
+  tipoPlanejViagem?: TipoPlanejViagem;
   localidadeDestino?: string;
   funcId?: string;
   // estimativa anual, será distruído nos meses do processo orçamentário (12 a princípio)
@@ -1215,8 +1278,8 @@ export class Viagem {
   mediaPernoites?: number;
   obs?: string;
   valor?: number;
-  created: Date;
-  lastUpdated: Date;
+  created?: Date;
+  lastUpdated?: Date;
   // static get F() {
   //   return {
   //     ano: 'ano' as 'ano',
@@ -1224,23 +1287,25 @@ export class Viagem {
   //     centroCusto: 'centroCusto' as 'centroCusto',
   //   };
   // }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new Viagem(); }
+  static fill(values: Viagem, init = false) { return CutUndef(FillClassProps(Viagem.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new Viagem().Fill({
-        ...values,
+      return FillClassProps(Viagem.new(), {
+        ...ignoreMongoProps(values),
         created: DateFromStrISO(values.created),
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em Viagem.deserialize', error.message, values);
-      return new Viagem();
+      dbgError('Viagem.deserialize', error.message, values);
+      return Viagem.new(true);
     }
   }
   static get fldsCsvDefUpload() {
     const agora = new Date();
-    return FldsCsvAll(new Viagem(), [
-      // #!!!!!!!!!!!!!!!! tipoPlanejViagem check
+    return FldsCsvAll(Viagem.new(), [
+      // #!!!!!!! tipoPlanejViagem check
       new FldCsvDef('qtdViagens', { mandatoryValue: false, up: (data: IGenericObject) => StrToNumber(data.qtdViagens) }),
       new FldCsvDef('mediaPernoites', { mandatoryValue: false, up: (data: IGenericObject) => StrToNumber(data.mediaPernoites) }),
       new FldCsvDef('valor', { mandatoryValue: false, up: (data: IGenericObject) => StrToNumber(data.valor, 2) }),
@@ -1268,22 +1333,24 @@ export class Terceiro {
   //     centroCusto: 'centroCusto' as 'centroCusto',
   //   };
   // }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new Terceiro(); }
+  static fill(values: Terceiro, init = false) { return CutUndef(FillClassProps(Terceiro.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new Terceiro().Fill({
-        ...values,
+      return FillClassProps(Terceiro.new(), {
+        ...ignoreMongoProps(values),
         created: DateFromStrISO(values.created),
         lastUpdated: DateFromStrISO(values.lastUpdated),
       });
     } catch (error) {
-      dbgError('Erro em Terceiro.deserialize', error.message, values);
-      return new Terceiro();
+      dbgError('Terceiro.deserialize', error.message, values);
+      return Terceiro.new(true);
     }
   }
   static get fldsCsvDefUpload() {
     const agora = new Date();
-    return FldsCsvAll(new Terceiro(), [
+    return FldsCsvAll(Terceiro.new(), [
       new FldCsvDef('valMeses', {
         suppressColumn: true,
         def: (data: IGenericObject) => [
@@ -1302,24 +1369,26 @@ export class Terceiro {
 //#region CtrlInterface ValoresRealizadosInterfaceSap
 export class CtrlInterface {
   _id?: ObjectId;
-  categ: InterfaceSapCateg;
-  dag_run_id: string;
-  started: Date;
-  lastChecked: Date;
-  status: InterfaceSapStatus;
-  pending: boolean;
+  categ?: InterfaceSapCateg;
+  dag_run_id?: string;
+  started?: Date;
+  lastChecked?: Date;
+  status?: InterfaceSapStatus;
+  pending?: boolean;
   info?: any; // ano, ultimo mes com valor, nr de registros
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new CtrlInterface(); }
+  static fill(values: CtrlInterface, init = false) { return CutUndef(FillClassProps(CtrlInterface.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new CtrlInterface().Fill({
-        ...values,
+      return FillClassProps(CtrlInterface.new(), {
+        ...ignoreMongoProps(values),
         started: DateFromStrISO(values.started),
         lastChecked: DateFromStrISO(values.lastChecked),
       });
     } catch (error) {
-      dbgError('Erro em CtrlInterface.deserialize', error.message, values);
-      return new CtrlInterface();
+      dbgError('CtrlInterface.deserialize', error.message, values);
+      return CtrlInterface.new(true);
     }
   }
 }

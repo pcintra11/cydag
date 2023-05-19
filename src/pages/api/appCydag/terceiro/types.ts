@@ -1,5 +1,5 @@
 import { mesesFld } from '../../../../appCydag/util';
-import { csd, dbgError } from '../../../../libCommon/dbg';
+import { csd } from '../../../../libCommon/dbg';
 
 enum CmdApi_Terceiro {
   crudInitialization = 'crudInitialization',
@@ -23,7 +23,7 @@ export enum LineState {
 export class DataEdit {
   nome: string;
   fornecedor: string;
-  funcaoTerceiros: string;  
+  funcaoTerceiros: string;
   valMeses: string[];
   constructor() {
     this.valMeses = new Array(mesesFld.length).fill('');

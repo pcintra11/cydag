@@ -4,14 +4,15 @@ import _ from 'underscore';
 
 import { Box, Stack } from '@mui/material';
 
-import { IsErrorManaged, ObjUpdAllProps, ErrorPlus, CalcExecTime, ForceWait } from '../../../libCommon/util';
+import { IsErrorManaged, ObjUpdAllProps, ErrorPlus, ForceWait } from '../../../libCommon/util';
 import { IGenericObject } from '../../../libCommon/types';
 import { PageDef } from '../../../libCommon/endPoints';
+import { CalcExecTime } from '../../../libCommon/calcExectime';
 import { csd } from '../../../libCommon/dbg';
 
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
 
-import { globals } from '../../../libClient/clientGlobals';
+import { SaveAsXlsx } from '../../../libClient/saveAsClient';
 
 import { AlertMy, FrmCheckbox, SnackBarError, VisualBlock } from '../../../components';
 import { Btn, BtnLine, WaitingObs } from '../../../components';
@@ -20,14 +21,14 @@ import { FrmError, FrmInput } from '../../../components';
 import { ColGridConfig, TableGrid } from '../../../components';
 import { FrmDefaultValues, FrmSetValues, NormalizePropsString, useFrm } from '../../../hooks/useMyForm';
 
-import { configApp } from '../../../appCydag/config';
+import { configApp } from '../../../app_hub/appConfig';
+
 import { BtnCrud, IconButtonAppCrud, IconButtonAppDownload, IconButtonAppSearch } from '../../../appCydag/components';
 import { pagesApp, apisApp, rolesApp } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
 
 import { Entity_Crud, CmdApi_UserCrud as CmdApi, crudValidations } from '../../api/appCydag/user/types';
 
-import { SaveAsXlsx } from '../../../libClient/saveAsClient';
 
 enum Phase {
   initiating = 'initiating',
@@ -57,7 +58,7 @@ class FrmFilter {
   searchTerms: string;
 }
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.user.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.user.apiPath, parm) };
 const pageSelf = pagesApp.user;
 export default function PageUserCrud() {
   const frmFilter = useFrm<FrmFilter>({
@@ -176,7 +177,7 @@ export default function PageUserCrud() {
       if (phase == Phase.list)
         setMainStatesCache({ phase: Phase.list, data: null, index: null });
       else {
-        const data = phase === Phase.insert ? new Entity_Crud() : mainStates.listing.dataRows[index];
+        const data = phase === Phase.insert ? Entity_Crud.new(true) : mainStates.listing.dataRows[index];
         FrmSetValues(frmData, FrmDefaultValues(new FrmData(), dbToForm(data)));
         setMainStatesCache({ phase, data, index });
       }

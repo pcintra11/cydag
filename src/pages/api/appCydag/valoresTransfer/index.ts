@@ -1,11 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 //import _ from 'underscore';
 
-import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
+import { ConnectDbASync, CloseDbASync } from '../../../../libServer/dbMongo';
 
 import { ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
-import { csd, dbgWarn } from '../../../../libCommon/dbg';
-import { isAmbNone } from '../../../../libCommon/isAmb';
+import { csd } from '../../../../libCommon/dbg';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ReqNoParm, ResumoApi } from '../../../../libServer/util';
@@ -16,21 +15,23 @@ import { AlertTimeExecApiASync } from '../../../../libServer/alertTimeExecApi';
 //import { SystemMsgSvrASync } from '../../../../libServer/systemMsgSvr';
 import { ApiLogFinish, ApiLogStart } from '../../../../libServer/apiLog';
 
+import { isAmbNone } from '../../../../app_base/envs';
+
 import { apisApp } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 import { LocalidadeModel, ProcessoOrcamentarioModel, UserModel, ValoresTransferModel } from '../../../../appCydag/models';
 import { ValoresTransfer } from '../../../../appCydag/modelTypes';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatusMd, RevisaoValor } from '../../../../appCydag/types';
+import { amountParse } from '../../../../appCydag/util';
 
 import { CmdApi_ValoresTransfer as CmdApi, IChangedLine } from './types';
-import { amountParse } from '../../../../appCydag/util';
-import { configApp } from '../../../../appCydag/config';
+import { configCydag } from '../../../../appCydag/configCydag';
 
 const apiSelf = apisApp.valoresTransfer;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
   const parm = ctrlApiExec.parm;
@@ -38,10 +39,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   const resumoApi = new ResumoApi(ctrlApiExec);
   const agora = new Date();
   let deleteIfOk = false;
-  await SleepMsDevRandom(null, ctrlApiExec.context());
+  await SleepMsDevRandom(null, ctrlApiExec.ctrlContext, 'main');
 
   try {
-    await ConnectDbASync({ ctrlApiExec });
+    await ConnectDbASync({ ctrlContext: ctrlApiExec.ctrlContext });
     const apiLogProc = await ApiLogStart(ctrlApiExec, loggedUserReq);
 
     try {
@@ -78,7 +79,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           for (const changedLine of changedLines) {
             const dataEdit = changedLine.dataEdit;
             const ValoresTransferData = {
-              valMeses: dataEdit.valMeses.map((x) => amountParse(x, configApp.decimalsValsInput)),
+              valMeses: dataEdit.valMeses.map((x) => amountParse(x, configCydag.decimalsValsInput)),
             } as ValoresTransfer;
             const someInf = ValoresTransferData.valMeses.reduce((prev, curr) => prev || curr != null, false);
             const key = {
@@ -102,7 +103,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     await ApiLogFinish(apiLogProc, resumoApi.resultProc(), deleteIfOk);
-    await CloseDbASync({ ctrlApiExec });
+    await CloseDbASync({ ctrlContext: ctrlApiExec.ctrlContext });
   } catch (error) {
     const { httpStatusCode, jsonErrorData } = await ApiStatusDataByErrorASync(error, 'throw 2', parm, ctrlApiExec);
     resumoApi.status(httpStatusCode).jsonData(jsonErrorData);

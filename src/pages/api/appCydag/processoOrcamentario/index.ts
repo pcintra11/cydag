@@ -2,12 +2,11 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { ObjectId } from 'mongodb';
 import _ from 'underscore';
 
-import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
+import { ConnectDbASync, CloseDbASync } from '../../../../libServer/dbMongo';
 
 import { BinSearchItem, ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
-import { csd, dbgError, dbgWarn } from '../../../../libCommon/dbg';
+import { csd, dbgError } from '../../../../libCommon/dbg';
 import { FromCsvUpload, IUploadMessage, MessageLevelUpload } from '../../../../libCommon/uploadCsv';
-import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { CtrlApiExec, GetCtrlApiExec, ReqNoParm, ResumoApi } from '../../../../libServer/util';
@@ -17,25 +16,31 @@ import { CorsMiddlewareAsync } from '../../../../libServer/cors';
 import { AlertTimeExecApiASync, CheckTimeOutAndAbort } from '../../../../libServer/alertTimeExecApi';
 import { ApiLogFinish, ApiLogStart } from '../../../../libServer/apiLog';
 
+import { isAmbNone } from '../../../../app_base/envs';
+import { configApp } from '../../../../app_hub/appConfig';
+
 import { ProcessoOrcamentarioCentroCusto } from '../../../../appCydag/modelTypes';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatus, ProcessoOrcamentarioStatusMd, RevisaoValor } from '../../../../appCydag/types';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
-
 import { apisApp, rolesApp } from '../../../../appCydag/endPoints'; // @!!!!! agrupar num index !
-import { configApp, UploadCsvCmd } from '../../../../appCydag/config';
 import { FuncionarioModel, TerceiroModel, UserModel, ValoresImputadosModel, ValoresLocalidadeModel, ValoresPlanejadosCalcModel, ValoresPlanejadosHistoricoModel, ValoresPremissaModel, ValoresTransferModel, ViagemModel } from '../../../../appCydag/models';
-
 import { AgrupPremissasModel, DiretoriaModel, GerenciaModel, LocalidadeModel, UnidadeNegocioModel, CentroCustoModel, ProcessoOrcamentarioCentroCustoModel, ProcessoOrcamentarioModel as EntityModel } from '../../../../appCydag/models';
 import { ProcessoOrcamentario as Entity } from '../../../../appCydag/modelTypes';
 
 import { CmdApi_Crud as CmdApi } from './types';
 import { GetValsPlanejados, ValoresPlanejadosCalc } from '../valoresContas';
 
+enum UploadCsvCmd {
+  add = 'incluir',
+  upd = 'alterar',
+  del = 'excluir',
+}
+
 const apiSelf = apisApp.processoOrcamentario;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
   const parm = ctrlApiExec.parm;
@@ -43,11 +48,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   const resumoApi = new ResumoApi(ctrlApiExec);
   const agora = new Date();
   let deleteIfOk = false;
-  await SleepMsDevRandom(null, ctrlApiExec.context());
-  ctrlApiExec.checkElapsed('ini');
+  await SleepMsDevRandom(null, ctrlApiExec.ctrlContext, 'main');
+  ctrlApiExec.ctrlContext.checkElapsed('ini');
 
   try {
-    await ConnectDbASync({ ctrlApiExec });
+    await ConnectDbASync({ ctrlContext: ctrlApiExec.ctrlContext });
     const apiLogProc = await ApiLogStart(ctrlApiExec, loggedUserReq);
 
     //#region pre-carga
@@ -62,7 +67,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         };
         await EntityModel.create(documentInsert);
       }
-      ctrlApiExec.checkElapsed('check/create first');
+      ctrlApiExec.ctrlContext.checkElapsed('check/create first');
     }
     //#endregion
 
@@ -70,7 +75,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
       CheckApiAuthorized(apiSelf, await UserModel.findOne({ email: loggedUserReq?.email }).lean(), loggedUserReq?.email);
-      ctrlApiExec.checkElapsed(`pre ${parm.cmd}`);
+      ctrlApiExec.ctrlContext.checkElapsed(`pre ${parm.cmd}`);
 
       if (parm.cmd == CmdApi.list) {
         const { status } = parm.filter || {};
@@ -306,7 +311,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 dataUpdate.lastUpdated = agora;
                 try {
                   if (cmd == UploadCsvCmd.add) {
-                    const documentInsert = new ProcessoOrcamentarioCentroCusto().Fill({
+                    const documentInsert = ProcessoOrcamentarioCentroCusto.fill({
                       ...dataUpdate,
                       ano,
                       centroCusto: documentCsvDb.centroCusto,
@@ -325,7 +330,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                   }
                   linesOk++;
                 } catch (error) {
-                  dbgError(error.message);
+                  dbgError('prep', error.message);
                   throw new Error(`com erro: ${error.message}`);
                 }
               } catch (error) {
@@ -370,7 +375,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       else
         throw new Error(`Cmd '${parm.cmd}' inválido.`);
 
-      ctrlApiExec.checkElapsed(`pos ${parm.cmd}`);
+      ctrlApiExec.ctrlContext.checkElapsed(`pos ${parm.cmd}`);
 
     } catch (error) {
       const { httpStatusCode, jsonErrorData } = await ApiStatusDataByErrorASync(error, 'throw 1', parm, ctrlApiExec);
@@ -378,7 +383,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     await ApiLogFinish(apiLogProc, resumoApi.resultProc(), deleteIfOk);
-    await CloseDbASync({ ctrlApiExec });
+    await CloseDbASync({ ctrlContext: ctrlApiExec.ctrlContext });
   } catch (error) {
     const { httpStatusCode, jsonErrorData } = await ApiStatusDataByErrorASync(error, 'throw 2', parm, ctrlApiExec);
     resumoApi.status(httpStatusCode).jsonData(jsonErrorData);

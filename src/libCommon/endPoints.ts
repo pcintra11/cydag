@@ -1,4 +1,4 @@
-import { csd, dbgError } from './dbg';
+import { csd } from './dbg';
 import { ErrorPlus, HttpStatusCode } from './util';
 
 export const rolesDev = {
@@ -40,7 +40,7 @@ export const CheckRoleAllowed = (rolesNeeded: string[], rolesUser?: string[]) =>
     throw new ErrorPlus('Não autorizado.', { httpStatusCode: HttpStatusCode.unAuthorized });
 };
 
-interface PageDefOptions {
+interface IPageDefOptions {
   onlyAuthenticated?: boolean;
   roles?: string[];
   variant?: string; // é um objeto!
@@ -49,8 +49,8 @@ export class PageDef {
   pagePath: string;
   pageTitle?: string;
   txtDynamicMenu?: string; // se vazio usa o page title
-  options?: PageDefOptions;
-  constructor(pagePath: string, pageTitle: string = null, txtDynamicMenu: string = null, options?: PageDefOptions) {
+  options?: IPageDefOptions;
+  constructor(pagePath: string, pageTitle: string = null, txtDynamicMenu: string = null, options?: IPageDefOptions) {
     if (!pagePath.startsWith('/'))
       throw new Error(`pagePath deve ser com base na raiz (${pagePath})`);
     if (options?.roles != null &&

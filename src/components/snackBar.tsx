@@ -4,8 +4,9 @@ import Snackbar_mui from '@mui/material/Snackbar';
 import IconButton_mui from '@mui/material/IconButton';
 import CloseIcon_mui from '@mui/icons-material/Close';
 import Alert_mui from '@mui/material/Alert';
+import { Box } from '@mui/material';
 
-import { dbgError } from '../libCommon/dbg';
+import { csd, dbgError } from '../libCommon/dbg';
 
 type Severities = 'info' | 'success' | 'error';
 let _snackBarSet: (open: boolean, message?: string, severity?: Severities) => void = null;
@@ -13,7 +14,7 @@ let _snackBarSet: (open: boolean, message?: string, severity?: Severities) => vo
 // popups de alerta, sucesso, erro, etc
 const SnackBarMsg = (props?: { message: string, severity?: Severities }) => {
   if (_snackBarSet == null) {
-    dbgError(`${SnackBarContainer.name} não foi criado, mensagem não emitida: `, props.message);
+    dbgError('SnackBarMsg', `${SnackBarContainer.name} não foi criado, mensagem não emitida: `, props.message);
     return;
   }
   if (props == null)
@@ -29,7 +30,6 @@ export const PopupMsg = {
   clear: () => SnackBarMsg(),
 };
 
-const autoHideDurationDefault = 4000;
 export function SnackBarContainer() {
   const [mainStates, setMainStates] = React.useState<{ open: boolean, message?: string, severity?: Severities, autoHideDuration?: number }>({ open: false });
   //csl({ ctrl });
@@ -39,7 +39,7 @@ export function SnackBarContainer() {
   };
   _snackBarSet = (open: boolean, message?: string, severity?: Severities) => {
     //csl('_snackBarSet open', mainStates.open, 'message', message);
-    const autoHideDuration = severity == 'error' ? null : autoHideDurationDefault;
+    const autoHideDuration = severity == 'error' ? null : 4000;
     if (open) {
       if (mainStates.open)
         setTimeout(() => setMainStates({ open: true, message: message, severity, autoHideDuration }), 100);
@@ -76,7 +76,7 @@ export function SnackBarContainer() {
           {mainStates.message}
           {action}
         </Alert_mui>
-        : <div></div>
+        : <Box></Box>
       }
     </Snackbar_mui>
   );

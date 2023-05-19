@@ -1,32 +1,31 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import _ from 'underscore';
 
 import Box from '@mui/material/Box';
 import { Stack, useTheme } from '@mui/material';
 
-import { BinSearchItem, BinSearchProp, CalcExecTime, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../../libCommon/util';
-import { csd, dbgError } from '../../../libCommon/dbg';
+import { BinSearchItem, BinSearchProp, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../../libCommon/util';
+import { csd } from '../../../libCommon/dbg';
 import { IGenericObject } from '../../../libCommon/types';
 import { PageDef } from '../../../libCommon/endPoints';
+import { CalcExecTime } from '../../../libCommon/calcExectime';
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
-
-import { globals } from '../../../libClient/clientGlobals';
 
 import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, SnackBarError, fontSizeGrid, fontSizeIconsInGrid } from '../../../components';
 import { GridCellEdit, GridCell, IFldChange, IGridEditFldCtrl, IGridEditMainCtrl, ValueType } from '../../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 //import { GlobalState, useGlobalState } from '../../hooks/useGlobalState';
 
+import { configApp } from '../../../app_hub/appConfig';
+
 import { IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, SelAno, SelEntity, SelRevisao } from '../../../appCydag/components';
 import { apisApp, pagesApp } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
 import { amountToStr } from '../../../appCydag/util';
-import { configApp } from '../../../appCydag/config';
 import { CentroCusto, Funcionario, Localidade, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto, Viagem } from '../../../appCydag/modelTypes';
 import { CentroCustoConfigOption, IAnoCentroCustos, ProcCentrosCustoConfig, RevisaoValor, OrigemFuncMd, OrigemFunc, ProcessoOrcamentarioStatusMd, OperInProcessoOrcamentario, TipoPlanejViagem } from '../../../appCydag/types';
-
 import { CmdApi_Viagem as CmdApi, IChangedLine, DataEdit, LineState } from '../../api/appCydag/viagem/types';
+import { configCydag } from '../../../appCydag/configCydag';
 
 enum Phase {
   initiating = 'initiating',
@@ -73,7 +72,7 @@ class FrmFilter {
 }
 
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.viagem.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.viagem.apiPath, parm) };
 const pageSelf = pagesApp.viagem;
 
 const statesCompsSubord = { setMainStatesFilter: null, setMainStatesData1: null, setMainStatesData2: null, setStatePreReservedItensPrem: null, setStatePreReservedItensVal: null };
@@ -339,11 +338,11 @@ export default function PageViagem() {
 
       if (lineState === LineState.reserved) return (<></>);
 
-      const dataOriginal = viagem != null ? viagem : new Viagem().Fill({ tipoPlanejViagem: TipoPlanejViagem.porPremissa });
+      const dataOriginal = viagem != null ? viagem : Viagem.fill({ tipoPlanejViagem: TipoPlanejViagem.porPremissa });
 
       const idLine = `${setor}-${lineSeq}`;
 
-      const dataEdit = new DataEdit().Fill({ tipoPlanejViagem: dataOriginal.tipoPlanejViagem });
+      const dataEdit = DataEdit.fill({ tipoPlanejViagem: dataOriginal.tipoPlanejViagem });
 
       const changeLineState = (lineState: LineState) => {
         setLineState(lineState);
@@ -434,11 +433,11 @@ export default function PageViagem() {
 
       if (lineState === LineState.reserved) return (<></>);
 
-      const dataOriginal = viagem != null ? viagem : new Viagem().Fill({ tipoPlanejViagem: TipoPlanejViagem.porValor });
+      const dataOriginal = viagem != null ? viagem : Viagem.fill({ tipoPlanejViagem: TipoPlanejViagem.porValor });
 
       const idLine = `${setor}-${lineSeq}`;
 
-      const dataEdit = new DataEdit().Fill({ tipoPlanejViagem: dataOriginal.tipoPlanejViagem });
+      const dataEdit = DataEdit.fill({ tipoPlanejViagem: dataOriginal.tipoPlanejViagem });
 
       const changeLineState = (lineState: LineState) => {
         setLineState(lineState);
@@ -460,7 +459,7 @@ export default function PageViagem() {
       const mainCtrl: IGridEditMainCtrl = { dataOriginal: dataOriginal, fldNewValue, fontSizeGrid };
       const fldsCtrl = {
         obs: { fld: 'obs', valueType: ValueType.string, mandatory: true } as IGridEditFldCtrl,
-        valor: { fld: 'valor', valueType: ValueType.amount, decimals: configApp.decimalsValsInput, mandatory: true } as IGridEditFldCtrl,
+        valor: { fld: 'valor', valueType: ValueType.amount, decimals: configCydag.decimalsValsInput, mandatory: true } as IGridEditFldCtrl,
       };
       //#endregion
 
@@ -502,7 +501,7 @@ export default function PageViagem() {
           <GridCell textAlign='center'>{iconsCmd}</GridCell>
 
           <GridCell><Box>{dataOriginal.obs}</Box></GridCell>
-          <GridCell textAlign='right'>{amountToStr(dataOriginal.valor, configApp.decimalsValsInput)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(dataOriginal.valor, configCydag.decimalsValsInput)}</GridCell>
         </>);
       }
     };

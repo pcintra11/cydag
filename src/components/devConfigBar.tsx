@@ -1,26 +1,30 @@
 import React from 'react';
 import { Box, MenuItem, Select, Stack, SxProps } from '@mui/material';
 
-import { Env } from '../libCommon/envs';
+import { configApp } from '../app_hub/appConfig';
 
-import { ScopeDbg } from '../libCommon/dbg';
+import { devUserOrAmb } from '../libCommon/dbg';
 import { StrLeft } from '../libCommon/util';
 import { IGenericObject } from '../libCommon/types';
-import { isAmbDev } from '../libCommon/isAmb';
 
 import { globals } from '../libClient/clientGlobals';
-import { ThemeSchemes, ThemeVariants } from '../styles/themeTools';
+import { IThemeSchemes, IThemeVariants } from '../styles/themeTools';
 import { useMediaQueryMy } from '../hooks/useMediaQueryMy';
 
 import { AbortProcComponent, LogErrorUnmanaged } from './abortProc';
+import { FrmInput } from './fldMyForm';
+import { FakeLink } from './ui';
+
+// @!!!!!!!!! só mostra a barra depois de clicar em algum item do menu (ex: home)
 
 interface IDevConfigBarProps {
   _appMainStates: IGenericObject; // @!!!!! aqui apenas os demais, como niveis log, etc
-  themeVariants: ThemeVariants;
-  themeSchemes: ThemeSchemes;
+  themeVariants: IThemeVariants;
+  themeSchemes: IThemeSchemes;
   changeMenuType: () => void;
-  changeThemeVariants: (themeVariants: ThemeVariants) => void;
-  changeNivelLog: (nivel: number, scopeDbg: ScopeDbg) => void
+  changeThemeVariants: (themeVariants: IThemeVariants) => void;
+  //changeNivelLog: (nivel: number, scopeDbg: ScopeDbg) => void;
+  changeCtrlLog: (ctrlLog: string) => void;
 }
 
 export const DevConfigBarContext = React.createContext<IDevConfigBarProps>(null);
@@ -38,10 +42,10 @@ export const DevConfigBar = () => {
   const [showThemeVars, setShowThemeVars] = React.useState(false);
   const [showDbgLevels, setShowDbgLevels] = React.useState(false);
   const [showOthers, setShowOthers] = React.useState(false);
-  const { _appMainStates, themeVariants, themeSchemes, changeMenuType, changeThemeVariants, changeNivelLog } = React.useContext(DevConfigBarContext);
+  const { _appMainStates, themeVariants, themeSchemes, changeMenuType, changeThemeVariants, changeCtrlLog } = React.useContext(DevConfigBarContext);
   const useMediaQueryData = useMediaQueryMy();
 
-  const changeThemeLocal = (themeVariantsChg: ThemeVariants) => { // ThemeVariants { maxWidth: string, colorScheme: string; fontScheme: string };
+  const changeThemeLocal = (themeVariantsChg: IThemeVariants) => { // ThemeVariants { maxWidth: string, colorScheme: string; fontScheme: string };
     changeThemeVariants({ ...themeVariants, ...themeVariantsChg });
   };
 
@@ -65,10 +69,11 @@ export const DevConfigBar = () => {
     // } `;
     // let xx = maxWidthCategories.map((x, i) => mediaPattern(x.maxWidth, x.category, i)).join(' ');
 
-    const isDevContext = (isAmbDev() || globals?.loggedUserIsDev === true);
+    const isDevContext = devUserOrAmb();
 
     const sxFont: SxProps = { fontFamily: 'arial', fontSize: '16px' };
 
+    const bgcolor1 = 'yellow';
     return (
       <>
         {/* <div style={{
@@ -79,13 +84,16 @@ export const DevConfigBar = () => {
           gap: '1rem',
         }}>   em box usar o flaxdirection revertido @!!!!! */}
         <Stack direction='row' alignItems='center' gap='16px' sx={sxFont}>
-          {showOthers &&
-            <Box>{`id: ${StrLeft(globals.browserId, 3)} / ${globals.windowId}`}</Box>
-          }
           {isDevContext &&
-            <Box onClick={() => setShowOthers(!showOthers)}>Ot</Box>
+            <FakeLink onClick={() => setShowOthers(!showOthers)} bgcolor={showOthers ? bgcolor1 : null}>Others</FakeLink>
+          }
+          {showOthers &&
+            <Box bgcolor={bgcolor1}>{`id: ${StrLeft(globals.browserId, 3)} / ${globals.windowId}`}</Box>
           }
 
+          {(isDevContext || globals?.loggedUserCanChangeTheme === true) &&
+            <FakeLink onClick={() => setShowThemeVars(!showThemeVars)}>Tema</FakeLink>
+          }
           {showThemeVars &&
             <>
               {optionsThemeMaxWidth.length > 1 &&
@@ -110,30 +118,23 @@ export const DevConfigBar = () => {
               }
             </>
           }
-          {(isDevContext || globals?.loggedUserCanChangeTheme === true) &&
-            <Box onClick={() => setShowThemeVars(!showThemeVars)}>tema</Box>
-          }
 
-          {showDbgLevels &&
-            <>
-              <a onClick={() => changeNivelLog(_appMainStates.nivelLogA + 1, ScopeDbg.a)}>a{_appMainStates.nivelLogA}</a>
-              <a onClick={() => changeNivelLog(_appMainStates.nivelLogD + 1, ScopeDbg.d)}>d{_appMainStates.nivelLogD}</a>
-              <a onClick={() => changeNivelLog(_appMainStates.nivelLogE + 1, ScopeDbg.e)}>e{_appMainStates.nivelLogE}</a>
-              <a onClick={() => changeNivelLog(_appMainStates.nivelLogT + 1, ScopeDbg.t)}>t{_appMainStates.nivelLogT}</a>
-              <a onClick={() => changeNivelLog(_appMainStates.nivelLogX + 1, ScopeDbg.x)}>x{_appMainStates.nivelLogX}</a>
-            </>
-          }
           {isDevContext &&
-            <div onClick={() => setShowDbgLevels(!showDbgLevels)}>dL</div>
+            <Stack direction='row' alignItems='center' gap={1}>
+              <FakeLink onClick={() => setShowDbgLevels(!showDbgLevels)}>CtrlLog</FakeLink>
+              {showDbgLevels &&
+                <FrmInput value={_appMainStates.ctrlLog} width='5rem' onChange={(ev) => changeCtrlLog(ev.target.value)} />
+              }
+            </Stack>
           }
 
           {isDevContext &&
-            <a onClick={changeMenuType}>menuType:{_appMainStates.menuType}</a>
+            <FakeLink onClick={changeMenuType}>menuType:{_appMainStates.menuType}</FakeLink>
           }
 
           <span className='infoSize' />
 
-          <Box>{`${Env('appVersion')}`}</Box>
+          <Box>{`${configApp.appVersion}`}</Box>
         </Stack>
 
         <style jsx>{`

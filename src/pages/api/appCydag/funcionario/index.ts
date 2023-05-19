@@ -1,13 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import _ from 'underscore';
 
-import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
+import { ConnectDbASync, CloseDbASync } from '../../../../libServer/dbMongo';
 
 import { BinSearchItem, ConcatArrays, ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
 import { csd } from '../../../../libCommon/dbg';
 import { FromCsvUpload, IUploadMessage, MessageLevelUpload } from '../../../../libCommon/uploadCsv';
 import { CheckRoleAllowed } from '../../../../libCommon/endPoints';
-import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ReqNoParm, ResumoApi } from '../../../../libServer/util';
@@ -17,25 +15,26 @@ import { CorsMiddlewareAsync } from '../../../../libServer/cors';
 import { AlertTimeExecApiASync } from '../../../../libServer/alertTimeExecApi';
 import { ApiLogFinish, ApiLogStart } from '../../../../libServer/apiLog';
 
+import { isAmbNone } from '../../../../app_base/envs';
+import { configApp } from '../../../../app_hub/appConfig';
+
 import { FuncionarioRevisao, Funcionario, ProcessoOrcamentario } from '../../../../appCydag/modelTypes';
 import { OperInProcessoOrcamentario, OrigemFunc, ProcessoOrcamentarioStatusMd, RevisaoValor } from '../../../../appCydag/types';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
-
 import { apisApp, rolesApp } from '../../../../appCydag/endPoints';
 import { DiretoriaModel, GerenciaModel, UnidadeNegocioModel, UserModel } from '../../../../appCydag/models';
-import { configApp } from '../../../../appCydag/config';
-
+import { accessAllCCs, ccsAuthArray, CheckProcCentroCustosAuth, IAuthCC, procsCentroCustosConfigAuthAllYears } from '../../../../appCydag/utilServer';
+import { amountParse } from '../../../../appCydag/util';
 import { PremissaModel, ProcessoOrcamentarioCentroCustoModel, ProcessoOrcamentarioModel, FuncionarioModel } from '../../../../appCydag/models';
 
 import { CmdApi_Funcionario as CmdApi, IChangedLine, FuncionarioClient, LineState, DataEdit } from './types';
-import { accessAllCCs, ccsAuthArray, CheckProcCentroCustosAuth, IAuthCC, procsCentroCustosConfigAuthAllYears } from '../../../../appCydag/utilServer';
-import { amountParse } from '../../../../appCydag/util';
+import { configCydag } from '../../../../appCydag/configCydag';
 
 const apiSelf = apisApp.funcionario;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
   const parm = ctrlApiExec.parm;
@@ -43,10 +42,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   const resumoApi = new ResumoApi(ctrlApiExec);
   const agora = new Date();
   let deleteIfOk = false;
-  await SleepMsDevRandom(null, ctrlApiExec.context());
+  await SleepMsDevRandom(null, ctrlApiExec.ctrlContext, 'main');
 
   try {
-    await ConnectDbASync({ ctrlApiExec });
+    await ConnectDbASync({ ctrlContext: ctrlApiExec.ctrlContext });
     const apiLogProc = await ApiLogStart(ctrlApiExec, loggedUserReq);
 
     try {
@@ -87,7 +86,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             const salarioLegado = Funcionario.unscrambleSalario(funcionario.salario_messy, funcionario.centroCusto, funcionario.refer);
             const salario = Funcionario.unscrambleSalario(funcionarioRevisao.salario_messy, funcionario.centroCusto, funcionario.refer);
             const salarioPromo = Funcionario.unscrambleSalario(funcionarioRevisao.salarioPromo_messy, funcionario.centroCusto, funcionario.refer);
-            const result = new FuncionarioClient().Fill({
+            const result = FuncionarioClient.fill({
               ...funcionario,
               ...funcionarioRevisao,
               salarioLegado,
@@ -182,12 +181,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                   mesIni: dataEdit.mesIni != null ? amountParse(dataEdit.mesIni, 0) : undefined,
                   tipoFim: dataEdit.tipoFim,
                   mesFim: dataEdit.mesFim != null ? amountParse(dataEdit.mesFim, 0) : undefined,
-                  salario_messy: Funcionario.scrambleSalario(amountParse(dataEdit.salario, configApp.decimalsSalario), centroCusto, refer),
+                  salario_messy: Funcionario.scrambleSalario(amountParse(dataEdit.salario, configCydag.decimalsSalario), centroCusto, refer),
                   dependentes: dataEdit.dependentes != null ? amountParse(dataEdit.dependentes, 0) : undefined,
-                  valeTransp: dataEdit.valeTransp != null ? amountParse(dataEdit.valeTransp, configApp.decimalsSalario) : undefined,
+                  valeTransp: dataEdit.valeTransp != null ? amountParse(dataEdit.valeTransp, configCydag.decimalsSalario) : undefined,
                   mesPromo: dataEdit.mesPromo != null ? amountParse(dataEdit.mesPromo, 0) : undefined,
                   tipoColaboradorPromo: dataEdit.tipoColaboradorPromo,
-                  salarioPromo_messy: dataEdit.salarioPromo != null ? Funcionario.scrambleSalario(amountParse(dataEdit.salarioPromo, configApp.decimalsSalario), centroCusto, refer) : undefined,
+                  salarioPromo_messy: dataEdit.salarioPromo != null ? Funcionario.scrambleSalario(amountParse(dataEdit.salarioPromo, configCydag.decimalsSalario), centroCusto, refer) : undefined,
                   despsRecorr: dataEdit.despsRecorr,
                 },
                 lastUpdated: agora,
@@ -281,14 +280,14 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
               if (errosThisLine.length != 0)
                 throw new Error(errosThisLine.join(', '));
 
-              const documentInsert = new Funcionario().Fill({
+              const documentInsert = Funcionario.fill({
                 ...documentCsvDb,
                 ano,
                 origem: OrigemFunc.legado,
-                revisaoAtual: new FuncionarioRevisao().Fill({ ...documentCsvDb, ativo: true }),
+                revisaoAtual: FuncionarioRevisao.fill({ ...documentCsvDb, ativo: true }),
                 lastUpdated: agora,
                 created: agora,
-              });
+              }, true);
 
               documentsInsert.push(documentInsert);
               messages.push({ level: MessageLevelUpload.ok, message: `Linha ${line} - ${documentCsvDb.centroCusto}/${documentCsvDb.refer} inclusão pré validada` });
@@ -388,7 +387,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           const salarioLegado = Funcionario.unscrambleSalario(funcionario.salario_messy, funcionario.centroCusto, funcionario.refer);
           const salario = Funcionario.unscrambleSalario(funcionarioRevisao.salario_messy, funcionario.centroCusto, funcionario.refer);
           const salarioPromo = Funcionario.unscrambleSalario(funcionarioRevisao.salarioPromo_messy, funcionario.centroCusto, funcionario.refer);
-          const result = new FuncionarioClient().Fill({
+          const result = FuncionarioClient.fill({
             ...funcionario,
             ...funcionarioRevisao,
             salarioLegado,
@@ -416,7 +415,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     await ApiLogFinish(apiLogProc, resumoApi.resultProc(), deleteIfOk);
-    await CloseDbASync({ ctrlApiExec });
+    await CloseDbASync({ ctrlContext: ctrlApiExec.ctrlContext });
   } catch (error) {
     const { httpStatusCode, jsonErrorData } = await ApiStatusDataByErrorASync(error, 'throw 2', parm, ctrlApiExec);
     resumoApi.status(httpStatusCode).jsonData(jsonErrorData);

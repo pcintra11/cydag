@@ -11,13 +11,14 @@ import { CategMsgSystem } from '../libCommon/logSystemMsg_cliSvr';
 import { SystemMsgCli } from '../libClient/systemMsgCli';
 
 import { FrmInput } from './fldMyForm';
+import { Box } from '@mui/material';
 
-export interface DialogInput { label: string }
-export interface DialogButton { text: string, onClick?: (inputResponses: string[]) => void; fnCheck?: (inputResponses: string[]) => string }
+export interface IDialogInput { label: string }
+export interface IDialogButton { text: string, onClick?: (inputResponses: string[]) => void; fnCheck?: (inputResponses: string[]) => string }
 
-let _dialogSet: (open: boolean, title?: string, body?: string[], dialogInputs?: DialogInput[], buttons?: DialogButton[]) => void = null;
+let _dialogSet: (open: boolean, title?: string, body?: string[], dialogInputs?: IDialogInput[], buttons?: IDialogButton[]) => void = null;
 
-interface IDialogMyProps { title?: string, body: string[] | string, dialogInputs?: DialogInput[], buttons: DialogButton[] }
+interface IDialogMyProps { title?: string, body: string[] | string, dialogInputs?: IDialogInput[], buttons: IDialogButton[] }
 export const DialogMy = ({ title, body, dialogInputs, buttons }: IDialogMyProps) => {
   let bodyUse;
   if (Array.isArray(body))
@@ -40,7 +41,7 @@ export function DialogContainer() {
   const [mainStates, setMainStates] = React.useState<{
     open: boolean;
     title?: string; body?: string[];
-    dialogInputs?: DialogInput[]; buttons?: DialogButton[];
+    dialogInputs?: IDialogInput[]; buttons?: IDialogButton[];
   }>({ open: false });
   const [msgErro, setMsgErro] = React.useState<string>(null);
   const [inputResponse1, setInputResponse1] = React.useState<string>();
@@ -49,7 +50,7 @@ export function DialogContainer() {
   const handleClose = () => {
     setMainStates({ open: false });
   };
-  _dialogSet = (open: boolean, title?: string, body?: string[], dialogInputs?: DialogInput[], buttons?: DialogButton[]) => {
+  _dialogSet = (open: boolean, title?: string, body?: string[], dialogInputs?: IDialogInput[], buttons?: IDialogButton[]) => {
     if (open) {
       setInputResponse1('');
       setInputResponse2('');
@@ -66,7 +67,7 @@ export function DialogContainer() {
       setMainStates({ open: false });
   };
 
-  const clickButton = (dialogButton: DialogButton) => {
+  const clickButton = (dialogButton: IDialogButton) => {
     const inputResponses = [inputResponse1, inputResponse2, inputResponse3];
     if (dialogButton.fnCheck != null) {
       const msgErro = dialogButton.fnCheck(inputResponses);
@@ -86,8 +87,8 @@ export function DialogContainer() {
       aria-labelledby='alert-dialog-title'
       aria-describedby='alert-dialog-description'
     >
-      {mainStates.open
-        ? <>
+      {mainStates.open &&
+        <>
           {mainStates.title &&
             <DialogTitle_mui id='alert-dialog-title'>
               {mainStates.title}
@@ -101,11 +102,11 @@ export function DialogContainer() {
             )}
           </DialogContent_mui>
           {mainStates.dialogInputs != null &&
-            <div style={{ margin: '0px 20px' }}>
+            <Box m={1}>
               {(mainStates.dialogInputs.length > 0) && <FrmInput label={mainStates.dialogInputs[0].label} value={inputResponse1} onChange={(ev) => setInputResponse1(ev.target.value)} />}
               {(mainStates.dialogInputs.length > 1) && <FrmInput label={mainStates.dialogInputs[1].label} value={inputResponse2} onChange={(ev) => setInputResponse2(ev.target.value)} />}
               {(mainStates.dialogInputs.length > 2) && <FrmInput label={mainStates.dialogInputs[2].label} value={inputResponse3} onChange={(ev) => setInputResponse3(ev.target.value)} />}
-            </div>
+            </Box>
           }
           {mainStates.buttons != null &&
             <DialogActions_mui>
@@ -123,7 +124,6 @@ export function DialogContainer() {
             </DialogContent_mui>
           }
         </>
-        : <div></div>
       }
     </Dialog_mui>
   );

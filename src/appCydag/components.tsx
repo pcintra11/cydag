@@ -25,14 +25,16 @@ import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 
 import { IGenericObject } from '../libCommon/types';
 import { AutocompleteMy, Btn, IconButtonMy, SelectMy, SelOption, ThemeColors } from '../components';
-import { dbgError } from '../libCommon/dbg';
-import { isAmbDev } from '../libCommon/isAmb';
+import { csd, dbgError } from '../libCommon/dbg';
 
 import { globals } from '../libClient/clientGlobals';
-import { ForeColorByBack, ThemePlus } from '../styles/themeTools';
+import { ForeColorByBack, IThemePlus } from '../styles/themeTools';
+
+import { isAmbDev } from '../app_base/envs';
 
 import { RevisaoValor, RevisaoValorMd } from './types';
 import { mesesHdr } from './util';
+import { cydagColors } from './themes';
 
 export type IconsAllowed = 'create' | 'edit' | 'delete' | 'search' | 'download' | 'downloading' | 'expand' | 'colapse' | 'redo' | 'clear' | 'restoreDelete';
 //export const IconComponent = (icon: IconsAllowed) => { return IconComp(icon); };
@@ -152,11 +154,11 @@ export const IconButtonAppDownload = ({ onClick, downloadInProgress }: IconButto
   );
 };
 
-interface BtnCrudProps {
+interface IBtnCrudProps {
   action: 'insert' | 'update' | 'delete';
   onClick?: () => void; // apenas para delete, pois insert e update será usado 'submit' para a validação dos campos
 }
-export const BtnCrud = ({ action, onClick }: BtnCrudProps) => {
+export const BtnCrud = ({ action, onClick }: IBtnCrudProps) => {
   const buttonText = {
     insert: 'Incluir',
     update: 'Alterar',
@@ -175,11 +177,11 @@ const propsByBgcolor = (bgcolor: string) => {
   const color = ForeColorByBack(bgcolor);
   return { color, bgcolor };
 };
-export const propsColorByTotLevel = (themePlus: ThemePlus, level: number) => {
-  const bgColorsHier = themePlus.themePlusConfig?.colorsBackHier || [];
+export const propsColorByTotLevel = (themePlus: IThemePlus, level: number) => {
+  const bgColorsHier = cydagColors.colorsBackHier;
   const bgColorDefault = '#ffffff';
   if (level == 0) {
-    dbgError('propsColorByTotLevel com level 0!');
+    dbgError('propsColorByTotLevel', 'level 0!');
     return propsByBgcolor(bgColorDefault);
   }
   if (level > (bgColorsHier.length - 1)) {
@@ -188,16 +190,15 @@ export const propsColorByTotLevel = (themePlus: ThemePlus, level: number) => {
   }
   return propsByBgcolor(bgColorsHier[level]);
 };
-export const propsColorByCompRealPlan = (themePlus: ThemePlus, varAbs: number) => {
-  const bgColorRealMaior = '#ffe5e5'; //#!!!!!!!!
-  const bgColorRealMenor = '#e5f2e5';
-  if (varAbs > 0) return { bgcolor: bgColorRealMaior };
-  else if (varAbs < 0) return { bgcolor: bgColorRealMenor };
+export const propsColorByCompRealPlan = (themePlus: IThemePlus, varAbs: number) => {
+  if (varAbs > 0) return { bgcolor: cydagColors.bgColorRealMaiorPlan };
+  else if (varAbs < 0) return { bgcolor: cydagColors.bgColorRealMenorPlan };
   else return {};
 };
 
-export const propsColorHeader = (themePlus: ThemePlus) => {
-  const bgColorsHier = themePlus.themePlusConfig?.colorsBackHier || [];
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const propsColorHeader = (themePlus: IThemePlus) => {
+  const bgColorsHier = cydagColors.colorsBackHier;
   if (bgColorsHier.length == 0) return propsByBgcolor('#ffffff');
   else return propsByBgcolor(bgColorsHier[0]);
 };
@@ -219,7 +220,7 @@ export const SelRevisao = ({ value, onChange }: ISelRevisao) => {
       isOptionEqualToValue={(option: SelOption<RevisaoValor>, value: SelOption<RevisaoValor>) => option.cod === value.cod}
       placeholder={RevisaoValorMd.Name}
       options={revisaoOptions}
-      getOptionDisabled={(option: SelOption<RevisaoValor>) => option.disabled}
+      //getOptionDisabled={(option: SelOption<RevisaoValor>) => option.disabled}
       disableClearable
     />
   );
@@ -290,7 +291,7 @@ export const SelEntity = ({ value, onChange, options, disableClearable, name, wi
       getOptionLabel={(option: SelOption) => option.show(withCod)}
       isOptionEqualToValue={(option: SelOption, value: SelOption) => option.cod === value.cod}
       options={optionsUse}
-      getOptionDisabled={(option: SelOption) => option.disabled}
+      //getOptionDisabled={(option: SelOption) => option.disabled}
       disableClearable={disableClearable}
     />
   );

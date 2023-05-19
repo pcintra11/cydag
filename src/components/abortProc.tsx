@@ -1,15 +1,16 @@
 import { Box } from '@mui/material';
 
-import { LoggedUserBase } from '../base/db/types';
+import { LoggedUserBase } from '../app_base/modelTypes';
 
-import { ErrorPlus, FriendlyErrorMsgApi, IsErrorLogged, IsErrorManaged, OnClient } from '../libCommon/util';
+import { ErrorPlus, FriendlyErrorMsgApi, IsErrorLogged, IsErrorManaged } from '../libCommon/util';
+import { OnClient } from '../libCommon/sideProc';
 import { CategMsgSystem } from '../libCommon/logSystemMsg_cliSvr';
 
 import { SystemMsgCli } from '../libClient/systemMsgCli';
 
 import { LinkHelpEmail } from './';
 
-export interface AbortProcType {
+export interface IAbortProcType {
   error: Error | ErrorPlus;
   point: string;
   hour?: Date;
@@ -20,13 +21,13 @@ export function AbortProc({ error, tela, loggedUserBase }: { error: Error | Erro
   const hour = new Date();
   if (IsErrorManaged(error))
     return (
-      <Box mt='1.5rem'>
+      <Box m='1.5rem'>
         {error?.message}
       </Box>
     );
   else {
     return (
-      <Box mt='1.5rem' display='flex' flexDirection='column' gap={1}>
+      <Box m='1.5rem' display='flex' flexDirection='column' gap={1}>
         <Box>{FriendlyErrorMsgApi(error)}.</Box>
         <Box>Lamentamos pelo ocorrido, mas já estamos cientes e trabalhando na solução.</Box>
         <LinkHelpEmail tela={tela} loggedUserBase={loggedUserBase} errorMsgHour={{ message: FriendlyErrorMsgApi(error), hour }} />

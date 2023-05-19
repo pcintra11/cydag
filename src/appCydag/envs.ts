@@ -1,15 +1,16 @@
-import { CheckProps, OnClient, PrimitivesType } from '../libCommon/util';
+import { CheckProps, PrimitivesType } from '../libCommon/checkProps';
+import { OnClient } from '../libCommon/sideProc';
 
 const nullOrObj = (valueStr) => valueStr == null ? null : JSON.parse(valueStr);
 
-interface IInterfaceSapRealizado {
+interface ISapRealizado {
   url: string;
   auth: { user: string; pass: string; };
 }
 export function EnvSvrInterfaceSapRealizadoConfig() {
   const envName = 'SITE_INTERFACE_SAP_REALIZADO_CONFIG';
   if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
-  const value: IInterfaceSapRealizado = nullOrObj(process.env.SITE_INTERFACE_SAP_REALIZADO_CONFIG);
+  const value: ISapRealizado = nullOrObj(process.env.SITE_INTERFACE_SAP_REALIZADO_CONFIG);
   if (value == null) throw new Error(`Env ${envName} não configurada`);
   const errorProp = CheckProps(value, [
     { name: 'url', type: PrimitivesType.string },

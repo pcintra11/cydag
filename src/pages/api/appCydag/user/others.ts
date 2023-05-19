@@ -1,13 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 //import _ from 'underscore';
 
-import { CookieUserConfig } from '../../../../base/loggedUserSvr';
-import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
+import { CookieUserConfig } from '../../../../libCommon/loggedUserSvr';
+import { ConnectDbASync, CloseDbASync } from '../../../../libServer/dbMongo';
 
 import { ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
-import { csd, dbgWarn } from '../../../../libCommon/dbg';
-import { EnvDeployConfig } from '../../../../libCommon/envs';
-import { isAmbNone } from '../../../../libCommon/isAmb';
+import { csd } from '../../../../libCommon/dbg';
+import { EnvDeployConfig, isAmbNone } from '../../../../app_base/envs';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ReqNoParm, ResumoApi } from '../../../../libServer/util';
@@ -31,11 +30,12 @@ import { SendLink_resetPswASync } from '../../../../appCydag/emailMessages';
 
 const saltRounds = 10;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const apiSelf = apisApp.userOthers;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
   const parm = ctrlApiExec.parm;
@@ -47,10 +47,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   const resumoApi = new ResumoApi(ctrlApiExec);
   const agora = new Date();
   const deleteIfOk = false;
-  await SleepMsDevRandom(null, ctrlApiExec.context());
+  await SleepMsDevRandom(null, ctrlApiExec.ctrlContext, 'main');
 
   try {
-    await ConnectDbASync({ ctrlApiExec });
+    await ConnectDbASync({ ctrlContext: ctrlApiExec.ctrlContext });
     const apiLogProc = await ApiLogStart(ctrlApiExec, loggedUserReq);
 
     try {
@@ -98,7 +98,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         const hasSomeCCResponsavel = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailResponsavel: userDb.email })) != null;
         const hasSomeCCPlanejador = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailPlanejador: userDb.email })) != null;
         const hasSomeCCConsulta = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailConsulta: userDb.email })) != null;
-        const loggedUserNow = User.loggedUser(userDb, parm.email, agora, agora, agora, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta, cookieUserConfig.TTLSeconds);
+        const loggedUserNow = User.loggedUser(userDb, parm.email, agora, agora, agora, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta); // , cookieUserConfig.TTLSeconds
         await CheckBlockAsync(loggedUserNow);
 
         await HttpCriptoCookieCmdASync(ctrlApiExec, `user:${parm.cmd}`, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, loggedUserNow);
@@ -118,7 +118,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           lastUpdated: agora,
           //$push: { updates: { date: agora, reason: `user-${parm.cmd}-${parm.linkType}` } as UpdateReason },
         });
-        const { sentSync } = await SendLink_resetPswASync(ctrlApiExec, userDb._id, userDb.email, userDb.nome, { token }, expireIn);
+        const { sentSync } = await SendLink_resetPswASync(ctrlApiExec.ctrlContext, userDb._id, userDb.email, userDb.nome, { token }, expireIn);
         if (sentSync)
           resumoApi.jsonData({ value: { message: 'O link para reset de senha foi enviado' } });
         else
@@ -134,7 +134,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     await ApiLogFinish(apiLogProc, resumoApi.resultProc(), deleteIfOk);
-    await CloseDbASync({ ctrlApiExec });
+    await CloseDbASync({ ctrlContext: ctrlApiExec.ctrlContext });
   } catch (error) {
     const { httpStatusCode, jsonErrorData } = await ApiStatusDataByErrorASync(error, 'throw 2', parm, ctrlApiExec);
     resumoApi.status(httpStatusCode).jsonData(jsonErrorData);

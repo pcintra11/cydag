@@ -1,69 +1,69 @@
-import { EnvNivelLog } from '../libCommon/envs';
+import format_dtfns from 'date-fns/format';
+
+import { isAmbDev, isVercelHost } from '../app_base/envs';
 
 import { globals } from '../libClient/clientGlobals';
 
-import { isAmbDev } from './isAmb';
-import { colorsDestaq, colorErr, colorWarn, colorInfo, colorX } from './consoleColor';
-import { CalcExecTime, HoraDebug, isPlataformVercel, OnClient, OnServer } from './util';
+import { colorsDbg, colorErr, colorWarn, colorInfo, colorX } from './consoleColor';
+import { OnClient, OnServer } from './sideProc';
+import { CtrlContext } from './ctrlContext';
 
-const colorAllowed = () => OnClient() || !isPlataformVercel();
+const colorAllowed = () => OnClient() || !isVercelHost();
 
-function HoraLog() {
-  return HoraDebug();
+export function HoraCsl() {
+  return format_dtfns(new Date(), 'HH:mm:ss:SSS');
+}
+
+export function console_log(...params) {
+  // eslint-disable-next-line no-console
+  console.log(...params);
 }
 
 export function dbgNotifyAdm(...params) {
   if (dbgShow())
-    console.log(colorErr(HoraLog() + ' notifyAdm'), ...params);
+    console_log(colorErr(HoraCsl() + ' notifyAdm'), ...params);
 }
 
-// let calcExecTime: CalcExecTime = null, lastElapsed = 0;
-// export function cst(point?: string, showAlways = false) {
-//   if (point == null ||
-//     calcExecTime == null) {
-//     calcExecTime = new CalcExecTime();
-//     lastElapsed = 0;
-//     console.log('cst timer started ***********');
-//   }
-//   if (point != null && dbgShow()) {
-//     const elapsed = calcExecTime.elapsedMs();
-//     const gap = elapsed - lastElapsed;
-//     if (showAlways || gap > 1000)
-//       console.log(point, `cst tot ${elapsed}ms, gap ${gap}ms ${gap > 1000 ? '- !!!' : ''}`);
-//     lastElapsed = elapsed;
-//   }
-// }
-
-// @!!!!!!! opção para gravar em arquivo, se for server
-export function csd(...params) { // console.log (debug, apenas para o contexto onde pode ser visto a informação)
+export function csd(...params) {
   if (dbgShow()) {
     // if (params.length === 1 && typeof params[0] === 'object')
-    //   console.log(JSON.stringify(params[0], null, 2), `csdX ${HoraDebug()}`); // @!!!!!!
+    //   console_log(JSON.stringify(params[0], null, 2), `csdX ${HoraDebug()}`); // @!!!!!!
     // else
-    console.log(...params, `csd ${HoraDebug()}`);
+    console_log(...params, `csd ${HoraCsl()}`);
   }
 }
-export function csl(...params) { // console.log (tudo)
-  console.log(...params, `csl ${HoraDebug()}`);
+export function csl(...params) {
+  console_log(...params, `csl ${HoraCsl()}`);
 }
 
-export function dbgError(...params) {
+export function dbgError(point: string, msg1: string, ...params) {
   if (dbgShow())
-    console.log(colorErr(HoraLog() + ' dbgError'), ...params);
+    console_log(colorErr(`${HoraCsl()} error-${point}`), msg1, ...params);
 }
-export function dbgWarn(...params) {
+export function dbgWarn(point: string, msg1: string, ...params) {
   if (dbgShow())
-    console.log(colorWarn(HoraLog() + ' dbgWarn'), ...params);
+    console_log(colorWarn(`${HoraCsl()} warn-${point}`), msg1, ...params);
 }
-export function dbgInfo(...params) {
+export function dbgInfo(point: string, msg1: string, ...params) {
   if (dbgShow())
-    console.log(colorInfo(HoraLog() + ' dbgInfo'), ...params);
+    console_log(colorInfo(`${HoraCsl()} info-${point}`), msg1, ...params);
 }
-export interface ConfigDbg { level?: number; levelScope?: ScopeDbg; context?: string; color?: number }
+export interface IConfigDbg {
+  level: number;
+  scopeMsg?: ScopeDbg;
+  ctrlContext?: CtrlContext;
+  point?: string;
+  colorMsg?: number;
+}
 
+export const colorsMsg = {
+  lock: 6,
+  elapsedWarn: 1,
+  elapsedAlert: 2,
+};
 // sem destaque
 // 'context' tem um tratamento especial, uma largura minima para que fique bem visivel no log
-export function dbg(config: ConfigDbg, ...params) { //@!!!!!!! fora na maioria das chamadas
+export function dbg(config: IConfigDbg, ...params) {
   dbgProc(config, ...params);
 }
 export function dbgTest() {
@@ -71,11 +71,11 @@ export function dbgTest() {
   dbgError('ponto1', 'mensagem erro', obj);
   dbgWarn('ponto2', 'mensagem warn', obj);
   dbgInfo('ponto3', 'mensagem info', obj);
-  for (let color = 0; color < colorsDestaq.length + 1; color++)
-    dbg({ color }, `color destaq ${color}`);
+  for (let colorDbg = 0; colorDbg < colorsDbg.length; colorDbg++)
+    dbg({ level: 0, colorMsg: colorDbg }, `colorDbg ${colorDbg}`);
 }
 
-const dispContextLen = 30;
+const dispContextLen = 40;
 
 //const ctrlRecursion = new CtrlRecursion('dbg', 3); // dá pau !!
 
@@ -83,7 +83,7 @@ const dispContextLen = 30;
  * Ativa o modo de prototipação (escolha de temas, fontes, etc)
  * @returns apenas se definido or ambiente ou para o device ou para o usuario
  */
-export function userIsDev() {
+export function devUserOrAmb() { // @!!!!!!!!! retirar globals
   return isAmbDev() || globals?.loggedUserIsDev === true;
 }
 
@@ -94,65 +94,83 @@ function dbgShow() {
   return OnServer() || dbgShowCli();
 }
 
-function dbgProc(config: ConfigDbg, ...params): void {
+function dbgProc(config: IConfigDbg, ...params): void {
   //ctrlRecursion.in();
-  if (!dbgShow())
-    return;
+  if (!dbgShow()) return;
 
-  const level = config.level || 0;
-  const color = colorAllowed() ? (config.color || 0) : 0;
+  const levelDbg = config.level || 0;
+  let levelMinShow = 0;
+  let scopesShow = '';
+
+  if (config?.ctrlContext?.ctrlLog != null) {
+    const { ctrlLogLevel, ctrlLogScopes } = CtrlContext.ProcCtrlLogStr(config.ctrlContext.ctrlLog);
+    levelMinShow = ctrlLogLevel;
+    scopesShow = ctrlLogScopes;
+  }
+
+  const scopeMsg = config.scopeMsg || ScopeDbg.x;
+
+  const colorContext = colorAllowed() ? (config.ctrlContext?.colorContext || 0) : 0;
+  const colorMsg = colorAllowed() ? (config.colorMsg || colorContext) : 0;
   try {
     let prefixDbg = '';
-    if (config.levelScope == ScopeDbg.a) prefixDbg = 'dA';
-    else if (config.levelScope == ScopeDbg.d) prefixDbg = 'dD';
-    else if (config.levelScope == ScopeDbg.e) prefixDbg = 'dE';
-    else if (config.levelScope == ScopeDbg.t) prefixDbg = 'dT';
-    else if (config.levelScope == ScopeDbg.x) prefixDbg = 'dX';
+    if (scopeMsg == ScopeDbg.a) prefixDbg = 'dA';
+    else if (scopeMsg == ScopeDbg.d) prefixDbg = 'dD';
+    else if (scopeMsg == ScopeDbg.e) prefixDbg = 'dE';
+    else if (scopeMsg == ScopeDbg.x) prefixDbg = 'dX';
     else prefixDbg = 'dX';
-    prefixDbg += `${level}`;
+    prefixDbg += `${levelDbg}`;
 
-    if (NivelLog(config.levelScope || ScopeDbg.x) >= level) {
-      const contextDisp = config.context != null ? ' ' + (config.context + '===').padEnd(dispContextLen, '=') : '';
+    if (config.ctrlContext?.context != null) {
+      prefixDbg += `:${config.ctrlContext.context}`;
+      prefixDbg = (prefixDbg + '===').padEnd(dispContextLen, '=');
+    }
+    if (config?.point != null)
+      prefixDbg += ` >${config?.point}`;
+
+    //if (NivelLog(config.levelScope || ScopeDbg.x) >= level) {
+    if (levelDbg === 0 ||
+      (levelDbg <= levelMinShow && scopesShow.includes(scopeMsg))) {
+      const contextDisp = ''; //config.ctrlContext?.context != null ? ' ' + (config.ctrlContext.context + '===').padEnd(dispContextLen, '=') : '';
       //const paramsDisp = params.filter(x => x != null);
-      if (color === 0)
-        console.log(HoraLog(), `${prefixDbg}${contextDisp}`, ...params);
-      else {
-        const colorUse = (color - 1) % colorsDestaq.length;
-        //console.log(colorsDestaq[colorUse](HoraLog()), `${prefixDbg}${contextDisp}`, ...params);
-        console.log(colorX(colorsDestaq[colorUse], HoraLog()), `${prefixDbg}${contextDisp}`, ...params);
-      }
+      const colorContextUse = colorContext % colorsDbg.length;
+      const colorMsgUse = colorMsg % colorsDbg.length;
+      //console_log(colorsDestaq[colorUse](HoraCsl()), `${prefixDbg}${contextDisp}`, ...params);
+      if (OnClient())
+        console_log(colorX(colorsDbg[colorMsgUse], `${HoraCsl()} ${prefixDbg}${contextDisp}`), ...params);
+      else
+        console_log(colorX(colorsDbg[colorContextUse], HoraCsl()), colorX(colorsDbg[colorMsgUse], `${prefixDbg}${contextDisp}`), ...params);
     }
   } catch (error) {
-    console.log('dbgProc', error.message);
+    console_log('dbgProc', error.message);
   }
   //ctrlRecursion.out();
 }
 
 export enum ScopeDbg {
-  a = 'api',
-  d = 'db',
-  e = 'email',
-  t = 'temp', // apenas durante o desenvolvimento e teste de alguma lógica, polui muito, evitar !
-  x = 'geral',
+  a = 'a', // api
+  d = 'd', // db
+  e = 'e', // email
+  x = 'x', // outros
 }
 
-let nivelLogA = null;
-let nivelLogD = null;
-let nivelLogE = null;
-let nivelLogT = null;
-let nivelLogX = null;
-export function NivelLog(scope: ScopeDbg): number {
-  if (scope == ScopeDbg.a) { if (nivelLogA == null) nivelLogA = (EnvNivelLog() || {}).api || 0; return nivelLogA; }
-  else if (scope == ScopeDbg.d) { if (nivelLogD == null) nivelLogD = (EnvNivelLog() || {}).db || 0; return nivelLogD; }
-  else if (scope == ScopeDbg.e) { if (nivelLogE == null) nivelLogE = (EnvNivelLog() || {}).email || 0; return nivelLogE; }
-  else if (scope == ScopeDbg.t) { if (nivelLogT == null) nivelLogT = (EnvNivelLog() || {}).test || 0; return nivelLogT; }
-  else if (scope == ScopeDbg.x) { if (nivelLogX == null) nivelLogX = (EnvNivelLog() || {}).commom || 0; return nivelLogX; }
-  else return 0;
-}
-export function SetNivelLog(nivelLogNew, scope: ScopeDbg): void {
-  if (scope == ScopeDbg.a) { if (nivelLogNew != null && nivelLogNew != nivelLogA) { nivelLogA = nivelLogNew; } }
-  else if (scope == ScopeDbg.d) { if (nivelLogNew != null && nivelLogNew != nivelLogD) { nivelLogD = nivelLogNew; } }
-  else if (scope == ScopeDbg.e) { if (nivelLogNew != null && nivelLogNew != nivelLogE) { nivelLogE = nivelLogNew; } }
-  else if (scope == ScopeDbg.t) { if (nivelLogNew != null && nivelLogNew != nivelLogT) { nivelLogT = nivelLogNew; } }
-  else if (scope == ScopeDbg.x) { if (nivelLogNew != null && nivelLogNew != nivelLogX) { nivelLogX = nivelLogNew; } }
-}
+// let nivelLogA = null;
+// let nivelLogD = null;
+// let nivelLogE = null;
+// let nivelLogT = null;
+// let nivelLogX = null;
+// export function NivelLog(scope: ScopeDbg): number {
+//   if (scope == ScopeDbg.a) { if (nivelLogA == null) nivelLogA = (EnvNivelLog() || {}).api || 0; return nivelLogA; }
+//   else if (scope == ScopeDbg.d) { if (nivelLogD == null) nivelLogD = (EnvNivelLog() || {}).db || 0; return nivelLogD; }
+//   else if (scope == ScopeDbg.e) { if (nivelLogE == null) nivelLogE = (EnvNivelLog() || {}).email || 0; return nivelLogE; }
+//   else if (scope == ScopeDbg.t) { if (nivelLogT == null) nivelLogT = (EnvNivelLog() || {}).test || 0; return nivelLogT; }
+//   else if (scope == ScopeDbg.x) { if (nivelLogX == null) nivelLogX = (EnvNivelLog() || {}).commom || 0; return nivelLogX; }
+//   else return 0;
+// }
+// export function SetNivelLog(nivelLogNew, scope: ScopeDbg): void {
+//   if (scope == ScopeDbg.a) { if (nivelLogNew != null && nivelLogNew != nivelLogA) { nivelLogA = nivelLogNew; } }
+//   else if (scope == ScopeDbg.d) { if (nivelLogNew != null && nivelLogNew != nivelLogD) { nivelLogD = nivelLogNew; } }
+//   else if (scope == ScopeDbg.e) { if (nivelLogNew != null && nivelLogNew != nivelLogE) { nivelLogE = nivelLogNew; } }
+//   else if (scope == ScopeDbg.t) { if (nivelLogNew != null && nivelLogNew != nivelLogT) { nivelLogT = nivelLogNew; } }
+//   else if (scope == ScopeDbg.x) { if (nivelLogNew != null && nivelLogNew != nivelLogX) { nivelLogX = nivelLogNew; } }
+// }

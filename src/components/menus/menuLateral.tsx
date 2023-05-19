@@ -11,6 +11,8 @@ import { PageDef } from '../../libCommon/endPoints';
 
 import { useMediaQueryMy } from '../../hooks/useMediaQueryMy';
 
+import { preserveStateContext } from '../../pages/_appResources';
+
 import { ImgResponsive } from '../ui';
 import { useMenuLateral } from './useMenulateral';
 import { MenuEntry, MenuEntryType, routerPageDef, MenuLateralContext } from '.';
@@ -23,6 +25,7 @@ interface IMenuLateralProps {
 }
 export const MenuLateral: React.FC<IMenuLateralProps> = ({ menuEntries, pageDefCurr, imgApp, children }: IMenuLateralProps) => {
   const { variant: menuLateralVariant } = useMenuLateral();
+  const { preserveStateResetAll } = React.useContext(preserveStateContext);
   const router = useRouter();
 
   const { isMenuOpen, closeMenu } = React.useContext(MenuLateralContext);
@@ -52,7 +55,7 @@ export const MenuLateral: React.FC<IMenuLateralProps> = ({ menuEntries, pageDefC
     else if (menuEntry.type == MenuEntryType.pagePath) {
       //const match = pageDef?.pagePath == menuEntry.pageDef.pagePath && !actualPagePath.endsWith('dummy');
       const isPageCurrent = pageDefCurr == menuEntry.pageDef && !pageDefCurr?.pagePath.endsWith('dummy');
-      const handlePagePath = () => { closeMenu(); routerPageDef(menuEntry.pageDef, router, menuEntry.query, pageDefCurr); };
+      const handlePagePath = () => { closeMenu(); preserveStateResetAll(); routerPageDef(menuEntry.pageDef, router, menuEntry.query, pageDefCurr); };
       return (<ListItemButton selected={isPageCurrent} onClick={handlePagePath} sx={sx}>{menuEntry.content}</ListItemButton>);
     }
     else if (menuEntry.type == MenuEntryType.onlyShow)
@@ -60,11 +63,11 @@ export const MenuLateral: React.FC<IMenuLateralProps> = ({ menuEntries, pageDefC
     else if (menuEntry.type == MenuEntryType.divider)
       return (<Divider />);
     else
-      return (<div>{menuEntry.type} ???</div>);
+      return (<Box>{menuEntry.type} ???</Box>);
   };
 
   //const menuWidth = useMediaQueryData.lgDown ? theme.spacing(20) : theme.spacing(25);
-  const menuWidth = useMediaQueryData.lgDown ? '180px' : '200px';
+  const menuWidth = useMediaQueryData.lgDown ? '180px' : '200px'; // pode dar pau, de pagina gerada na compilação ser diferente da pagina renderizada? //@!!!!!!!!
 
   return (
     <Box height='100%'>

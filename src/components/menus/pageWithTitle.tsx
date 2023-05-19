@@ -22,27 +22,29 @@ export const PageWithTitle = ({ title, menuType, toggleMenu, children }: IPagina
   return (
     <Stack pl='1.5rem' pr='1rem' pt='1rem' pb='0.5rem' height='100%' overflow='hidden'>
       {/* <Box padding={1} display'flex' alignItems='center' gap={1} height={theme.spacing(smDown ? 6 : mdDown ? 8 : 12)}> */}
-      <Stack direction='row' alignItems='center' gap={0.5} mb='16px'>
-        {/* height={theme.spacing(6)} */}
-        {renderIconMenu && (
-          <IconButton onClick={toggleMenu}>
-            <Icon>menu</Icon>
-          </IconButton>
-        )}
-        {(title != null) &&
-          <Stack flex={1} justifyContent='center' sx={{ backgroundColor: themePlus.themePlusDeriv.destaque1.backColor }}> 
-            <Typography             
-              whiteSpace='nowrap' overflow='hidden' textOverflow='ellipses'
-              m='auto'
-              // variant={smDown ? 'h5' : mdDown ? 'h4' : 'h3'}
-              variant='h6'
-            >
-              {title}
-            </Typography>
-          </Stack>
-        }
-      </Stack>
-      {/* no 'children' (a pagina que será renderizada) deve ser determinado qual parte é a scroolable para ser possível 'congelar' algumas partes! */}
+      {(renderIconMenu || title != null) &&
+        <Stack direction='row' alignItems='center' gap={0.5} mb='16px'>
+          {/* height={theme.spacing(6)} */}
+          {renderIconMenu && (
+            <IconButton onClick={toggleMenu}>
+              <Icon>menu</Icon>
+            </IconButton>
+          )}
+          {(title != null) &&
+            <Stack flex={1} justifyContent='center' sx={{ backgroundColor: themePlus.themePlusDeriv.destaque1.backColor }}>
+              <Typography noWrap
+                // whiteSpace='nowrap' overflow='hidden' textOverflow='ellipses' @!!!!!!!!! ellipses não funciona aqui
+                m='auto'
+                // variant={smDown ? 'h5' : mdDown ? 'h4' : 'h3'}
+                variant='h6'
+              >
+                {title}
+              </Typography>
+            </Stack>
+          }
+        </Stack>
+      }
+      {/* no 'children' (a pagina que será renderizada) deve ser determinado qual parte é a scrollable para ser possível 'congelar' algumas partes! */}
       <Box flex={1} overflow='hidden'>
         {children}
       </Box>
@@ -50,5 +52,5 @@ export const PageWithTitle = ({ title, menuType, toggleMenu, children }: IPagina
   );
 };
 // const TitleTrans2 = ({ pageTitle }: { pageTitle?: string }) => {
-//   return (<>      {pageTitle != null && <div>          {pageTitle}        </div>}    </>);
+//   return (<>      {pageTitle != null && <Box>          {pageTitle}        </Box>}    </>);
 // };

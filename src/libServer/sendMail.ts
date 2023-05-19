@@ -2,15 +2,17 @@ import nodemailer, { SentMessageInfo } from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
-import { Env, EnvSvr, EnvSvrEmailConfig, IEmailConfig } from '../libCommon/envs';
+import { configApp } from '../app_hub/appConfig';
 
-import { isAmbDevOrQas } from '../libCommon/isAmb';
+import { Env, EnvSvrEmailConfig, IEmailConfig, isAmbPrd } from '../app_base/envs';
 import { dbg, ScopeDbg } from '../libCommon/dbg';
-import { CalcExecTime, CtrlRecursion } from '../libCommon/util';
+import { CalcExecTime } from '../libCommon/calcExectime';
 
 import { LogSentMessagesFn } from './util';
+import { CtrlContext } from '../libCommon/ctrlContext';
+import { CtrlRecursion } from '../libCommon/ctrlRecursion';
 
-interface EmailConfig {
+interface IEmailSend {
   host: string;
   port: number;
   auth: { user: '', pass: '', name: '' };
@@ -20,7 +22,7 @@ interface EmailConfig {
   secure: boolean;
 }
 
-export interface SendEmailParams {
+export interface ISendEmailParams {
   to: string | Mail.Address;
   bcc?: string;
   subject: string;
@@ -42,11 +44,11 @@ const GetCtrlRecursion = (func: string) => {
 
 // mensagens do App
 
-export async function SendMailASync(sendEmailParams: SendEmailParams, context: string, timeOut?: number, logFn?: LogSentMessagesFn) {
-  return await _SendMailASync(sendEmailParams, context, null, timeOut, logFn);
+export async function SendMailASync(sendEmailParams: ISendEmailParams, ctrlContext: CtrlContext, timeOut?: number, logFn?: LogSentMessagesFn) {
+  return await _SendMailASync(sendEmailParams, ctrlContext, null, timeOut, logFn);
 }
-export async function SendMailOptionsASync(sendEmailParams: SendEmailParams, context: string, emailConfig: EmailConfig = null) {
-  return await _SendMailASync(sendEmailParams, context, emailConfig);
+export async function SendMailOptionsASync(sendEmailParams: ISendEmailParams, ctrlContext: CtrlContext, emailConfig: IEmailSend = null) {
+  return await _SendMailASync(sendEmailParams, ctrlContext, emailConfig);
 }
 
 let seqMailCtr = 0;
@@ -55,7 +57,7 @@ let seqMailCtr = 0;
 
 export const sysEmailSupport = '*support*';
 
-async function _SendMailASync(sendEmailParams: SendEmailParams, context: string, emailConfig: EmailConfig = null, timeOut?: number, logFn?: LogSentMessagesFn) {
+async function _SendMailASync(sendEmailParams: ISendEmailParams, ctrlContext: CtrlContext, emailConfig: IEmailSend = null, timeOut?: number, logFn?: LogSentMessagesFn) {
   // Generate test SMTP service account from ethereal.email
   // Only needed if you don't have a real mail account for testing
   // const testAccount = await nodemailer.createTestAccount();
@@ -71,11 +73,13 @@ async function _SendMailASync(sendEmailParams: SendEmailParams, context: string,
   // });
 
   const ctrlRecursion = GetCtrlRecursion('_SendMailASync');
-  if (ctrlRecursion.inExceeded(sendEmailParams.subject)) return;
 
-  const dbgE = (level: number, ...params) => dbg({ level, levelScope: ScopeDbg.e, context }, `==> SendMail(${++seqMailCtr})`, ...params);
+  let thisCallCtrl = null;
+  if ((thisCallCtrl = ctrlRecursion.in(sendEmailParams.subject)) == null) return;
 
-  const subjectUseMail = (isAmbDevOrQas() ? `(${Env('amb')}/${EnvSvr('plataform')}) ` : '') + sendEmailParams.subject;
+  const dbgE = (level: number, ...params) => dbg({ level, point: '_SendMailASync', scopeMsg: ScopeDbg.e, ctrlContext }, `${++seqMailCtr}`, ...params);
+
+  const subjectUseMail = (isAmbPrd() ? '' : `(${Env('amb')}/${Env('plataform')}) `) + sendEmailParams.subject;
 
   dbgE(1, `subject: ${sendEmailParams.subject}`);
 
@@ -89,7 +93,7 @@ async function _SendMailASync(sendEmailParams: SendEmailParams, context: string,
 
   try {
 
-    let emailConfigUse: EmailConfig | IEmailConfig = null;
+    let emailConfigUse: IEmailSend | IEmailConfig = null;
     if (emailConfig != null)
       emailConfigUse = emailConfig;
     else
@@ -152,7 +156,7 @@ async function _SendMailASync(sendEmailParams: SendEmailParams, context: string,
     // });
 
     //const to = sendEmailParams.to === epecialEmailSupport ? (emailConfigUse.to || emailConfigUse.auth.user) : sendEmailParams.to;
-    const to = sendEmailParams.to === sysEmailSupport ? Env('emailSupport') : sendEmailParams.to;
+    const to = sendEmailParams.to === sysEmailSupport ? configApp.support.email : sendEmailParams.to;
 
     const recipients: Mail.Options = {
       // //from: emailConfigUse.from || emailConfigUse.auth.user,  // o address do 'from' é ignorado (sempre usa o do auth.user, mas é necessário informar!)
@@ -197,7 +201,7 @@ async function _SendMailASync(sendEmailParams: SendEmailParams, context: string,
     errorThrow = error;
   }
 
-  ctrlRecursion.out();
+  ctrlRecursion.out(thisCallCtrl);
 
   // if (errorThrow != null)
   //   throw errorThrow;

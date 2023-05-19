@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 
 import { Autocomplete, Box, Stack, TextField, useTheme } from '@mui/material';
 
-import { _AppLogRedir } from '../_app';
+import { chgUserAndRouteContext } from '../_appResources';
 
 import { IsErrorManaged, ObjUpdAllProps, ErrorPlus, BinSearchItem } from '../../libCommon/util';
 import { csd, dbg, ScopeDbg } from '../../libCommon/dbg';
@@ -12,7 +12,7 @@ import { IGenericObject } from '../../libCommon/types';
 
 import { CallApiCliASync } from '../../fetcher/fetcherCli';
 
-import { globals } from '../../libClient/clientGlobals';
+import { ctrlContextFromGlobals } from '../../libClient/clientGlobals';
 
 import { Btn, BtnLine, PopupMsg, WaitingObs } from '../../components';
 import { AbortProc, LogErrorUnmanaged } from '../../components';
@@ -48,14 +48,14 @@ export default function PageUserSimulate() {
   mainStatesCache = { ...mainStates }; const setMainStatesCache = (newValues: MainStates) => { if (!mount) return; ObjUpdAllProps(mainStatesCache, newValues); setMainStates({ ...mainStatesCache }); };
 
   //const { logRedirSetGet } = React.useContext(_AppLogRedir);
-  const { chgUserAndRouteStart } = React.useContext(_AppLogRedir);
+  const { chgUserAndRouteStart } = React.useContext(chgUserAndRouteContext);
   const router = useRouter();
   const { loggedUser, isLoadingUser } = useLoggedUser({ id: pageSelf.pagePath });
   //const agora = new Date();
 
   const themePlus = useTheme();
 
-  const dbgX = (...params) => dbg({ level: 99, levelScope: ScopeDbg.x, context: 'signIn', color: 2 }, ...params);
+  const dbgX = (...params) => dbg({ level: 3, ctrlContext: ctrlContextFromGlobals(pageSelf.pagePath) }, ...params);
 
   dbgX('root*****', `isReady: ${router.isReady} ; isLoadingUser: ${isLoadingUser} ; loggedUser: ${loggedUser}`);
   //csl('simulate render');
@@ -66,7 +66,7 @@ export default function PageUserSimulate() {
     if (!PageDef.IsUserAuthorized(pageSelf, loggedUser?.roles)) throw new ErrorPlus('Não autorizado.');
     FrmSetValues(frmUserSimulate, FrmDefaultValues(new FrmData(), { email: loggedUser.email == loggedUser.emailSigned ? '' : loggedUser.email }));
     setMainStatesCache({ phase: Phase.ready });
-    CallApiCliASync<any>(apisApp.user.apiPath, globals.windowId, { cmd: CmdApi_UserCrud.list, getAll: true })
+    CallApiCliASync<any>(apisApp.user.apiPath, { cmd: CmdApi_UserCrud.list, getAll: true })
       .then(async (apiReturn) => {
         //await (SleepMs(5000));
         if (!mount) return;
@@ -159,11 +159,11 @@ export default function PageUserSimulate() {
     optionEmailSelected = null;
     if (email != '') {
       if (mainStates.users == null)
-        optionEmailSelected = new User().Fill({ email, nome: `${email} ...` });
+        optionEmailSelected = User.fill({ email, nome: `${email} ...` });
       else {
         optionEmailSelected = BinSearchItem(usersAll, email, 'email');
         if (optionEmailSelected == null) {
-          optionEmailSelected = new User().Fill({ email, nome: `${email} (NÂO ENCONTRADO)` });
+          optionEmailSelected = User.fill({ email, nome: `${email} (NÂO ENCONTRADO)` });
           optionsEmail = [optionEmailSelected, ...usersShow];
         }
       }

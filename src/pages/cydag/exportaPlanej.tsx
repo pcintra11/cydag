@@ -4,13 +4,13 @@ import _ from 'underscore';
 
 import { Stack } from '@mui/material';
 
-import { BinSearchItem, BinSearchProp, CalcExecTime, ErrorPlus, ObjUpdAllProps } from '../../libCommon/util';
-import { csd, csl, dbgError } from '../../libCommon/dbg';
+import { BinSearchItem, BinSearchProp, ErrorPlus, ObjUpdAllProps } from '../../libCommon/util';
+import { csl } from '../../libCommon/dbg';
 import { IGenericObject } from '../../libCommon/types';
 import { PageDef } from '../../libCommon/endPoints';
+import { CalcExecTime } from '../../libCommon/calcExectime';
 import { CallApiCliASync } from '../../fetcher/fetcherCli';
 
-import { globals } from '../../libClient/clientGlobals';
 import { SaveAsXlsx } from '../../libClient/saveAsClient';
 
 import { AbortProc, SelOption, PopupMsg, WaitingObs, SnackBarError, SwitchMy, FakeLink } from '../../components';
@@ -49,9 +49,9 @@ const fldFrmExtra = {
 let mount; let mainStatesCache;
 const apis = { // cdm sempre aqui?? #!!!!!!
   // #!!!!! agrupar e executar em paralelo (await all)
-  getProcsOrcCCsAuth: () => CallApiCliASync<any>(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.getProcsOrcCCsAuthQuadroCons }),
-  getContas: () => CallApiCliASync<any>(apisApp.classeCusto.apiPath, globals.windowId, { cmd: CmdApi_ClasseCusto.list, sortType: SortType_ClasseCusto.classeCusto }),
-  getItens: (filter: FrmFilter) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.exportPlanejValoresGet, filter }),
+  getProcsOrcCCsAuth: () => CallApiCliASync<any>(apisApp.valoresContas.apiPath, { cmd: CmdApi_ValoresContas.getProcsOrcCCsAuthQuadroCons }),
+  getContas: () => CallApiCliASync<any>(apisApp.classeCusto.apiPath, { cmd: CmdApi_ClasseCusto.list, sortType: SortType_ClasseCusto.classeCusto }),
+  getItens: (filter: FrmFilter) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, { cmd: CmdApi_ValoresContas.exportPlanejValoresGet, filter }),
 };
 const pageSelf = pagesApp.exportaPlanej;
 export default function PageExportPlanej() {

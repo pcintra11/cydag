@@ -1,17 +1,16 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import _ from 'underscore';
 
 import Box from '@mui/material/Box';
 import { Stack, useTheme } from '@mui/material';
 
-import { BinSearchItem, CalcExecTime, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../libCommon/util';
-import { csd, dbgError } from '../../libCommon/dbg';
+import { BinSearchItem, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../libCommon/util';
+import { csd } from '../../libCommon/dbg';
 import { IGenericObject } from '../../libCommon/types';
 import { PageDef } from '../../libCommon/endPoints';
+import { CalcExecTime } from '../../libCommon/calcExectime';
 import { CallApiCliASync } from '../../fetcher/fetcherCli';
 
-import { globals } from '../../libClient/clientGlobals';
 import { cssTextNoWrapEllipsis } from '../../libClient/util';
 
 import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, SnackBarError, fontSizeGrid, fontSizeIconsInGrid } from '../../components';
@@ -19,14 +18,16 @@ import { GridCell, GridCellEdit, IFldChange, IGridEditFldCtrl, IGridEditMainCtrl
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../hooks/useMyForm';
 //import { GlobalState, useGlobalState } from '../../hooks/useGlobalState';
 
+import { configApp } from '../../app_hub/appConfig';
+
 import { IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, SelAno, SelRevisao } from '../../appCydag/components';
 import { apisApp, pagesApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 import { mesesFld, mesesHdr, genValMeses, amountToStr } from '../../appCydag/util';
-import { configApp } from '../../appCydag/config';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatusMd, RevisaoValor } from '../../appCydag/types';
 import { ProcessoOrcamentario, ValoresLocalidade, Localidade, localidadeCoringa } from '../../appCydag/modelTypes';
 import { CmdApi_ValoresLocalidade as CmdApi, IChangedLine, DataEdit } from '../api/appCydag/valoresLocalidade/types';
+import { configCydag } from '../../appCydag/configCydag';
 
 //const empresaCoringa = new Empresa().Fill({ cod: codEmpresaCoringa, descr: 'Todas' });
 
@@ -70,7 +71,7 @@ class FrmFilter {
 }
 
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.valoresLocalidade.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.valoresLocalidade.apiPath, parm) };
 const pageSelf = pagesApp.valoresLocalidade;
 const statesCompsSubord = { setMainStatesData1: null, setMainStatesData2: null };
 
@@ -246,7 +247,7 @@ export default function PageValoresLocalidades() {
 
       let dataOriginal = BinSearchItem(dataStructure.valoresLocalidade, localidade.cod, 'localidade');
       if (dataOriginal == null)
-        dataOriginal = new ValoresLocalidade().Fill({ localidade: localidade.cod, valMeses: genValMeses(null) });
+        dataOriginal = ValoresLocalidade.fill({ localidade: localidade.cod, valMeses: genValMeses(null) });
 
       const idLine = `${localidade.cod}`;
 
@@ -265,7 +266,7 @@ export default function PageValoresLocalidades() {
       };
       const mainCtrl: IGridEditMainCtrl = { dataOriginal: dataOriginal, fldNewValue, fontSizeGrid };
       const fldsCtrl = {
-        valMeses: { fld: 'valMeses', valueType: ValueType.amount, decimals: configApp.decimalsValsInput, arrayItens: mesesFld.length } as IGridEditFldCtrl,
+        valMeses: { fld: 'valMeses', valueType: ValueType.amount, decimals: configCydag.decimalsValsInput, arrayItens: mesesFld.length } as IGridEditFldCtrl,
       };
       //#endregion
 
@@ -350,7 +351,7 @@ export default function PageValoresLocalidades() {
         >
           <HeaderComp />
 
-          {[new Localidade().Fill({ cod: localidadeCoringa.cod, descr: localidadeCoringa.descr }), ...mainStates.localidadeArray].map((localidade, index) =>
+          {[Localidade.fill({ cod: localidadeCoringa.cod, descr: localidadeCoringa.descr }), ...mainStates.localidadeArray].map((localidade, index) =>
             <LineComp key={index} localidade={localidade} canEdit={dataStructure.canEdit} />
           )}
         </Box>

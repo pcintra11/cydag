@@ -2,7 +2,7 @@ import React from 'react';
 
 import { useMediaQuery, useTheme } from '@mui/material';
 
-let mount;
+let mount = false;
 export const useMenuLateral = () => {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
   const toggleMenu = React.useCallback(() => {

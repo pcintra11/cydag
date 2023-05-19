@@ -114,7 +114,7 @@ export const FldsCsvAll = (entityStructure: IGenericObject, fldsCsvCustom: FldCs
   });
   fldsCsvCustom.forEach((x) => {
     if (!fldsEntity.includes(x.fld))
-      dbgError(`prop ${x.fld} inexistente na entidade`);
+      dbgError('FldsCsvAll', `prop ${x.fld} inexistente na entidade`);
   });
   return result;
 };
@@ -128,7 +128,7 @@ export const ToCsvDownload = (data: IGenericObject, fldsCsvDef: FldCsvDef[]) => 
       else return { ...prev, [curr.fldDisp]: curr.down(data) };
     }, {} as any);
   } catch (error) {
-    dbgError('Erro em ToCsvDownload', error.message, data);
+    dbgError('ToCsvDownload', 'ToCsvDownload', error.message, data);
     return null;
   }
 };

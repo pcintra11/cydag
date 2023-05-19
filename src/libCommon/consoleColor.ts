@@ -1,13 +1,13 @@
 import clc, { Format } from 'cli-color';
-
-import { isPlataformVercel, OnClient } from './util';
+import { OnClient } from './sideProc';
+import { isVercelHost } from '../app_base/envs';
 
 const colorErrX = clc.red.bold;
 const colorAlertX = clc.yellow;
 const colorWarnX = clc.blue;
 const colorInfoX = clc.green;
 
-const colorAllowed = () => OnClient() || !isPlataformVercel();  // @@@@!!!! vercel sem cor !!!!! OU agrupar todos os campos na mesma cor
+const colorAllowed = () => OnClient() || !isVercelHost();  // @!!!!! agrupar todos os campos na mesma cor
 export function colorX(colorFn: Format, param) {
   //export function colorX(colorFn: (text: string) => string, param) {
   if (colorAllowed())
@@ -28,7 +28,8 @@ export function colorInfo(param: string) {
   return colorX(colorInfoX, param);
 }
 
-export const colorsDestaq = [
+export const colorsDbg = [
+  clc.black,
   clc.bgRed,
   clc.bgMagenta,
   clc.bgYellowBright,

@@ -1,17 +1,18 @@
 import { Box } from '@mui/material';
 
-import { LoggedUserBase } from '../base/db/types';
+import { configApp } from '../app_hub/appConfig';
 
-import { Env } from '../libCommon/envs';
+import { LoggedUserBase } from '../app_base/modelTypes';
+
 import { AnchorHrefMailTo, DateDisp } from '../libCommon/util';
 
 // apresenta um link para envio de email para o suporte, com as informações do problema
 export function LinkHelpEmail({ tela, loggedUserBase, info, errorMsgHour }: { tela?: string, loggedUserBase?: LoggedUserBase, info?: string, errorMsgHour?: { message: string, hour: Date } }) {
-  if (Env('emailSupport') == null)
+  if (configApp.support.email == null)
     return (<></>);
   //const { loggedUser } = useLoggedUser({ id: 'LinkHelpEmail' });
 
-  const subject = `Ajuda para utilização de ${Env('appName')}` + (tela != null ? ` - tela ${tela}` : '');
+  const subject = `Ajuda para utilização de ${configApp.appName}` + (tela != null ? ` - tela ${tela}` : '');
   let body = '';
   if (errorMsgHour != null) {
     const userInfo = loggedUserBase == null ? '' : `conta: ${loggedUserBase.email}\n`;
@@ -31,7 +32,7 @@ export function LinkHelpEmail({ tela, loggedUserBase, info, errorMsgHour }: { te
   //  mt='1.5rem'
   return (
     <Box>
-      <a href={`${AnchorHrefMailTo(Env('emailSupport'), subject, body)}`}>{linkText}</a>
+      <a href={`${AnchorHrefMailTo(configApp.support.email, subject, body)}`}>{linkText}</a>
     </Box>
   );
 }

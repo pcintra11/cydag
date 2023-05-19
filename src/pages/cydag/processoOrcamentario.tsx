@@ -5,16 +5,18 @@ import { FileRejection, useDropzone } from 'react-dropzone';
 
 import { Box, Stack, useTheme } from '@mui/material';
 
-import { ObjUpdAllProps, ErrorPlus, CalcExecTime, ForceWait, mimeTypes } from '../../libCommon/util';
+import { ObjUpdAllProps, ErrorPlus, ForceWait, mimeTypes } from '../../libCommon/util';
 import { IGenericObject } from '../../libCommon/types';
 import { PageDef } from '../../libCommon/endPoints';
+import { CalcExecTime } from '../../libCommon/calcExectime';
 import { csd, csl, dbgError } from '../../libCommon/dbg';
 
 import { IUploadMessage, UploadFriendlyError, UploadStatus, UploadStateClear, ToCsvDownload } from '../../libCommon/uploadCsv';
 
 import { CallApiCliASync } from '../../fetcher/fetcherCli';
 
-import { globals } from '../../libClient/clientGlobals';
+import { SaveAsXlsx } from '../../libClient/saveAsClient';
+import { propsByMessageLevel } from '../../libClient/util';
 
 import { DialogMy, FakeLink, PopupMsg, SnackBarError } from '../../components';
 import { Btn, BtnLine, WaitingObs } from '../../components';
@@ -23,15 +25,14 @@ import { FrmInput } from '../../components';
 import { ColGridConfig, TableGrid } from '../../components';
 import { DropAreaUpload } from '../../components/dropArea';
 
-import { configApp } from '../../appCydag/config';
+import { configApp } from '../../app_hub/appConfig';
+
 import { IconButtonAppCrud } from '../../appCydag/components';
 import { pagesApp, apisApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 import { AgrupPremissas, Diretoria, CentroCusto, Gerencia, Localidade, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto, UnidadeNegocio, User } from '../../appCydag/modelTypes';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatus, ProcessoOrcamentarioStatusMd } from '../../appCydag/types';
 import { CmdApi_Crud as CmdApi } from '../api/appCydag/processoOrcamentario/types';
-import { SaveAsXlsx } from '../../libClient/saveAsClient';
-import { propsByMessageLevel } from '../../libClient/util';
 
 class Entity extends ProcessoOrcamentario { }
 
@@ -41,7 +42,7 @@ enum Phase {
   configCCs = 'configCCs',
 }
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.processoOrcamentario.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.processoOrcamentario.apiPath, parm) };
 const pageSelf = pagesApp.processoOrcamentario;
 export default function PageProcessoOrcamentario() {
   interface MainStates {
@@ -126,7 +127,7 @@ export default function PageProcessoOrcamentario() {
         const configCCs = (apiReturn.value.configCCsDb as IGenericObject[]).map((data) => ToCsvDownload(ProcessoOrcamentarioCentroCusto.deserialize(data), ProcessoOrcamentarioCentroCusto.fldsCsvDefCrud));
         if (configCCs.length == 0)
           //configCCs.push(ProcessoOrcamentarioCentroCusto.Generate({ centroCusto: configApp.csvTextNoData }).toCsvCrud());
-          configCCs.push(ToCsvDownload(new ProcessoOrcamentarioCentroCusto().Fill({ centroCusto: configApp.csvTextNoData }), ProcessoOrcamentarioCentroCusto.fldsCsvDefCrud));
+          configCCs.push(ToCsvDownload(ProcessoOrcamentarioCentroCusto.fill({ centroCusto: configApp.csvTextNoData }), ProcessoOrcamentarioCentroCusto.fldsCsvDefCrud));
 
         //const csvStr = Papa.unparse(configCCs, { delimiter: configApp.csvDelimiter, header: true });
         // const blob = new Blob([csvStr], { type: 'text/csv;charset=utf-8' });
@@ -140,31 +141,31 @@ export default function PageProcessoOrcamentario() {
 
         ponto++;
         const documentsCentroCusto = (apiReturn.value.documentsCentroCusto as IGenericObject[]).map((data) => CentroCusto.deserialize(data).toCsv());
-        if (documentsCentroCusto.length == 0) documentsCentroCusto.push(new CentroCusto().Fill({ cod: configApp.csvTextNoData }).toCsv());
+        if (documentsCentroCusto.length == 0) documentsCentroCusto.push(CentroCusto.fill({ cod: configApp.csvTextNoData }).toCsv());
 
         ponto++;
         const documentsUser = (apiReturn.value.documentsUser as IGenericObject[]).map((data) => User.deserialize(data).toCsv());
-        if (documentsUser.length == 0) documentsUser.push(new User().Fill({ email: configApp.csvTextNoData }).toCsv());
+        if (documentsUser.length == 0) documentsUser.push(User.fill({ email: configApp.csvTextNoData }).toCsv());
 
         ponto++;
         const documentsAgrupPremissas = (apiReturn.value.documentsAgrupPremissas as IGenericObject[]).map((data) => AgrupPremissas.deserialize(data).toCsv());
-        if (documentsAgrupPremissas.length == 0) documentsAgrupPremissas.push(new AgrupPremissas().Fill({ cod: configApp.csvTextNoData }).toCsv());
+        if (documentsAgrupPremissas.length == 0) documentsAgrupPremissas.push(AgrupPremissas.fill({ cod: configApp.csvTextNoData }).toCsv());
 
         ponto++;
         const documentsLocalidade = (apiReturn.value.documentsLocalidade as IGenericObject[]).map((data) => Localidade.deserialize(data).toCsv());
-        if (documentsLocalidade.length == 0) documentsLocalidade.push(new Localidade().Fill({ cod: configApp.csvTextNoData }).toCsv());
+        if (documentsLocalidade.length == 0) documentsLocalidade.push(Localidade.fill({ cod: configApp.csvTextNoData }).toCsv());
 
         ponto++;
         const documentsUnidadeNegocio = (apiReturn.value.documentsUnidadeNegocio as IGenericObject[]).map((data) => UnidadeNegocio.deserialize(data).toCsv());
-        if (documentsUnidadeNegocio.length == 0) documentsUnidadeNegocio.push(new UnidadeNegocio().Fill({ cod: configApp.csvTextNoData }).toCsv());
+        if (documentsUnidadeNegocio.length == 0) documentsUnidadeNegocio.push(UnidadeNegocio.fill({ cod: configApp.csvTextNoData }).toCsv());
 
         ponto++;
         const documentsDiretoria = (apiReturn.value.documentsDiretoria as IGenericObject[]).map((data) => Diretoria.deserialize(data).toCsv());
-        if (documentsDiretoria.length == 0) documentsDiretoria.push(new Diretoria().Fill({ cod: configApp.csvTextNoData }).toCsv());
+        if (documentsDiretoria.length == 0) documentsDiretoria.push(Diretoria.fill({ cod: configApp.csvTextNoData }).toCsv());
 
         ponto++;
         const documentsGerencia = (apiReturn.value.documentsGerencia as IGenericObject[]).map((data) => Gerencia.deserialize(data).toCsv());
-        if (documentsGerencia.length == 0) documentsGerencia.push(new Gerencia().Fill({ cod: configApp.csvTextNoData }).toCsv());
+        if (documentsGerencia.length == 0) documentsGerencia.push(Gerencia.fill({ cod: configApp.csvTextNoData }).toCsv());
 
         // ponto++;
         // const documentsDepto = (apiReturn.value.documentsDepto as IGenericObject[]).map((data) => Depto.deserialize(data).toCsv());
@@ -195,7 +196,7 @@ export default function PageProcessoOrcamentario() {
         ]);
       })
       .catch((error) => {
-        dbgError(`erro downloadConfigCCsAndRefs ponto ${ponto}`, error);
+        dbgError(`ponto ${ponto}`, 'erro downloadConfigCCsAndRefs', error);
       })
       .finally(() => {
         setMainStatesCache({ downloading: false });

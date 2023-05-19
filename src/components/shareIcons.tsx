@@ -2,7 +2,7 @@ import { EmailShareButton, FacebookShareButton, TelegramShareButton, TwitterShar
 import { EmailIcon, FacebookIcon, TelegramIcon, TwitterIcon, WhatsappIcon } from 'react-share';
 import { Stack } from '@mui/material';
 
-import { Env } from '../libCommon/envs';
+import { configApp } from '../app_hub/appConfig';
 
 import { CategMsgSystem } from '../libCommon/logSystemMsg_cliSvr';
 
@@ -23,7 +23,7 @@ export const ShareIcons = ({ url, text, emailSubject, loggedUserInfo, page, poin
       <FacebookShareButton
         url={url}
         quote={text}
-        hashtag={`#${Env('appName')}`}
+        hashtag={`#${configApp.appName}`}
       >
         <FacebookIcon size={40} round={true} />
       </FacebookShareButton>

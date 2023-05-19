@@ -24,7 +24,7 @@ const blackBackColorSobreposSemiTransparent = '#707070';
 // const colorCodeBrown = '#A52A2A';
 // const colorCodeGreen = '#008000';
 
-export interface ThemeVariants { maxWidthScheme?: string, colorScheme?: string; fontScheme?: string; spacingScheme?: string }
+export interface IThemeVariants { maxWidthScheme?: string, colorScheme?: string; fontScheme?: string; spacingScheme?: string }
 
 export const fontFamiliesDefault = ['Roboto', 'Helvetica', 'Verdana', 'Arial', 'Courier'];
 
@@ -38,23 +38,22 @@ export class ThreeColors {
     this.stronger = stronger || regular;
   }
 }
-interface ThemeSchemeMaxWidth { key: string, props: { maxWidth: number } } // em px !
-interface ThemeSchemeColor { key: string, props: { bodyDark: boolean, primaryBackColor: ThreeColors, secondaryBackColor?: ThreeColors } }
-interface ThemeSchemeFont { key: string, props: { fontFamilies: string[], fontSize?: number } }
-interface ThemeSchemeSpacing { key: string, props: { spacing: number } }
+interface IThemeSchemeMaxWidth { key: string, props: { maxWidth: number } } // em px !
+interface IThemeSchemeColor { key: string, props: { bodyDark: boolean, primaryBackColor: ThreeColors, secondaryBackColor?: ThreeColors } }
+interface IThemeSchemeFont { key: string, props: { fontFamilies: string[], fontSize?: number } }
+interface IThemeSchemeSpacing { key: string, props: { spacing: number } }
 
 export type InputVariantType = 'outlined' | 'filled' | 'standard';
-type ButtomVariantType = 'text' | 'outlined' | 'contained';
+type ButtonVariantType = 'text' | 'outlined' | 'contained';
 
-export interface ThemeSchemes {
+export interface IThemeSchemes {
   inputVariant?: InputVariantType,
-  buttomVariant?: ButtomVariantType,
-  colorsBackHier?: string[],
+  buttonVariant?: ButtonVariantType,
   colorBackDroparea?: string;
-  maxWidth?: ThemeSchemeMaxWidth[],
-  color?: ThemeSchemeColor[],
-  font?: ThemeSchemeFont[],
-  spacing?: ThemeSchemeSpacing[],
+  maxWidth?: IThemeSchemeMaxWidth[],
+  color?: IThemeSchemeColor[],
+  font?: IThemeSchemeFont[],
+  spacing?: IThemeSchemeSpacing[],
 }
 
 // export const defaultThemeVariants = (themeSchemes: ThemeSchemes) => ({
@@ -67,7 +66,7 @@ export interface ThemeSchemes {
 /**
  * Tudo que pode ser personalizado na app
  */
-export interface ThemePlusConfig {
+export interface IThemePlusConfig {
   maxWidth?: number;
   fontFamilies: string[];
   fontSize: number;
@@ -78,13 +77,12 @@ export interface ThemePlusConfig {
   widthFontFull?: string;
   widthFontReduz1: string;
   inputVariant: InputVariantType;
-  buttomVariant: ButtomVariantType;
-  colorsBackHier?: string[]; // header e níveis de total
+  buttonVariant: ButtonVariantType;
   colorBackDroparea?: string;
   //widthSmall: string;
   // @@@! tb para cor disabled !!! montar uma pagina de demonstração completa (themes)  
 }
-export const themePlusConfigDefault: ThemePlusConfig = {
+export const themePlusConfigDefault: IThemePlusConfig = {
   maxWidth: 99999,
   fontFamilies: fontFamiliesDefault,
   fontSize: 16,
@@ -94,23 +92,23 @@ export const themePlusConfigDefault: ThemePlusConfig = {
   secondaryBackColor: null,
   widthFontFull: '1000px',
   widthFontReduz1: '768px', // tablets
-  inputVariant: 'standard', 
-  buttomVariant: 'contained',
+  inputVariant: 'standard',
+  buttonVariant: 'contained',
   //widthSmall: '480px', // mobile
 };
 
-export interface BackFront {
+export interface IBackFront {
   text: string;
   backColor: string;
 }
-interface ThemePlusDeriv {
+interface IThemePlusDeriv {
   // status?: {
   //   danger?: string;
   // };
   // minhaCor?: string;
-  destaque1: BackFront;
-  destaque2: BackFront;
-  sobreposSemiTransparent: BackFront;
+  destaque1: IBackFront;
+  destaque2: IBackFront;
+  sobreposSemiTransparent: IBackFront;
   borderLightColor: string;
   borderHeavyColor: string;
 }
@@ -121,8 +119,8 @@ declare module '@mui/material/styles' {
     //   danger: string;
     // };
     // minhaCor: string;
-    themePlusConfig: ThemePlusConfig;
-    themePlusDeriv: ThemePlusDeriv;
+    themePlusConfig: IThemePlusConfig;
+    themePlusDeriv: IThemePlusDeriv;
   }
   // allow configuration using `createTheme`
   interface ThemeOptions {
@@ -130,12 +128,12 @@ declare module '@mui/material/styles' {
     //   danger?: string;
     // };
     // minhaCor?: string;
-    themePlusConfig: ThemePlusConfig;
-    themePlusDeriv: ThemePlusDeriv;
+    themePlusConfig: IThemePlusConfig;
+    themePlusDeriv: IThemePlusDeriv;
   }
 }
 
-export interface ThemePlus extends ThemeMui { } // @@!!!!! ThemePlus em tudo !!
+export interface IThemePlus extends ThemeMui { } // @@!!!!! ThemePlus em tudo
 
 // export const colorTypes = {
 //   primary: 'primary',
@@ -144,7 +142,7 @@ export interface ThemePlus extends ThemeMui { } // @@!!!!! ThemePlus em tudo !!
 
 // aqui se for usado 'Switch size=small' (por exemplo) não fica proporcional ao font size @!!!!!!
 
-export function GenThemePlus(themeSchemes: ThemeSchemes, themeVariants?: ThemeVariants) {
+export function GenThemePlus(themeSchemes: IThemeSchemes, themeVariants?: IThemeVariants) {
   const themePlusConfig = GenThemeConfig(themeSchemes, themeVariants);
 
   const secondaryBackColorOrPrimary = themePlusConfig.secondaryBackColor || themePlusConfig.primaryBackColor;
@@ -157,7 +155,7 @@ export function GenThemePlus(themeSchemes: ThemeSchemes, themeVariants?: ThemeVa
   const foreColorAlt1 = ForeColorAlternative(bodyBackColor, 1);
   //const foreColor = ForeColorByBack(bodyBackColor);
 
-  const themePlusDeriv: ThemePlusDeriv = {
+  const themePlusDeriv: IThemePlusDeriv = {
     destaque1: {
       backColor: backColorAlt1,
       text: ForeColorByBack(backColorAlt1),
@@ -242,7 +240,7 @@ export function GenThemePlus(themeSchemes: ThemeSchemes, themeVariants?: ThemeVa
     // borderHeavyColor: backColorAlt2,
   });
 
-  return <ThemePlus>themePlus;
+  return <IThemePlus>themePlus;
 }
 // export function ThemeObj(theme) {
 //   const themeObj = theme == 'light' ? lightTheme : darkTheme;
@@ -301,7 +299,7 @@ export function ForeColorByBack(backColor: string) {
     }
   }
   catch (error) {
-    dbgError(`Erro ao interpretar backColor '${backColor}' e assumido blue como cor de fonte (tente usar o código da cor no formato #xxxxxx)`);
+    dbgError('ForeColorByBack', `Erro ao interpretar backColor '${backColor}' e assumido blue como cor de fonte (tente usar o código da cor no formato #xxxxxx)`);
     result = 'blue';
   }
   //csl('ForeColorByBack - backcolor', backColor, 'dark?', Color(backColor).isDark(), 'fore', result);
@@ -365,10 +363,9 @@ export function ForeColorAlternative(backColor: string, variant: number) {
   return result;
 }
 
-const GenThemeConfig = (themeSchemes: ThemeSchemes, themeVariants?: ThemeVariants) => {
+const GenThemeConfig = (themeSchemes: IThemeSchemes, themeVariants?: IThemeVariants) => {
   let themeConfig = themePlusConfigDefault;
   if (themeSchemes.inputVariant != null) themeConfig.inputVariant = themeSchemes.inputVariant;
-  if (themeSchemes.colorsBackHier != null) themeConfig = { ...themeConfig, colorsBackHier: themeSchemes.colorsBackHier };
   if (themeSchemes.colorBackDroparea != null) themeConfig = { ...themeConfig, colorBackDroparea: themeSchemes.colorBackDroparea };
   if (themeSchemes.maxWidth?.length > 0) themeConfig = { ...themeConfig, ...themeSchemes.maxWidth[0].props };
   if (themeSchemes.color?.length > 0) themeConfig = { ...themeConfig, ...themeSchemes.color[0].props };

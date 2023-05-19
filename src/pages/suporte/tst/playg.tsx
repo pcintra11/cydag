@@ -4,13 +4,13 @@ import * as yup from 'yup';
 
 import { Box, FormControlLabel, Radio, RadioGroup, Stack } from '@mui/material';
 
-import { HoraDebug, StrNormalize, IdByTime, RandomItem, RandomNumber, HttpStatusCode, CalcExecTime, ErrorPlus } from '../../../libCommon/util';
+import { HoraDebug, StrNormalize, IdByTime, RandomItem, RandomNumber, HttpStatusCode } from '../../../libCommon/util';
 import { IGenericObject } from '../../../libCommon/types';
 import { dbgError } from '../../../libCommon/dbg';
 import { CategMsgSystem } from '../../../libCommon/logSystemMsg_cliSvr';
+import { CalcExecTime } from '../../../libCommon/calcExectime';
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
 
-import { globals } from '../../../libClient/clientGlobals';
 import { CookieCli } from '../../../libClient/cookiesCli';
 import localStorage from '../../../libClient/localStorage';
 import { SystemMsgCli } from '../../../libClient/systemMsgCli';
@@ -20,8 +20,8 @@ import { FrmSetError, FrmCheckbox, FrmInput } from '../../../components';
 import { JsonShow } from '../../../components/jsonShow';
 import { FrmDefaultValues, useFrm, NormalizePropsString } from '../../../hooks/useMyForm';
 
-import { apisTst, pagesSuporte } from '../../../suporte/endPoints';
-import { CmdApi_Playg } from '../../api/suporte/tst/playg_types';
+import { apisTst, pagesSuporte } from '../../../app_suporte/endPoints';
+import { CmdApi_Playg } from '../../api/app_suporte/tst/playg_types';
 
 const f = ({
   qtd: 'qtd',
@@ -32,7 +32,7 @@ const f = ({
   uniqKeys: 'uniqKeys',
 
   collection: 'collection',
-  otherDatabase: 'otherDatabase',
+  useDatabaseTst: 'useDatabaseTst',
 
   tipoExec: 'tipoExec',
   toDo: 'toDo',
@@ -50,7 +50,7 @@ class FrmDataTestsDb {
   insertInGroup: boolean;  // comando unico no mongo com todos inserts
   uniqKeys: boolean;  // gera chaves que nunca serão duplicadas
   collection: string;
-  otherDatabase: boolean;
+  useDatabaseTst: boolean;
 }
 class FrmDataApiCalls {
   tipoExec: string;  // Normal, Promisse, Async (callapi async)
@@ -83,9 +83,11 @@ enum PlayArea {
   none = 'none',
 }
 
-let mount; //let mainStatesCache;
+let mount = false; //let mainStatesCache;
 const apiCorresp1 = apisTst.playg;
 const apiCorresp2 = apisTst.playg_async;
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const pageSelf = pagesSuporte.playg;
 export default function PagePlayg() {
   //#region 
@@ -141,7 +143,7 @@ export default function PagePlayg() {
   //   const calcExecTime = new CalcExecTime();
   //   //appendResults(`${idProc}-ini (${cmd})`);
   //   try {
-  //     const apiReturn = await CallApiCliASync(apiUse(apiCorresp1.apiPath), globals.windowId, { idProc, cmd });
+  //     const apiReturn = await CallApiCliASync(apiUse(apiCorresp1.apiPath),, { idProc, cmd });
   //     if (!mount) return;
   //     appendResults(`${cmd}-fim ${calcExecTime.elapsedMs()}ms`, apiReturn.value);
   //   } catch (error) {
@@ -152,7 +154,7 @@ export default function PagePlayg() {
   async function SubEnvs() {
     //const horaStart = HoraDebug();
     try {
-      const apiReturn = await CallApiCliASync<any>(apiUse(apiCorresp1.apiPath), globals.windowId, {
+      const apiReturn = await CallApiCliASync<any>(apiUse(apiCorresp1.apiPath), {
         cmd: CmdApi_Playg.envs,  //...parmNivelLog()
       });
       appendResults('SubEnvs', apiReturn.value);
@@ -166,7 +168,7 @@ export default function PagePlayg() {
       ...FrmDefaultValues(new FrmDataTestsDb()),
       ...{
         qtd: '100', contentSize: '1024', contentSizeVariable: false, insertInGroup: true, uniqKeys: true,
-        collection: 'base_db_tests', otherDatabase: false
+        collection: 'base_db_tests', useDatabaseTst: false
       } as FrmDataTestsDb,
     }
   });
@@ -199,7 +201,7 @@ export default function PagePlayg() {
     //const horaStart = HoraDebug();
     try {
       //setResultMail({ horaStart, horaEnd: '......', dataApi: resultMail.dataApi });
-      const apiReturn = await CallApiCliASync<any>(apiUse(apiCorresp1.apiPath), globals.windowId, { ...parm, cmd: CmdApi_Playg.mail });
+      const apiReturn = await CallApiCliASync<any>(apiUse(apiCorresp1.apiPath), { ...parm, cmd: CmdApi_Playg.mail });
       appendResults('SubMail', apiReturn.value);
     } catch (error) {
       appendResults('SubMail (error)', error.message);
@@ -212,7 +214,7 @@ export default function PagePlayg() {
     const calcExecTime = new CalcExecTime();
     appendResults(`${idProc}-ini (params)`, [JSON.stringify(parm)]);
     try {
-      const apiReturn = await CallApiCliASync<any>(apiCorresp1.apiPath, globals.windowId, { ...parm, idProc, cmd: CmdApi_Playg.testDbWrite });
+      const apiReturn = await CallApiCliASync<any>(apiCorresp1.apiPath, { ...parm, idProc, cmd: CmdApi_Playg.testDbWrite });
       if (!mount) return;
       appendResults(`${idProc}-fim ${calcExecTime.elapsedMs()}ms`, apiReturn.value);
     } catch (error) {
@@ -225,7 +227,7 @@ export default function PagePlayg() {
     const calcExecTime = new CalcExecTime();
     appendResults(`${idProc}-ini (params)`, [JSON.stringify(parm)]);
     try {
-      const apiReturn = await CallApiCliASync<any>(apiCorresp1.apiPath, globals.windowId, { ...parm, idProc, cmd: CmdApi_Playg.testDbRead });
+      const apiReturn = await CallApiCliASync<any>(apiCorresp1.apiPath, { ...parm, idProc, cmd: CmdApi_Playg.testDbRead });
       if (!mount) return;
       appendResults(`${idProc}-fim ${calcExecTime.elapsedMs()}ms`, apiReturn.value);
     } catch (error) {
@@ -235,7 +237,7 @@ export default function PagePlayg() {
   const TestDbReset = async () => {
     const parm = frmTestsDb.getValues();
     try {
-      const apiReturn = await CallApiCliASync<any>(apiCorresp1.apiPath, globals.windowId, { ...parm, cmd: CmdApi_Playg.testDbReset });
+      const apiReturn = await CallApiCliASync<any>(apiCorresp1.apiPath, { ...parm, cmd: CmdApi_Playg.testDbReset });
       if (!mount) return;
       appendResults('TestDbReset', apiReturn.value);
     } catch (error) {
@@ -249,7 +251,7 @@ export default function PagePlayg() {
     const calcExecTime = new CalcExecTime();
     appendResults(`${idProc}-ini (params)`, [JSON.stringify(parm)]);
     try {
-      const apiReturn = await CallApiCliASync<any>(apiCorresp1.apiPath, globals.windowId, { ...parm, idProc, cmd: CmdApi_Playg.testApiCalls });
+      const apiReturn = await CallApiCliASync<any>(apiCorresp1.apiPath, { ...parm, idProc, cmd: CmdApi_Playg.testApiCalls });
       if (!mount) return;
       appendResults(`${idProc}-fim ${calcExecTime.elapsedMs()}ms`, apiReturn.value);
     } catch (error) {
@@ -305,7 +307,7 @@ export default function PagePlayg() {
       return FrmSetError(frm, 'name', 'Informação obrigatória');
     //const horaStart = HoraDebug();
     try {
-      const apiReturn = await CallApiCliASync<any>(apiUse(apiCorresp1.apiPath), globals.windowId, {
+      const apiReturn = await CallApiCliASync<any>(apiUse(apiCorresp1.apiPath), {
         cmd: CmdApi_Playg.cookieHttpNormal, cmdCookie, ...dataForm, // ...parmNivelLog()
       }, { withCredentials: true });
       appendResults('SubCookieHttpNormal', apiReturn.value);
@@ -329,7 +331,7 @@ export default function PagePlayg() {
       return FrmSetError(frm, 'name', 'Informação obrigatória');
     //const horaStart = HoraDebug();
     try {
-      const apiReturn = await CallApiCliASync<any>(apiUse(apiCorresp1.apiPath), globals.windowId, {
+      const apiReturn = await CallApiCliASync<any>(apiUse(apiCorresp1.apiPath), {
         cmd: CmdApi_Playg.cookieHttpCrypto, cmdCookie, ...dataForm,
       }, { withCredentials: true });
       appendResults('SubCookieHttpCrypto', apiReturn.value);
@@ -376,7 +378,7 @@ export default function PagePlayg() {
         else
           parm = { ...parm, cmd: CmdApi_Playg.wait };
         const horaStart = HoraDebug();
-        CallApiCliASync<any>(apiUse(api), globals.windowId, parm)
+        CallApiCliASync<any>(apiUse(api), parm)
           .then(apiReturn => {
             calls.push({ horaStart, api, callInfo, apiReturn });
             appendResults('SubASyncAndDb', { header, calls });
@@ -395,7 +397,7 @@ export default function PagePlayg() {
     const calcExecTime = new CalcExecTime();
     appendResults(`${idProc}-ini (status ${httpStatus} async: ${isAsync})`);
     try {
-      const apiReturn = await CallApiCliASync<any>(apiCorresp1.apiPath, globals.windowId, { idProc, cmd: CmdApi_Playg.forceHttpStatus, httpStatus, isAsync });
+      const apiReturn = await CallApiCliASync<any>(apiCorresp1.apiPath, { idProc, cmd: CmdApi_Playg.forceHttpStatus, httpStatus, isAsync });
       //const msgsProc = apiReturn.value as string[];
       if (!mount) return;
       appendResults(`${idProc}-fim ${calcExecTime.elapsedMs()}ms`, apiReturn.value);
@@ -474,16 +476,16 @@ export default function PagePlayg() {
 
         {playArea == PlayArea.testsDb &&
           <form onSubmit={(ev) => ev.preventDefault()}>
-            <Stack flexDirection='row' gap={1}>
+            <Stack direction='row' alignItems='center' gap={1}>
               <FrmInput label='qtd' name={f.qtd} width='8rem' frm={frmTestsDb} />
               <FrmInput label='contentSize' name={f.contentSize} width='8rem' frm={frmTestsDb} />
               <FrmCheckbox label='contentSizeVariable' name={f.contentSizeVariable} frm={frmTestsDb} />
               <FrmCheckbox label='insertInGroup' name={f.insertInGroup} frm={frmTestsDb} />
               <FrmCheckbox label='uniqKeys' name={f.uniqKeys} frm={frmTestsDb} />
             </Stack>
-            <Stack flexDirection='row' gap={1}>
+            <Stack direction='row' alignItems='center' gap={1}>
               <FrmInput label='collection' name={f.collection} width='15rem' frm={frmTestsDb} />
-              <FrmCheckbox label='otherDatabase' name={f.otherDatabase} frm={frmTestsDb} />
+              <FrmCheckbox label='useDatabaseTst' name={f.useDatabaseTst} frm={frmTestsDb} />
             </Stack>
             <BtnLine left>
               <BtnS onClick={TestDbWrite}>testDbWrite</BtnS>
@@ -495,7 +497,7 @@ export default function PagePlayg() {
 
         {playArea == PlayArea.testApiCalls &&
           <form onSubmit={(ev) => ev.preventDefault()}>
-            <Stack flexDirection='row' gap={1}>
+            <Stack direction='row' alignItems='center' gap={1}>
               <FrmInput label='(Norm/Prom/Async)' name={f.tipoExec} width='8rem' frm={frmApiCalls} />
               <FrmInput label='(M=mail/D=db/MD=ambos)' name={f.toDo} width='7rem' frm={frmApiCalls} />
               <FrmInput label='sleepMs' name={f.sleepMs} width='3rem' frm={frmApiCalls} />
@@ -590,7 +592,7 @@ export default function PagePlayg() {
       </Stack>
     );
   } catch (error) {
-    dbgError(error, `${pageSelf}-render`);
+    dbgError(pageSelf.pagePath, error.message);
     return (<div>Erro: {error.message}</div>);
   }
 }

@@ -1,12 +1,12 @@
 import React from 'react';
 
 import { csd, dbgError } from '../libCommon/dbg';
-//const useMsal = () => ({ accounts: [], inProgress: Math.random() > 0.5 ? 'none' : '' });
-import { useMsal } from '@azure/msal-react';
+const useMsal = () => ({ accounts: [], inProgress: Math.random() > 0.5 ? 'none' : '' });
+//import { useMsal } from '@azure/msal-react';
 // import { clientId } from '../msal';
 const clientId = '';
 
-import { EnvDeployConfig } from '../libCommon/envs';
+import { EnvDeployConfig } from '../app_base/envs';
 
 import { GlobalState } from '../hooks/useGlobalState';
 import { useGlobalState } from '../hooks/useGlobalState';
@@ -59,16 +59,15 @@ let globalUser: GlobalState = null;
 //let reloginFromCookieNotConfirmed = false;
 //const setReloginConfirmed = () => reloginFromCookieNotConfirmed = false;
 
-interface Parm {
+interface IParm {
   reRender?: boolean;
   id?: string;
 }
-//let mount = false;
-export function useLoggedUser(parm: Parm = {}) {
-  const parmDef: Parm = { reRender: true, id: null };
-  const parmUse: Parm = { ...parmDef, ...parm };
+export function useLoggedUser(parm: IParm = {}) {
+  const parmDef: IParm = { reRender: true, id: null };
+  const parmUse: IParm = { ...parmDef, ...parm };
   const { reRender, id } = parmUse;
-  const [ handleRedirectFase, setHandleRedirectFase ] = React.useState(false); // ainda não está em uso !
+  const [handleRedirectFase] = React.useState(false); // ainda não está em uso !
   const { accounts, inProgress } = useMsal();
   //const [msalInitiating, setMsalInitiating] = React.useState(true);
 
@@ -145,7 +144,7 @@ export function useLoggedUser(parm: Parm = {}) {
     return { loggedUser, isLoadingUser, setUser };
   }
   catch (error) {
-    dbgError('Erro em useLoggedUser:', error.message);
-    return { loggedUser: null as LoggedUser, isLoadingUser: false, setUser: (...params) => dbgError('setUser em caso de erro não tratado!', ...params) };
+    dbgError('useLoggedUser', error.message);
+    return { loggedUser: null as LoggedUser, isLoadingUser: false, setUser: (...params) => dbgError('setUser', 'caso de erro não tratado!', ...params) };
   }
 }

@@ -1,7 +1,7 @@
 import { OrigemFunc, TipoColaborador, TipoParticipPerOrcam } from '../../../../appCydag/types';
 import { csd, dbgError } from '../../../../libCommon/dbg';
 import { IGenericObject } from '../../../../libCommon/types';
-import { FillClass } from '../../../../libCommon/util';
+import { CutUndef, FillClassProps } from '../../../../libCommon/util';
 
 enum CmdApi_Funcionario {
   crudInitialization = 'crudInitialization',
@@ -51,13 +51,15 @@ export class FuncionarioClient {
     this.ativo = true;
     this.despsRecorr = [];
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new FuncionarioClient(); }
+  static fill(values: FuncionarioClient, init = false) { return CutUndef(FillClassProps(FuncionarioClient.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new FuncionarioClient().Fill(values);
+      return FillClassProps(FuncionarioClient.new(), values);
     } catch (error) {
-      dbgError('Erro em FuncionarioClient.deserialize', error.message, values);
-      return new FuncionarioClient();
+      dbgError('FuncionarioClient.deserialize', error.message, values);
+      return FuncionarioClient.new(true);
     }
   }
 }

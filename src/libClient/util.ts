@@ -2,9 +2,9 @@ import { CSSProperties } from 'react';
 import { SxProps } from '@mui/material';
 
 import { MessageLevelUpload } from '../libCommon/uploadCsv';
-import { ThemePlus } from '../styles/themeTools';
+import { IThemePlus } from '../styles/themeTools';
 
-export const propsByMessageLevel = (theme: ThemePlus, level: MessageLevelUpload) => {
+export const propsByMessageLevel = (theme: IThemePlus, level: MessageLevelUpload) => {
   const sxProps: SxProps = { color: '' };
   if (level == MessageLevelUpload.error)
     sxProps.color = theme.palette.error.main;

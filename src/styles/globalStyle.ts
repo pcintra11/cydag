@@ -1,6 +1,6 @@
 import { createGlobalStyle } from 'styled-components';
 
-import { ThemePlus } from './themeTools';
+import { IThemePlus } from './themeTools';
 
 // Configuring styled-jsx with scss in Next.js: https://bfanger.medium.com/styled-jsx-with-scss-in-next-js-5850dfc00449
 
@@ -19,11 +19,11 @@ import { ThemePlus } from './themeTools';
 // 1201px and more - Extra large screens, TV
 
 // remover styled components !
-export const GlobalStyleSC = createGlobalStyle<{ theme: ThemePlus }>`
-  ${({ theme }: { theme: ThemePlus }) => cssByTheme(theme)}
+export const GlobalStyleSC = createGlobalStyle<{ theme: IThemePlus }>`
+  ${({ theme }: { theme: IThemePlus }) => cssByTheme(theme)}
 `;
 
-export const cssByTheme = (theme: ThemePlus) => {
+export const cssByTheme = (theme: IThemePlus) => {
   //#region  
   return `
     div#__next {
@@ -122,6 +122,7 @@ export const cssByTheme = (theme: ThemePlus) => {
     }
 
 
+    /*
     .xxxg-distribVert {
       XXmargin-top: 1rem;
       XXmargin-bottom: 1rem;
@@ -134,7 +135,6 @@ export const cssByTheme = (theme: ThemePlus) => {
       }
     }
 
-    /*
     .xxxg-pageTitle {
       XXmargin-top: 1rem;
       margin-bottom: 1rem;
@@ -168,7 +168,7 @@ export const cssByTheme = (theme: ThemePlus) => {
       display: flex;
       flex-direction: row;
       align-items: center;  /* eixo cruzado era flex-direction (alinhamento na vertical) */
-      justify-content: flex-start; /* filhos no proprio eixo */
+      justify-content: flex-start; /* filhos no próprio eixo */
       flex-wrap: wrap;
       & > * { /* apenas o filho imediato */
         margin-left: 0.5rem;
@@ -184,14 +184,7 @@ export const cssByTheme = (theme: ThemePlus) => {
       }
     }
 
-    .xxxg-clickable {
-      cursor: pointer;
-      &:hover {
-        filter: brightness(0.8);
-        transition: all 0.50s linear;
-      }
-    }
-
+    /*
     ul.xxxg-ul-clean {
       list-style-type: none;
       margin: 0;
@@ -204,6 +197,7 @@ export const cssByTheme = (theme: ThemePlus) => {
       object-fit: cover;
       object-position: center center;
     }
+    */
   `;
   //#endregion
 };

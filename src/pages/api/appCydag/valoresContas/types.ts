@@ -1,6 +1,3 @@
-import _ from 'underscore';
-
-import { dbgError } from '../../../../libCommon/dbg';
 import { IGenericObject } from '../../../../libCommon/types';
 
 enum CmdApi_ValoresContas {
@@ -28,7 +25,7 @@ export {
   CmdApi_ValoresContas,
 };
 
-export interface IChangedLine { 
+export interface IChangedLine {
   key: IGenericObject;
   descr: string;  // #!!!!!! usar o novo protocolo
   valMeses: number[];

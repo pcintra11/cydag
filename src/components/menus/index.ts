@@ -25,8 +25,8 @@ export class MenuEntry {
   }
   static PagePath(pageDef: PageDef, contentUse: React.ReactNode = null, query?: IGenericObject) {
     if (pageDef?.pagePath == null)
-      dbgError('MenuEntry.PagePath para path nulo');
-    const content = contentUse != null ? contentUse : pageDef.txtDynamicMenu;
+      dbgError('MenuEntry', 'PagePath para path nulo');
+    const content = contentUse != null ? contentUse : (pageDef.txtDynamicMenu || pageDef.pagePath);
     return { type: MenuEntryType.pagePath, content, pageDef, query } as MenuEntry;
   }
   static OnlyShow(content: React.ReactNode) {
@@ -74,7 +74,7 @@ export const PageByVariant = (pages: PageDef[], router: NextRouter, mustFound = 
   for (index = 0; index < pages.length; index++) {
     const page = pages[index];
     if (pagesChecked.find((x) => x.pagePath == page.pagePath && x.options?.variant == page.options?.variant) != null) {
-      dbgError(`PageByVariant com entrada duplicada: ${page.pagePath} variante ${page.options?.variant}`, pages);
+      dbgError('PageByVariant', `entrada duplicada: ${page.pagePath} variante ${page.options?.variant}`, pages);
       return null;
     }
     if (page.pagePath == router.pathname) {

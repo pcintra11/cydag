@@ -34,20 +34,20 @@ export function useFrm<FormData = any>({ schema, defaultValues, mode }:
  * @param values valores a assinalar
  * @param propsPreserveNull - propriedades onde o valor null será preservado (não vai substituir por '')
  */
-export function FrmDefaultValues<T>(frmInitValues: T, valuesDb?: any): T {
+export function FrmDefaultValues<T>(frmInitValues: T, valuesSet?: any): T {
+  const result: any = {};
   for (const prop in frmInitValues) {
-    const valueInit = frmInitValues[prop];
-    let valueSet = undefined;
-    if (valueInit == null)
-      valueSet = '';
-    if (valuesDb != null &&
-      valuesDb[prop] != null)
-      valueSet = valuesDb[prop];
-    if (valueSet !== undefined)
-      frmInitValues[prop] = valueSet;
+    let valueFinal: any = frmInitValues[prop];
+    if (valueFinal == null)
+      valueFinal = '';
+    if (valuesSet != null &&
+      valuesSet[prop] != null)
+      valueFinal = valuesSet[prop];
+    result[prop] = valueFinal;  //#!!!!!!!!!!!!!!!!!! retestar, não ajusta mais o primeiro objeto !!
   }
-  return frmInitValues;
+  return result;
 }
+
 // export function FrmDefaultValuesOld<T>(frmInitValues: T, values?: any, propsPreserveNull?: string[]): T {
 //   for (const prop in frmInitValues) {
 //     const valueInit = frmInitValues[prop];
@@ -72,28 +72,28 @@ export function FrmSetValues(frm, values) { //@@!!!!! type !!
   frm.clearErrors(); //@@!!!!!!
 }
 
-export function NormalizePropsString<T>(dataform: T) {
+export function NormalizePropsString<T>(dataForm: T) {
   const result = {} as T;
-  if (dataform == null) return undefined;
-  for (let index = 0; index < Object.keys(dataform).length; index++) {
-    const prop = Object.keys(dataform)[index];
-    let valueSet = dataform[prop];
+  if (dataForm == null) return undefined;
+  for (let index = 0; index < Object.keys(dataForm).length; index++) {
+    const prop = Object.keys(dataForm)[index];
+    let valueSet = dataForm[prop];
     if (typeof valueSet === 'string') {
       valueSet = valueSet.trim();
       if (valueSet == '')
         //(propsPreserveEmptyString == null || !propsPreserveEmptyString.includes(prop)))
-        valueSet = undefined;
+        valueSet = null;
     }
     result[prop] = valueSet;
   }
   return result;
 }
-// export function NormalizePropsStringOld<T>(dataform: T, propsPreserveEmptyString?: string[]) {
+// export function NormalizePropsStringOld<T>(dataForm: T, propsPreserveEmptyString?: string[]) {
 //   const result = {} as T;
-//   if (dataform == null) return undefined;
-//   for (let index = 0; index < Object.keys(dataform).length; index++) {
-//     const prop = Object.keys(dataform)[index];
-//     let valueSet = dataform[prop];
+//   if (dataForm == null) return undefined;
+//   for (let index = 0; index < Object.keys(dataForm).length; index++) {
+//     const prop = Object.keys(dataForm)[index];
+//     let valueSet = dataForm[prop];
 //     if (typeof valueSet === 'string') {
 //       valueSet = valueSet.trim();
 //       if (valueSet == '' &&

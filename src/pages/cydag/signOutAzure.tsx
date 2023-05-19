@@ -8,7 +8,7 @@ import { useLoggedUser } from '../../appCydag/useLoggedUser';
 import { pagesApp } from '../../appCydag/endPoints';
 import { useMsal } from '@azure/msal-react';
 import { Box,  Stack } from '@mui/material';
-import { UserSignOut } from '../../appCydag/userResourcesCli';
+import { UserSignOut } from '../../appCydag/userResourcesCli'; 
 
 const pageSelf = pagesApp.signOut;
 export default function PageSignOutAzure() {

@@ -1,16 +1,15 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import _ from 'underscore';
 
 import { Stack } from '@mui/material';
 
-import { BinSearchItem, BinSearchProp, BooleanToSN, CalcExecTime, ErrorPlus, ObjUpdAllProps } from '../../libCommon/util';
-import { csd, csl, dbgError } from '../../libCommon/dbg';
+import { BinSearchItem, BinSearchProp, BooleanToSN, ErrorPlus, ObjUpdAllProps } from '../../libCommon/util';
+import { CalcExecTime } from '../../libCommon/calcExectime';
+import { csd, csl } from '../../libCommon/dbg';
 import { IGenericObject } from '../../libCommon/types';
 import { PageDef } from '../../libCommon/endPoints';
 import { CallApiCliASync } from '../../fetcher/fetcherCli';
 
-import { globals } from '../../libClient/clientGlobals';
 import { SaveAsXlsx } from '../../libClient/saveAsClient';
 
 import { AbortProc, SelOption, PopupMsg, WaitingObs, SnackBarError, FakeLink } from '../../components';
@@ -40,8 +39,8 @@ const fldFrmExtra = {
 
 let mount; let mainStatesCache;
 const apis = {
-  getProcsOrcCCsAuth: () => CallApiCliASync<any>(apisApp.funcionario.apiPath, globals.windowId, { cmd: CmdApi_Funcionario.getProcsOrcCCsAuthFuncionarios }),
-  getItens: (filter: FrmFilter) => CallApiCliASync<any>(apisApp.funcionario.apiPath, globals.windowId, { cmd: CmdApi_Funcionario.exportFuncionarios, filter }),
+  getProcsOrcCCsAuth: () => CallApiCliASync<any>(apisApp.funcionario.apiPath, { cmd: CmdApi_Funcionario.getProcsOrcCCsAuthFuncionarios }),
+  getItens: (filter: FrmFilter) => CallApiCliASync<any>(apisApp.funcionario.apiPath, { cmd: CmdApi_Funcionario.exportFuncionarios, filter }),
 };
 const pageSelf = pagesApp.exportaFuncionario;
 export default function PageExportPlanej() {

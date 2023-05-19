@@ -5,16 +5,15 @@ import { FileRejection, useDropzone } from 'react-dropzone';
 
 import { Box, Stack, useTheme } from '@mui/material';
 
-import { IsErrorManaged, ObjUpdAllProps, ErrorPlus, CalcExecTime, ForceWait, mimeTypes } from '../../libCommon/util';
+import { IsErrorManaged, ObjUpdAllProps, ErrorPlus, ForceWait, mimeTypes } from '../../libCommon/util';
+import { CalcExecTime } from '../../libCommon/calcExectime';
 import { IGenericObject } from '../../libCommon/types';
 import { PageDef } from '../../libCommon/endPoints';
-import { dbgError } from '../../libCommon/dbg';
 
 import { IUploadMessage, ToCsvDownload, UploadFriendlyError, UploadStatus } from '../../libCommon/uploadCsv';
 
 import { CallApiCliASync } from '../../fetcher/fetcherCli';
 
-import { globals } from '../../libClient/clientGlobals';
 import { SaveAsXlsx } from '../../libClient/saveAsClient';
 import { propsByMessageLevel } from '../../libClient/util';
 import { FrmDefaultValues, useFrm, useWatchMy } from '../../hooks/useMyForm';
@@ -24,7 +23,8 @@ import { WaitingObs } from '../../components';
 import { AbortProc, LogErrorUnmanaged } from '../../components';
 import { DropAreaUpload } from '../../components/dropArea';
 
-import { configApp } from '../../appCydag/config';
+import { configApp } from '../../app_hub/appConfig';
+
 import { pagesApp, apisApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 import { Funcionario, ProcessoOrcamentario } from '../../appCydag/modelTypes';
@@ -43,8 +43,8 @@ class FrmFilter {
 
 let mount; let mainStatesCache;
 const apis = {
-  getAnoAllowed: () => CallApiCliASync<any>(apisApp.processoOrcamentario.apiPath, globals.windowId, { cmd: CmdApi_ProcessoOrcamentario.list, filter: { status: ProcessoOrcamentarioStatus.preparacao } }),
-  upload: (parm: any) => CallApiCliASync<any>(apisApp.funcionario.apiPath, globals.windowId, { cmd: CmdApi_Funcionario.upload, ...parm })
+  getAnoAllowed: () => CallApiCliASync<any>(apisApp.processoOrcamentario.apiPath, { cmd: CmdApi_ProcessoOrcamentario.list, filter: { status: ProcessoOrcamentarioStatus.preparacao } }),
+  upload: (parm: any) => CallApiCliASync<any>(apisApp.funcionario.apiPath, { cmd: CmdApi_Funcionario.upload, ...parm })
 };
 const pageSelf = pagesApp.cargaFuncionario;
 export default function PageCargaFuncionario() {
@@ -131,7 +131,7 @@ export default function PageCargaFuncionario() {
   //#endregion
 
   const downloadModelo = () => {
-    const amostra = [ToCsvDownload(new Funcionario().Fill({ centroCusto: '' }), Funcionario.fldsCsvDefUpload)];
+    const amostra = [ToCsvDownload(Funcionario.fill({ centroCusto: '' }), Funcionario.fldsCsvDefUpload)];
     const orientacoes = [
       { 'Orientações': '' },
       { 'Orientações': 'Preenchimento' },

@@ -1,19 +1,25 @@
-import { Env, EnvApiTimeout, EnvDeveloper } from '../libCommon/envs';
-
-import { pagesApp } from './endPoints';
 import { ObjectId } from 'mongodb';
-import { GenThemePlus } from '../styles/themeTools';
-import { themeSchemesHub } from '../link';
-import { isAmbDev, isAmbDevOrQas } from '../libCommon/isAmb';
-import { SentMessageLogASync } from '../base/SentMessageLog';
-import { SendEmailAsyncApiNew, SendMailASyncManaged } from '../libServer/asyncProcsCalls';
-import { CtrlApiExec } from '../libServer/util';
+
+import { configApp } from '../app_hub/appConfig';
+import { SentMessageLogASync } from '../app_base/SentMessageLog';
+
+
+import { Env, EnvApiTimeout, EnvDeveloper, isAmbDev, isAmbPrd } from '../app_base/envs';
 import { IGenericObject } from '../libCommon/types';
-import { AnchorHrefMailTo, DateDisp, UrlAppWithParams } from '../libCommon/util';
+import { AnchorHrefMailTo, DateDisp, UrlForPage } from '../libCommon/util';
+import { CtrlContext } from '../libCommon/ctrlContext';
 import { dbgError } from '../libCommon/dbg';
 
+import { SendEmailAsyncApi, SendMailASyncManaged } from '../libServer/asyncProcsCalls';
+
+import { GenThemePlus } from '../styles/themeTools';
+
+import { themeSchemesHub } from '../app_hub/clientResources';
+
+import { pagesApp } from './endPoints';
+
 // #region links por email
-interface bodyForLinks1Props {
+interface IBodyForLinks1Props {
   //homeHref: string;
   linkHref: string;
   linkText: string;
@@ -22,10 +28,10 @@ interface bodyForLinks1Props {
   expireIn?: Date;
 }
 
-const bodyForLinks1 = (props: bodyForLinks1Props) => {
+const bodyForLinks1 = (props: IBodyForLinks1Props) => {
   const theme = GenThemePlus(themeSchemesHub);
 
-  const infoAmbiente = isAmbDevOrQas() ? `<p>Ambiente ${Env('amb')}</p>` : '';
+  const infoAmbiente = !isAmbPrd() ? `<p>Ambiente ${Env('amb')}</p>` : '';
   const textHtml = props.text != null ? `<p style='text-align:center; margin:20px; font-size:16pt;'>${props.text}</p>` : '';
   const expireInHtml = props.expireIn != null ? `<p style='text-align:center; margin-top:10px; margin-bottom:40px; font-size:10pt;'>Link válido até ${DateDisp(props.expireIn, 'dmyhm')}</p>` : '';
   //const homeHref = Env('appUrl');
@@ -36,7 +42,7 @@ const bodyForLinks1 = (props: bodyForLinks1Props) => {
     <div style='text-align:center; margin:10px; font-size:20pt;'>
       <hr style='height:10px; margin: 10px; color:${theme.palette.primary.main}' />
 
-      <p style='font-size:35pt;'>${Env('appName')}</p>
+      <p style='font-size:35pt;'>${configApp.appName}</p>
 
       <p style='text-align:center; margin:20px; font-size:20pt;'>${props.title}</p>
 
@@ -56,7 +62,7 @@ const bodyForLinks1 = (props: bodyForLinks1Props) => {
           Se você não reconhece essa atividade por favor desconsidere a mensagem.
         </p>        
         <p>
-          Não responda para esse endereço. Precisando de ajuda entre em contato por este email: <a href=${AnchorHrefMailTo(Env('emailSupport'), subjectEmailHelp)}>${Env('emailSupport')}</a>
+          Não responda para esse endereço. Precisando de ajuda entre em contato por este email: <a href=${AnchorHrefMailTo(configApp.support.email, subjectEmailHelp)}>${configApp.support.email}</a>
         </p>       
       </div>
       ${infoAmbiente}
@@ -67,29 +73,29 @@ const bodyForLinks1 = (props: bodyForLinks1Props) => {
   // </div>
 };
 
-
-export async function SendLink_resetPswASync(ctrlApiExec: CtrlApiExec, userId: ObjectId, email: string, name: string, query: IGenericObject, expireIn: Date) {
-  return await SendLinkASync(ctrlApiExec, userId, email, pagesApp.userResetPsw.pagePath, query, expireIn, bodyForLinks1,
+export async function SendLink_resetPswASync(ctrlContext: CtrlContext, userId: ObjectId, email: string, name: string,
+  query: IGenericObject, expireIn: Date) {
+  return await SendLinkASync(ctrlContext, userId, email, pagesApp.userResetPsw.pagePath, query, expireIn, bodyForLinks1,
     'Reset de senha',
     `Olá ${name}.`,
     null,
     'Clique aqui para alterar sua senha');
 }
 
-// possiveis retornos
+// possíveis retornos
 // para erros graves throw error
-// para erros no envio (timeout) tenta enviar novamente em backgound (de forma asincrona)
-async function SendLinkASync(ctrlApiExec: CtrlApiExec, userId: ObjectId, email: string, path: string, query: IGenericObject, expireIn: Date, bodyCb: (props: bodyForLinks1Props) => string,
+// para erros no envio (timeout) tenta enviar novamente em background (de forma assíncrona)
+async function SendLinkASync(ctrlContext: CtrlContext, userId: ObjectId, email: string, pagePath: string, query: IGenericObject, expireIn: Date, bodyCb: (props: IBodyForLinks1Props) => string,
   subject: string, title: string, text: string, linkText: string) {
-  const elapsedMsApi = ctrlApiExec.calcExecTime.elapsedMs();
+  const elapsedMsApi = ctrlContext.calcExecTime.elapsedMs();
   //let resultOk = null;
   //let resultError = null;
-  const replyTo = Env('emailSupport');
+  const replyTo = configApp.support.email;
   // const methodAsync = false; // (new Date()).getSeconds() < 30 ? true : false;
-  // dbgInfo('subject', subject, ' - metodo async', methodAsync);
+  // dbgInfo('subject', subject, ' - método async', methodAsync);
   try {
     //const homeHref = FullUrl(ctrlApiExec, pageHome.pagePath);
-    const linkHref = UrlAppWithParams(path, query);
+    const linkHref = UrlForPage(pagePath, query);
     const bodyHtml = bodyCb({ linkHref, linkText, title, text, expireIn }); // homeHref, 
     let to: string = null;
     let bcc: string = null;
@@ -112,7 +118,7 @@ async function SendLinkASync(ctrlApiExec: CtrlApiExec, userId: ObjectId, email: 
       replyTo,
     };
 
-    const logFn = (userId != null) ? async (resultOk, resultError) => await SentMessageLogASync({ userId, type: 'email', target: email, message: subject }, resultOk, resultError, ctrlApiExec) : undefined;
+    const logFn = (userId != null) ? async (resultOk, resultError) => await SentMessageLogASync({ userId, type: 'email', target: email, message: subject }, resultOk, resultError, ctrlContext) : undefined;
     // if (methodAsync)
     //   SendMail(sendMailParams, varsHttp.apiPathMainParams(), logFn)
     //     .then((sendMail) => dbgInfo('SendLink return(async):', `response: ${sendMail.resultOk} ; error: ${sendMail.resultError}`))
@@ -123,7 +129,7 @@ async function SendLinkASync(ctrlApiExec: CtrlApiExec, userId: ObjectId, email: 
     try {
       const timeOutSendMail = (EnvApiTimeout().exec * 0.9) - elapsedMsApi;
       //console.log({ elapsedMsApi, timeOutSendMail });
-      resultSync = await SendMailASyncManaged(sendMailParams, ctrlApiExec.context(), timeOutSendMail, logFn);
+      resultSync = await SendMailASyncManaged(sendMailParams, ctrlContext, timeOutSendMail, logFn);
       //dbgInfo('SendLink return(sync) processed');
     } catch (error) {
       errorSync = error.message;
@@ -135,13 +141,13 @@ async function SendLinkASync(ctrlApiExec: CtrlApiExec, userId: ObjectId, email: 
         return { sentSync: true, result: resultSync.resultOk };
     }
     else {
-      // tenta envar de forma assincrona !
-      await SendEmailAsyncApiNew({ ...sendMailParams, subject: sendMailParams.subject }, ctrlApiExec);
+      // tenta enviar de forma assíncrona !
+      await SendEmailAsyncApi({ ...sendMailParams, subject: sendMailParams.subject }, ctrlContext);
       return { sentSync: false, result: `Erro na tentativa de envio síncrono: ${errorSync} (SERÁ tentado de forma assíncrona)` };
     }
     //}
   } catch (error) {
-    dbgError('SendLink error(sync)', error.message);
+    dbgError('SendLink(sync)', error.message);
     //resultError = error.message;
     throw error;
 

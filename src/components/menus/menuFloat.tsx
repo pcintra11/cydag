@@ -7,7 +7,9 @@ import Divider_mui from '@mui/material/Divider';
 
 import { PageDef } from '../../libCommon/endPoints';
 
+import { Typo } from '../ui';
 import { MenuEntry, MenuEntryType, routerPageDef } from '.';
+import { Box } from '@mui/material';
 
 // um componente que, ao clicar, abre um menu de opções abaixo
 interface IMenuFloatProps {
@@ -27,18 +29,18 @@ export function MenuFloat({ anchor, itens, pageDefCurr, style }: IMenuFloatProps
     setAnchorEl(null);
   };
   // @@@! cor do submenu
-  // está causando impacto em paginas com muito conteudo (css?)
+  // está causando impacto em paginas com muito conteúdo (css?)
 
   const ContentItem = ({ menuEntry, isPageCurrent }: { menuEntry: MenuEntry, isPageCurrent: boolean }) => {
-    const renderComp = isPageCurrent ? <b>{menuEntry.content}</b> : <>{menuEntry.content}</>;
+    const renderComp = (isPageCurrent && typeof menuEntry.content === 'string') ? <Typo bold>{menuEntry.content}</Typo> : <>{menuEntry.content}</>;
     return renderComp;
   };
 
   return (
     <>
-      <div onClick={handleClick} style={{ ...style, cursor: 'pointer' }}>
+      <Box onClick={handleClick} style={{ ...style, cursor: 'pointer' }}>
         {anchor}
-      </div>
+      </Box>
       <Menu_mui
         anchorEl={anchorEl}
         open={open}

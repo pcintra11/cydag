@@ -1,14 +1,19 @@
 import { MenuType } from '../components';
-import { ThemeSchemes, ThreeColors } from '../styles/themeTools';
+import { IThemeSchemes, ThreeColors } from '../styles/themeTools';
 
 // appXXX
 
 export const menuTypeApp = MenuType.lateral;
 
-export const themeSchemesApp: ThemeSchemes = {
-  inputVariant: 'standard',
-  buttomVariant: 'contained',
+export const cydagColors = {
   colorsBackHier: ['#ce171f', '#999999', '#cccccc', '#eeeeee'],
+  bgColorRealMaiorPlan: '#ffe5e5',
+  bgColorRealMenorPlan: '#e5f2e5',
+};
+
+export const themeSchemesApp: IThemeSchemes = {
+  inputVariant: 'standard',
+  buttonVariant: 'contained',
   colorBackDroparea: 'lightblue',
   maxWidth: [
     { key: 'full', props: { maxWidth: 99999 } },

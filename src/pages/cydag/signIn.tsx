@@ -4,7 +4,7 @@ import _ from 'underscore';
 
 import { Stack } from '@mui/material';
 
-import { _AppLogRedir } from '../_app';
+import { chgUserAndRouteContext } from '../_appResources';
 
 import { IsErrorManaged, ObjUpdAllProps, ErrorPlus } from '../../libCommon/util';
 import { dbg, ScopeDbg } from '../../libCommon/dbg';
@@ -20,6 +20,7 @@ import { useLoggedUser } from '../../appCydag/useLoggedUser';
 import { UserEmailLinkASync, UserSignInASync } from '../../appCydag/userResourcesCli';
 import { User } from '../../appCydag/modelTypes';
 import { signInValidations, UserLinkType } from '../api/appCydag/user/types';
+import { ctrlContextFromGlobals } from '../../libClient/clientGlobals';
 
 enum Phase {
   initiating = 'initiating',
@@ -41,12 +42,12 @@ export default function PageSignIn() {
   const [mainStates, setMainStates] = React.useState<MainStates>({ phase: Phase.initiating });
   mainStatesCache = { ...mainStates }; const setMainStatesCache = (newValues: MainStates) => { if (!mount) return; ObjUpdAllProps(mainStatesCache, newValues); setMainStates({ ...mainStatesCache }); };
 
-  const { chgUserAndRouteStart } = React.useContext(_AppLogRedir);
+  const { chgUserAndRouteStart } = React.useContext(chgUserAndRouteContext);
   const router = useRouter();
   const { loggedUser, isLoadingUser } = useLoggedUser({ id: pageSelf.pagePath });
   //const agora = new Date();
 
-  const dbgX = (...params) => dbg({ level: 99, levelScope: ScopeDbg.x, context: 'signIn', color: 2 }, ...params);
+  const dbgX = (...params) => dbg({ level: 3, ctrlContext: ctrlContextFromGlobals(pageSelf.pagePath) }, ...params);
 
   dbgX('root*****', `isReady: ${router.isReady} ; isLoadingUser: ${isLoadingUser} ; loggedUser: ${loggedUser}`);
 
@@ -106,7 +107,7 @@ export default function PageSignIn() {
       FrmError(frmSignIn, error);
     }
   };
-  const sendResetPswLink = async (dataForm) => {
+  const sendResetPswLink = async (dataForm: FrmDataSignIn) => {
     const data = NormalizePropsString(dataForm);
     try {
       const message = await UserEmailLinkASync(data.email, UserLinkType.resetPsw);

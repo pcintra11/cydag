@@ -4,14 +4,13 @@ import { Autocomplete, FormHelperText, TextField, useTheme } from '@mui/material
 
 import { Box, FormControl, Stack } from '@mui/material';
 
-import { IsErrorManaged, ObjUpdAllProps, ErrorPlus, ObjDiff, CalcExecTime, ForceWait, BinSearchItem } from '../../libCommon/util';
+import { IsErrorManaged, ObjUpdAllProps, ErrorPlus, ObjDiff, ForceWait, BinSearchItem } from '../../libCommon/util';
+import { CalcExecTime } from '../../libCommon/calcExectime';
 import { IGenericObject } from '../../libCommon/types';
 import { PageDef } from '../../libCommon/endPoints';
 import { csd } from '../../libCommon/dbg';
 
 import { CallApiCliASync } from '../../fetcher/fetcherCli';
-
-import { globals } from '../../libClient/clientGlobals';
 
 import { AlertMy, FrmSetError, PopupMsg, SnackBarError } from '../../components';
 import { Btn, BtnLine, WaitingObs } from '../../components';
@@ -20,18 +19,16 @@ import { FrmError, FrmInput } from '../../components';
 import { ColGridConfig, TableGrid } from '../../components';
 import { FrmDefaultValues, FrmSetValues, NormalizePropsString, useFrm, useWatchMy } from '../../hooks/useMyForm';
 
-import { configApp } from '../../appCydag/config';
+import { configApp } from '../../app_hub/appConfig';
+
 import { BtnCrud, IconButtonAppCrud, IconButtonAppSearch } from '../../appCydag/components';
 import { pagesApp, apisApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
-
 import { CentroCusto, ClasseCusto, ClasseCustoRestrita } from '../../appCydag/modelTypes';
 import { OrigemClasseCusto } from '../../appCydag/types';
 import { CmdApi_CentroCusto } from '../api/appCydag/centroCusto/types';
 import { CmdApi_ClasseCusto, SortType_ClasseCusto } from '../api/appCydag/classeCusto/types';
-
 import { Entity_Crud, CmdApi_Crud as CmdApi } from '../api/appCydag/classeCustoRestrita/types';
-
 
 enum Phase {
   initiating = 'initiating',
@@ -49,7 +46,7 @@ class FrmFilter {
   classeCusto: string;
 }
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.classeCustoRestrita.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.classeCustoRestrita.apiPath, parm) };
 const pageSelf = pagesApp.classeCustoRestrita;
 export default function PageClasseCustoRestritaCrud() {
   const frmFilter = useFrm<FrmFilter>({
@@ -152,7 +149,7 @@ export default function PageClasseCustoRestritaCrud() {
     if (!router.isReady || isLoadingUser) return;
     if (!PageDef.IsUserAuthorized(pageSelf, loggedUser?.roles)) throw new ErrorPlus('Não autorizado.');
     setMainStatesCache({ phase: Phase.list, filter: { classeCusto: '' }, filterApplyed: false, listing: { searching: false, dataRows: [] } });
-    CallApiCliASync<any>(apisApp.classeCusto.apiPath, globals.windowId, {
+    CallApiCliASync<any>(apisApp.classeCusto.apiPath, {
       cmd: CmdApi_ClasseCusto.list, getAll: true,
       filter: { origemArray: [OrigemClasseCusto.inputada, OrigemClasseCusto.totalImputada] },
       sortType: SortType_ClasseCusto.classeCusto
@@ -165,7 +162,7 @@ export default function PageClasseCustoRestritaCrud() {
       .catch((error) => {
         SnackBarError(error, `${pageSelf.pagePath}-CmdApi_ClasseCusto.list`);
       });
-    CallApiCliASync<any>(apisApp.centroCusto.apiPath, globals.windowId, { cmd: CmdApi_CentroCusto.list, getAll: true })
+    CallApiCliASync<any>(apisApp.centroCusto.apiPath, { cmd: CmdApi_CentroCusto.list, getAll: true })
       .then(async (apiReturn) => {
         const centroCustoArray = (apiReturn.value.documents as IGenericObject[]).map((data) => CentroCusto.deserialize(data));
         setMainStatesCache({ centroCustoArray });
@@ -183,7 +180,7 @@ export default function PageClasseCustoRestritaCrud() {
       if (phase == Phase.list)
         setMainStatesCache({ phase: Phase.list, data: null, index: null });
       else {
-        const data = phase === Phase.insert ? new Entity_Crud() : mainStates.listing.dataRows[index];
+        const data = phase === Phase.insert ? Entity_Crud.new(true) : mainStates.listing.dataRows[index];
         FrmSetValues(frmData, FrmDefaultValues(new FrmData(), data));
         setMainStatesCache({ phase, data, index, errorFlds: {} });
       }
@@ -255,7 +252,7 @@ export default function PageClasseCustoRestritaCrud() {
     if (classeCusto != '') {
       classeCustoSelected = BinSearchItem(mainStates.classeCustoArray, classeCusto, ClasseCustoRestrita.F.classeCusto);
       if (classeCustoSelected == null) {
-        classeCustoSelected = new ClasseCusto().Fill({ classeCusto, descr: '*** inexistente ou imprópria para essa definição ***' });
+        classeCustoSelected = ClasseCusto.fill({ classeCusto, descr: '*** inexistente ou imprópria para essa definição ***' });
         optionClasseCustoAppend.push(classeCustoSelected);
       }
     }
@@ -264,7 +261,7 @@ export default function PageClasseCustoRestritaCrud() {
     centroCustoArray.forEach((x) => {
       let centroCustoSelected = BinSearchItem(mainStates.centroCustoArray, x, 'cod');
       if (centroCustoSelected == null) {
-        centroCustoSelected = new CentroCusto().Fill({ cod: x, descr: '*** inexistente ***' });
+        centroCustoSelected = CentroCusto.fill({ cod: x, descr: '*** inexistente ***' });
         optionCentroCustoAppend.push(centroCustoSelected);
       }
       centroCustoArraySelected.push(centroCustoSelected);

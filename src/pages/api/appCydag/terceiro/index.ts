@@ -1,12 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import _ from 'underscore';
 
-import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
+import { ConnectDbASync, CloseDbASync } from '../../../../libServer/dbMongo';
 
 import { ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
 import { csd } from '../../../../libCommon/dbg';
 //import { CheckRoleAllowed } from '../../../../libCommon/endPoints';
-import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ReqNoParm, ResumoApi } from '../../../../libServer/util';
@@ -16,25 +14,25 @@ import { CorsMiddlewareAsync } from '../../../../libServer/cors';
 import { AlertTimeExecApiASync } from '../../../../libServer/alertTimeExecApi';
 import { ApiLogFinish, ApiLogStart } from '../../../../libServer/apiLog';
 
+import { isAmbNone } from '../../../../app_base/envs';
+
 import { Terceiro } from '../../../../appCydag/modelTypes';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatusMd, RevisaoValor } from '../../../../appCydag/types';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
-
 import { apisApp, rolesApp } from '../../../../appCydag/endPoints';
 import { FuncaoTerceiroModel, UserModel } from '../../../../appCydag/models';
-import { configApp } from '../../../../appCydag/config';
-
 import { ProcessoOrcamentarioCentroCustoModel, ProcessoOrcamentarioModel, TerceiroModel } from '../../../../appCydag/models';
-
-import { CmdApi_Terceiro as CmdApi, IChangedLine, LineState } from './types';
 import { ccsAuthArray, CheckProcCentroCustosAuth, IAuthCC, procsCentroCustosConfigAuthAllYears } from '../../../../appCydag/utilServer';
 import { amountParse } from '../../../../appCydag/util';
 
+import { CmdApi_Terceiro as CmdApi, IChangedLine, LineState } from './types';
+import { configCydag } from '../../../../appCydag/configCydag';
+
 const apiSelf = apisApp.terceiro;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
   const parm = ctrlApiExec.parm;
@@ -42,10 +40,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   const resumoApi = new ResumoApi(ctrlApiExec);
   const agora = new Date();
   let deleteIfOk = false;
-  await SleepMsDevRandom(null, ctrlApiExec.context());
+  await SleepMsDevRandom(null, ctrlApiExec.ctrlContext, 'main');
 
   try {
-    await ConnectDbASync({ ctrlApiExec });
+    await ConnectDbASync({ ctrlContext: ctrlApiExec.ctrlContext });
     const apiLogProc = await ApiLogStart(ctrlApiExec, loggedUserReq);
 
     try {
@@ -151,7 +149,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 nome: terceirosEdit.nome,
                 fornecedor: terceirosEdit.fornecedor,
                 funcaoTerceiros: terceirosEdit.funcaoTerceiros,
-                valMeses: terceirosEdit.valMeses.map((x) => amountParse(x, configApp.decimalsValsInput)),
+                valMeses: terceirosEdit.valMeses.map((x) => amountParse(x, configCydag.decimalsValsInput)),
                 lastUpdated: agora,
               } as Terceiro;
             }
@@ -177,7 +175,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     await ApiLogFinish(apiLogProc, resumoApi.resultProc(), deleteIfOk);
-    await CloseDbASync({ ctrlApiExec });
+    await CloseDbASync({ ctrlContext: ctrlApiExec.ctrlContext });
   } catch (error) {
     const { httpStatusCode, jsonErrorData } = await ApiStatusDataByErrorASync(error, 'throw 2', parm, ctrlApiExec);
     resumoApi.status(httpStatusCode).jsonData(jsonErrorData);

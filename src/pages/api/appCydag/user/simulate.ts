@@ -1,12 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 //import _ from 'underscore';
 
-import { CookieUserConfig } from '../../../../base/loggedUserSvr';
-import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
+import { CookieUserConfig } from '../../../../libCommon/loggedUserSvr';
+import { ConnectDbASync, CloseDbASync } from '../../../../libServer/dbMongo';
 
 import { ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
-import { EnvDeployConfig } from '../../../../libCommon/envs';
-import { isAmbNone } from '../../../../libCommon/isAmb';
+import { EnvDeployConfig, isAmbNone } from '../../../../app_base/envs';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ReqNoParm, ResumoApi } from '../../../../libServer/util';
@@ -24,9 +23,9 @@ import { User } from '../../../../appCydag/modelTypes';
 
 const apiSelf = apisApp.userSimulate;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
   const parm = ctrlApiExec.parm;
@@ -34,10 +33,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   const resumoApi = new ResumoApi(ctrlApiExec);
   const agora = new Date();
   const deleteIfOk = true;
-  await SleepMsDevRandom(null, ctrlApiExec.context());
+  await SleepMsDevRandom(null, ctrlApiExec.ctrlContext, 'main');
 
   try {
-    await ConnectDbASync({ ctrlApiExec });
+    await ConnectDbASync({ ctrlContext: ctrlApiExec.ctrlContext });
     const apiLogProc = await ApiLogStart(ctrlApiExec, loggedUserReq);
 
     try {
@@ -63,7 +62,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       const hasSomeCCResponsavel = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailResponsavel: userDbSession.email })) != null;
       const hasSomeCCPlanejador = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailPlanejador: userDbSession.email })) != null;
       const hasSomeCCConsulta = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailConsulta: userDbSession.email })) != null;
-      const loggedUserNow = User.loggedUser(userDbSession, loggedUserReq.emailSigned, agora, agora, agora, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta, cookieUserConfig.TTLSeconds);
+      const loggedUserNow = User.loggedUser(userDbSession, loggedUserReq.emailSigned, agora, agora, agora, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta); // , cookieUserConfig.TTLSeconds
       await HttpCriptoCookieCmdASync(ctrlApiExec, `main-${parm.cmd}-${subCmd}`, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, loggedUserNow); // , `user-${parm.cmd}`
       resumoApi.jsonData({ value: loggedUserNow });
 
@@ -73,7 +72,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     await ApiLogFinish(apiLogProc, resumoApi.resultProc(), deleteIfOk);
-    await CloseDbASync({ ctrlApiExec });
+    await CloseDbASync({ ctrlContext: ctrlApiExec.ctrlContext });
   } catch (error) {
     const { httpStatusCode, jsonErrorData } = await ApiStatusDataByErrorASync(error, 'throw 2', parm, ctrlApiExec);
     resumoApi.status(httpStatusCode).jsonData(jsonErrorData);

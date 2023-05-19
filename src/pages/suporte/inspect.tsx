@@ -1,36 +1,40 @@
 import React from 'react';
 import publicIp from 'public-ip';
 import { GetServerSidePropsResult } from 'next';
+import { useRouter } from 'next/router';
 
-import { Box, Stack } from '@mui/material';
-import { HorizontalRule } from '@mui/icons-material';
+import Box from '@mui/material/Box'; //@!!!!!!!
+import Stack from '@mui/material/Stack';
+import HorizontalRule from '@mui/icons-material/HorizontalRule';
 
 import { ObjUpdAllProps } from '../../libCommon/util';
 import { csd, dbgTest } from '../../libCommon/dbg';
 
 import { AbortProc, LogErrorUnmanaged } from '../../components';
 
-import { pagesSuporte } from '../../suporte/endPoints';
+import { pagesSuporte } from '../../app_suporte/endPoints';
 
 //import { useLoggedUser } from '../../../hooks/useLoggedUser';
 //import Link from 'next/link';
 
-interface PageProps {
+interface IPageProps {
   // envsMain: object;
   // envsOthers: object;
   envsClient: string[];
 }
 
 // @@@@! por que não habilita o menu 'user'?
-let mount; let mainStatesCache;
+let mount = false; let mainStatesCache = null;
 const pageSelf = pagesSuporte.inspect;
-export default function PageInspect(props: PageProps) { // 
-  interface MainStates {
+export default function PageInspect(props: IPageProps) { // 
+  interface IMainStates {
     ipv4?: string;
     ipv6?: string;
   }
-  const [mainStates, setMainStates] = React.useState<MainStates>({});
-  mainStatesCache = { ...mainStates }; const setMainStatesCache = (newValues: MainStates) => { if (!mount) return; ObjUpdAllProps<MainStates>(mainStatesCache, newValues); setMainStates({ ...mainStatesCache }); };
+  const [mainStates, setMainStates] = React.useState<IMainStates>({});
+  mainStatesCache = { ...mainStates }; const setMainStatesCache = (newValues: IMainStates) => { if (!mount) return; ObjUpdAllProps<IMainStates>(mainStatesCache, newValues); setMainStates({ ...mainStatesCache }); };
+
+  const router = useRouter();
   //const { loggedUser } = useLoggedUser(false);
 
   // let modoProps;
@@ -71,7 +75,7 @@ export default function PageInspect(props: PageProps) { //
     getIp('v4');
     getIp('v6');
     return () => { isMounted = false; };
-  }, []);
+  }, [router?.asPath]);
 
   try {
     return (
@@ -131,8 +135,9 @@ export default function PageInspect(props: PageProps) { //
   }
 }
 
-export async function getServerSideProps(): Promise<GetServerSidePropsResult<PageProps>> { // context: NextPageContext
+export async function getServerSideProps(): Promise<GetServerSidePropsResult<IPageProps>> { // context: NextPageContext
   //const logs = GetCtrlLogs();
+  //@@!!!!!!!!! super lento por que??
   dbgTest();
   const envsMain = {};
   const envsClient = [];

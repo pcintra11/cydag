@@ -5,7 +5,7 @@ import { csd } from '../libCommon/dbg';
 
 import { IMenuEntriesForMenuTypesData, MenuEntry } from '../components';
 
-import { pagesSuporte } from '../suporte/endPoints';
+import { pagesSuporte } from '../app_suporte/endPoints';
 
 import { pageDummy, pagesApp } from './endPoints';
 import { LoggedUser } from './loggedUser';
@@ -117,7 +117,7 @@ export function MenuEntriesApp(loggedUser: LoggedUser, isLoadingUser: boolean) {
   if (isLoadingUser)
     menuEntries = [MenuEntry.OnlyShow(<Box sx={{ width: '100%' }}><LinearProgress /></Box>)];
   else if (loggedUser != null)
-    //menuEntries = [MenuEntry.OnlyShow(<div>{loggedUser.email}</div>), ...MenuEntries(menuTotal)];
+    //menuEntries = [MenuEntry.OnlyShow(<Box>{loggedUser.email}</Box>), ...MenuEntries(menuTotal)];
     menuEntries = MenuEntries(menuTotal);
 
   menuEntriesData = { menuEntries, menuEntriesLeft: menuEntries, menuEntriesRight: [] };

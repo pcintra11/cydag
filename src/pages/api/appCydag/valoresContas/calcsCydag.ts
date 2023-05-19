@@ -2,12 +2,13 @@ import _ from 'underscore';
 
 import { BinSearchItem, RoundDecs } from '../../../../libCommon/util';
 import { csd } from '../../../../libCommon/dbg';
-import { isAmbDevOrQas } from '../../../../libCommon/isAmb';
+
+import { isAmbDev } from '../../../../app_base/envs';
 
 import { Funcionario, localidadeCoringa, Viagem, Premissa, Terceiro, ValoresLocalidade, ValoresPremissa, ValoresTransfer } from '../../../../appCydag/modelTypes';
 import { RevisaoValor, TipoColaborador, TipoColaboradorMd, TipoParticipPerOrcam, TipoPlanejViagem } from '../../../../appCydag/types';
 import { genValMeses } from '../../../../appCydag/util';
-import { configApp } from '../../../../appCydag/config';
+import { configCydag } from '../../../../appCydag/configCydag';
 
 const attrProcOrc = { mesIni: 1, mesFim: 12 };
 
@@ -34,7 +35,7 @@ export const premissaCod = {
   tiSap2: 'tiSap2',
 };
 
-export interface FuncionarioForCalc {
+export interface IFuncionarioForCalc {
   funcId?: string;
   tipoIni?: TipoParticipPerOrcam;
   mesIni?: number;
@@ -48,14 +49,14 @@ export interface FuncionarioForCalc {
   obs: string[];
 }
 
-export interface PremissaValores { premissa: Premissa, valoresPrior1: ValoresPremissa[], valoresPrior2: ValoresPremissa[] }
+export interface IPremissaValores { premissa: Premissa, valoresPrior1: ValoresPremissa[], valoresPrior2: ValoresPremissa[] }
 
 //export interface ContaCalc { classeCusto: string, subClasseCusto?: string, calc: any }
 
-export interface ValsContaCalc { tipoCalc: string, valMeses: number[], countMeses: number[], anyValue: boolean, memoriaCalcDets?: any[] }
-export const RoundCalc = (value: number) => RoundDecs(value, configApp.decimalsValsCalc);
+export interface IValsContaCalc { tipoCalc: string, valMeses: number[], countMeses: number[], anyValue: boolean, memoriaCalcDets?: any[] }
+export const RoundCalc = (value: number) => RoundDecs(value, configCydag.decimalsValsCalc);
 
-export const ValorPremissaUse = (premisaValores: PremissaValores, tipoColaborador?: TipoColaborador) => {
+export const ValorPremissaUse = (premisaValores: IPremissaValores, tipoColaborador?: TipoColaborador) => {
   let result: ValoresPremissa = null;
   if (premisaValores != null) {
     if (premisaValores.premissa.segmTipoClb) {
@@ -75,8 +76,8 @@ export const ValorPremissaUse = (premisaValores: PremissaValores, tipoColaborado
 /**
  * Gera um array de funcionarios com o salario e tipoColaborador 'no tempo'
  */
-export function FuncionariosForCalc(centroCusto: string, premissaDissidioVals: PremissaValores, funcionarios: Funcionario[], revisao: RevisaoValor) {
-  const result: FuncionarioForCalc[] = [];
+export function FuncionariosForCalc(centroCusto: string, premissaDissidioVals: IPremissaValores, funcionarios: Funcionario[], revisao: RevisaoValor) {
+  const result: IFuncionarioForCalc[] = [];
 
   //csl('premissaDissidioVals', JSON.stringify(premissaDissidioVals, null, 2));
   let lastCentrCusto = null;
@@ -137,7 +138,7 @@ export function FuncionariosForCalc(centroCusto: string, premissaDissidioVals: P
       tipoColaboradorMeses,
       despsRecorr: funcionarioRevisao.despsRecorr,
       obs: [],
-    } as FuncionarioForCalc;
+    } as IFuncionarioForCalc;
     funcionarioForCalc.obs.push(`tipoClb: ${funcionario.tipoColaborador}, sal: ${Funcionario.unscrambleSalario(funcionarioRevisao.salario_messy, funcionario.centroCusto, funcionario.refer)}`);
     if (funcionarioRevisao.mesPromo != null)
       funcionarioForCalc.obs.push(`promo: mes ${funcionarioRevisao.mesPromo}, tipoClb: ${funcionarioRevisao.tipoColaboradorPromo}, sal: ${Funcionario.unscrambleSalario(funcionarioRevisao.salarioPromo_messy, funcionario.centroCusto, funcionario.refer)}`);
@@ -147,8 +148,8 @@ export function FuncionariosForCalc(centroCusto: string, premissaDissidioVals: P
   return result;
 }
 
-const calcContaSalario = (tipoCalc: string, funcionariosForCalc: FuncionarioForCalc[], tipoColaboradorArray: TipoColaborador[], showCalcFunc = false) => {
-  const showCalcUse = showCalcFunc && isAmbDevOrQas();
+const calcContaSalario = (tipoCalc: string, funcionariosForCalc: IFuncionarioForCalc[], tipoColaboradorArray: TipoColaborador[], showCalcFunc = false) => {
+  const showCalcUse = showCalcFunc && isAmbDev();
   const memoriaCalcDets: any = [];
   const valMeses = genValMeses(0); const countMeses = genValMeses(0); let anyValue = false;
   for (const item of funcionariosForCalc) {
@@ -167,10 +168,10 @@ const calcContaSalario = (tipoCalc: string, funcionariosForCalc: FuncionarioForC
     (showCalcUse && anyValueFunc) && memoriaCalcDets.push(memoriaCalcFunc);
     anyValue = anyValue || anyValueFunc;
   }
-  return { tipoCalc, valMeses, countMeses, anyValue, memoriaCalcDets } as ValsContaCalc;
+  return { tipoCalc, valMeses, countMeses, anyValue, memoriaCalcDets } as IValsContaCalc;
 };
-const calcContaAvisoPrevio = (funcionariosForCalc: FuncionarioForCalc[], showCalcFunc = false) => {
-  const showCalcUse = showCalcFunc && isAmbDevOrQas();
+const calcContaAvisoPrevio = (funcionariosForCalc: IFuncionarioForCalc[], showCalcFunc = false) => {
+  const showCalcUse = showCalcFunc && isAmbDev();
   const memoriaCalcDets: any = [];
   const valMeses = genValMeses(0); const countMeses = genValMeses(0); let anyValue = false;
   for (const item of funcionariosForCalc) {
@@ -193,10 +194,10 @@ const calcContaAvisoPrevio = (funcionariosForCalc: FuncionarioForCalc[], showCal
     (showCalcUse && anyValueFunc) && memoriaCalcDets.push(memoriaCalcFunc);
     anyValue = anyValue || anyValueFunc;
   }
-  return { tipoCalc: 'avisoPrevio', valMeses, countMeses, anyValue, memoriaCalcDets } as ValsContaCalc;
+  return { tipoCalc: 'avisoPrevio', valMeses, countMeses, anyValue, memoriaCalcDets } as IValsContaCalc;
 };
-const calcContasPercSalario = (tipoCalc: string, funcionariosForCalc: FuncionarioForCalc[], tipoColaboradorArray: TipoColaborador[], premissaVals: PremissaValores, dobraMesDesl: boolean, showCalcFunc = false) => {
-  const showCalcUse = showCalcFunc && isAmbDevOrQas();
+const calcContasPercSalario = (tipoCalc: string, funcionariosForCalc: IFuncionarioForCalc[], tipoColaboradorArray: TipoColaborador[], premissaVals: IPremissaValores, dobraMesDesl: boolean, showCalcFunc = false) => {
+  const showCalcUse = showCalcFunc && isAmbDev();
   const memoriaCalcDets: any = [];
   const valMeses = genValMeses(0); const countMeses = genValMeses(0); let anyValue = false;
   if (premissaVals != null) {
@@ -229,10 +230,10 @@ const calcContasPercSalario = (tipoCalc: string, funcionariosForCalc: Funcionari
       anyValue = anyValue || anyValueFunc;
     }
   }
-  return { tipoCalc, valMeses, countMeses, anyValue, memoriaCalcDets } as ValsContaCalc;
+  return { tipoCalc, valMeses, countMeses, anyValue, memoriaCalcDets } as IValsContaCalc;
 };
-const calcContasValorPorPessoa = (tipoCalc: string, funcionariosForCalc: FuncionarioForCalc[], tipoColaboradorArray: TipoColaborador[], premissaVals: PremissaValores, incluiDependentes: boolean, showCalcFunc = false) => {
-  const showCalcUse = showCalcFunc && isAmbDevOrQas();
+const calcContasValorPorPessoa = (tipoCalc: string, funcionariosForCalc: IFuncionarioForCalc[], tipoColaboradorArray: TipoColaborador[], premissaVals: IPremissaValores, incluiDependentes: boolean, showCalcFunc = false) => {
+  const showCalcUse = showCalcFunc && isAmbDev();
   const memoriaCalcDets: any = [];
   const valMeses = genValMeses(0); const countMeses = genValMeses(0); let anyValue = false;
   if (premissaVals != null) {
@@ -260,10 +261,10 @@ const calcContasValorPorPessoa = (tipoCalc: string, funcionariosForCalc: Funcion
       anyValue = anyValue || anyValueFunc;
     }
   }
-  return { tipoCalc, valMeses, countMeses, anyValue, memoriaCalcDets } as ValsContaCalc;
+  return { tipoCalc, valMeses, countMeses, anyValue, memoriaCalcDets } as IValsContaCalc;
 };
-const calcConta_vt = (funcionariosForCalc: FuncionarioForCalc[], showCalcFunc = false) => {
-  const showCalcUse = showCalcFunc && isAmbDevOrQas();
+const calcConta_vt = (funcionariosForCalc: IFuncionarioForCalc[], showCalcFunc = false) => {
+  const showCalcUse = showCalcFunc && isAmbDev();
   const memoriaCalcDets: any = [];
   const valMeses = genValMeses(0); const countMeses = genValMeses(0); let anyValue = false;
   for (const item of funcionariosForCalc) {
@@ -281,10 +282,10 @@ const calcConta_vt = (funcionariosForCalc: FuncionarioForCalc[], showCalcFunc = 
     (showCalcUse && anyValueFunc) && memoriaCalcDets.push(memoriaCalcFunc);
     anyValue = anyValue || anyValueFunc;
   }
-  return { tipoCalc: 'vt', valMeses, countMeses, anyValue, memoriaCalcDets } as ValsContaCalc;
+  return { tipoCalc: 'vt', valMeses, countMeses, anyValue, memoriaCalcDets } as IValsContaCalc;
 };
-export const calcContaDespCorr = (despRecorr: string, funcionariosForCalc: FuncionarioForCalc[], premissaVals: PremissaValores, showCalcFunc = false) => {
-  const showCalcUse = showCalcFunc && isAmbDevOrQas();
+export const calcContaDespCorr = (despRecorr: string, funcionariosForCalc: IFuncionarioForCalc[], premissaVals: IPremissaValores, showCalcFunc = false) => {
+  const showCalcUse = showCalcFunc && isAmbDev();
   const memoriaCalcDets: any = [];
   //csl('premissa vals', despRecorr, JSON.stringify(premissaVals, null, 2));
 
@@ -315,7 +316,7 @@ export const calcContaDespCorr = (despRecorr: string, funcionariosForCalc: Funci
       anyValue = anyValue || anyValueFunc;
     }
   }
-  return { tipoCalc: despRecorr, valMeses, countMeses, anyValue, memoriaCalcDets } as ValsContaCalc;
+  return { tipoCalc: despRecorr, valMeses, countMeses, anyValue, memoriaCalcDets } as IValsContaCalc;
 };
 
 const calcConta_viagens = (viagens: Viagem[], valoresLocalidades: ValoresLocalidade[], valoresTransfersCCOrigem: ValoresTransfer[]) => {
@@ -355,7 +356,7 @@ const calcConta_viagens = (viagens: Viagem[], valoresLocalidades: ValoresLocalid
     }
     memoriaCalcDets.push(memoriaCalc);
   }
-  return { tipoCalc: 'terceiros', valMeses, countMeses, anyValue, memoriaCalcDets } as ValsContaCalc;
+  return { tipoCalc: 'terceiros', valMeses, countMeses, anyValue, memoriaCalcDets } as IValsContaCalc;
 };
 
 const calcConta_terceiros = (terceiros: Terceiro[]) => {
@@ -374,27 +375,27 @@ const calcConta_terceiros = (terceiros: Terceiro[]) => {
     }
     memoriaCalcDets.push(memoriaCalc);
   }
-  return { tipoCalc: 'terceiros', valMeses, countMeses, anyValue, memoriaCalcDets } as ValsContaCalc;
+  return { tipoCalc: 'terceiros', valMeses, countMeses, anyValue, memoriaCalcDets } as IValsContaCalc;
 };
 
 export const contasCalc = {
-  salario: { classeCusto: '5200201001', calc: (funcionarioForCalc: FuncionarioForCalc[], showCalcFunc = false) => calcContaSalario('salClt', funcionarioForCalc, [TipoColaborador.clt, TipoColaborador.aprendiz, TipoColaborador.dir_clt], showCalcFunc) },
-  admServs: { classeCusto: '5200504030', calc: (funcionarioForCalc: FuncionarioForCalc[], showCalcFunc = false) => calcContaSalario('salPJ', funcionarioForCalc, [TipoColaborador.gestorpj, TipoColaborador.dir_pj], showCalcFunc) },
-  bolsaAux: { classeCusto: '5200208007', calc: (funcionarioForCalc: FuncionarioForCalc[], showCalcFunc = false) => calcContaSalario('salEstag', funcionarioForCalc, [TipoColaborador.estag], showCalcFunc) },
-  prolabore: { classeCusto: '5200206003', calc: (funcionarioForCalc: FuncionarioForCalc[], showCalcFunc = false) => calcContaSalario('salDir', funcionarioForCalc, [TipoColaborador.dir], showCalcFunc) },
+  salario: { classeCusto: '5200201001', calc: (funcionarioForCalc: IFuncionarioForCalc[], showCalcFunc = false) => calcContaSalario('salClt', funcionarioForCalc, [TipoColaborador.clt, TipoColaborador.aprendiz, TipoColaborador.dir_clt], showCalcFunc) },
+  admServs: { classeCusto: '5200504030', calc: (funcionarioForCalc: IFuncionarioForCalc[], showCalcFunc = false) => calcContaSalario('salPJ', funcionarioForCalc, [TipoColaborador.gestorpj, TipoColaborador.dir_pj], showCalcFunc) },
+  bolsaAux: { classeCusto: '5200208007', calc: (funcionarioForCalc: IFuncionarioForCalc[], showCalcFunc = false) => calcContaSalario('salEstag', funcionarioForCalc, [TipoColaborador.estag], showCalcFunc) },
+  prolabore: { classeCusto: '5200206003', calc: (funcionarioForCalc: IFuncionarioForCalc[], showCalcFunc = false) => calcContaSalario('salDir', funcionarioForCalc, [TipoColaborador.dir], showCalcFunc) },
 
-  avisoPrevio: { classeCusto: '5200201003', calc: (funcionarioForCalc: FuncionarioForCalc[], showCalcFunc = false) => calcContaAvisoPrevio(funcionarioForCalc, showCalcFunc) },
-  inss: { classeCusto: '5200205001', calc: (funcionarioForCalc: FuncionarioForCalc[], premissaVals: PremissaValores, showCalcFunc = false) => calcContasPercSalario('inss', funcionarioForCalc, TipoColaboradorMd.all.filter(x => x.plus.calcINSS).map(x => x.cod), premissaVals, true, showCalcFunc) },
-  inssHonorarios: { classeCusto: '5200206050', calc: (funcionarioForCalc: FuncionarioForCalc[], premissaVals: PremissaValores, showCalcFunc = false) => calcContasPercSalario('inssHonorarios', funcionarioForCalc, TipoColaboradorMd.all.filter(x => x.plus.calcINSSHonorarios).map(x => x.cod), premissaVals, true, showCalcFunc) },
-  fgts: { classeCusto: '5200205002', calc: (funcionarioForCalc: FuncionarioForCalc[], premissaVals: PremissaValores, showCalcFunc = false) => calcContasPercSalario('fgts', funcionarioForCalc, null, premissaVals, true, showCalcFunc) },
-  provFerias: { classeCusto: '5200203001', calc: (funcionarioForCalc: FuncionarioForCalc[], premissaVals: PremissaValores, showCalcFunc = false) => calcContasPercSalario('provFerias', funcionarioForCalc, null, premissaVals, false, showCalcFunc) },
-  encProvFerias: { classeCusto: '5200203002', calc: (funcionarioForCalc: FuncionarioForCalc[], premissaVals: PremissaValores, showCalcFunc = false) => calcContasPercSalario('encProvFerias', funcionarioForCalc, null, premissaVals, false, showCalcFunc) },
-  prov13: { classeCusto: '5200204001', calc: (funcionarioForCalc: FuncionarioForCalc[], premissaVals: PremissaValores, showCalcFunc = false) => calcContasPercSalario('prov13', funcionarioForCalc, null, premissaVals, false, showCalcFunc) },
-  encProv13: { classeCusto: '5200204002', calc: (funcionarioForCalc: FuncionarioForCalc[], premissaVals: PremissaValores, showCalcFunc = false) => calcContasPercSalario('encProv13', funcionarioForCalc, null, premissaVals, false, showCalcFunc) },
-  segVida: { classeCusto: '5200208003', calc: (funcionarioForCalc: FuncionarioForCalc[], premissaVals: PremissaValores, showCalcFunc = false) => calcContasPercSalario('segVida', funcionarioForCalc, null, premissaVals, false, showCalcFunc) },
-  assMed: { classeCusto: '5200208001', calc: (funcionarioForCalc: FuncionarioForCalc[], premissaVals: PremissaValores, showCalcFunc = false) => calcContasValorPorPessoa('assMed', funcionarioForCalc, null, premissaVals, true, showCalcFunc) },
-  vr: { classeCusto: '5200208004', calc: (funcionarioForCalc: FuncionarioForCalc[], premissaVals: PremissaValores, showCalcFunc = false) => calcContasValorPorPessoa('vr', funcionarioForCalc, null, premissaVals, false, showCalcFunc) },
-  vt: { classeCusto: '5200208009', calc: (funcionarioForCalc: FuncionarioForCalc[], showCalcFunc = false) => calcConta_vt(funcionarioForCalc, showCalcFunc) },
+  avisoPrevio: { classeCusto: '5200201003', calc: (funcionarioForCalc: IFuncionarioForCalc[], showCalcFunc = false) => calcContaAvisoPrevio(funcionarioForCalc, showCalcFunc) },
+  inss: { classeCusto: '5200205001', calc: (funcionarioForCalc: IFuncionarioForCalc[], premissaVals: IPremissaValores, showCalcFunc = false) => calcContasPercSalario('inss', funcionarioForCalc, TipoColaboradorMd.all.filter(x => x.plus.calcINSS).map(x => x.cod), premissaVals, true, showCalcFunc) },
+  inssHonorarios: { classeCusto: '5200206050', calc: (funcionarioForCalc: IFuncionarioForCalc[], premissaVals: IPremissaValores, showCalcFunc = false) => calcContasPercSalario('inssHonorarios', funcionarioForCalc, TipoColaboradorMd.all.filter(x => x.plus.calcINSSHonorarios).map(x => x.cod), premissaVals, true, showCalcFunc) },
+  fgts: { classeCusto: '5200205002', calc: (funcionarioForCalc: IFuncionarioForCalc[], premissaVals: IPremissaValores, showCalcFunc = false) => calcContasPercSalario('fgts', funcionarioForCalc, null, premissaVals, true, showCalcFunc) },
+  provFerias: { classeCusto: '5200203001', calc: (funcionarioForCalc: IFuncionarioForCalc[], premissaVals: IPremissaValores, showCalcFunc = false) => calcContasPercSalario('provFerias', funcionarioForCalc, null, premissaVals, false, showCalcFunc) },
+  encProvFerias: { classeCusto: '5200203002', calc: (funcionarioForCalc: IFuncionarioForCalc[], premissaVals: IPremissaValores, showCalcFunc = false) => calcContasPercSalario('encProvFerias', funcionarioForCalc, null, premissaVals, false, showCalcFunc) },
+  prov13: { classeCusto: '5200204001', calc: (funcionarioForCalc: IFuncionarioForCalc[], premissaVals: IPremissaValores, showCalcFunc = false) => calcContasPercSalario('prov13', funcionarioForCalc, null, premissaVals, false, showCalcFunc) },
+  encProv13: { classeCusto: '5200204002', calc: (funcionarioForCalc: IFuncionarioForCalc[], premissaVals: IPremissaValores, showCalcFunc = false) => calcContasPercSalario('encProv13', funcionarioForCalc, null, premissaVals, false, showCalcFunc) },
+  segVida: { classeCusto: '5200208003', calc: (funcionarioForCalc: IFuncionarioForCalc[], premissaVals: IPremissaValores, showCalcFunc = false) => calcContasPercSalario('segVida', funcionarioForCalc, null, premissaVals, false, showCalcFunc) },
+  assMed: { classeCusto: '5200208001', calc: (funcionarioForCalc: IFuncionarioForCalc[], premissaVals: IPremissaValores, showCalcFunc = false) => calcContasValorPorPessoa('assMed', funcionarioForCalc, null, premissaVals, true, showCalcFunc) },
+  vr: { classeCusto: '5200208004', calc: (funcionarioForCalc: IFuncionarioForCalc[], premissaVals: IPremissaValores, showCalcFunc = false) => calcContasValorPorPessoa('vr', funcionarioForCalc, null, premissaVals, false, showCalcFunc) },
+  vt: { classeCusto: '5200208009', calc: (funcionarioForCalc: IFuncionarioForCalc[], showCalcFunc = false) => calcConta_vt(funcionarioForCalc, showCalcFunc) },
 
   viagens: { classeCusto: '5200503001', calc: (viagens: Viagem[], valoresLocalidades: ValoresLocalidade[], valoresTransfersCCOrigem: ValoresTransfer[]) => calcConta_viagens(viagens, valoresLocalidades, valoresTransfersCCOrigem) },
 

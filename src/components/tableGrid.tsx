@@ -3,6 +3,7 @@ import { Box, useTheme } from '@mui/material';
 
 import { FriendlyErrorMsgApi } from '../libCommon/util';
 import { IGenericObject } from '../libCommon/types';
+import { csd } from '../libCommon/dbg';
 
 import { AbortProcComponent, LogErrorUnmanaged } from './abortProc';
 //import { Button, BtnLine, FakeLink, IconButton, VisualBlock, WaitingLine } from '../components';
@@ -16,7 +17,7 @@ import { AbortProcComponent, LogErrorUnmanaged } from './abortProc';
 // const isPortrait = useMediaQuery({ query: '(orientation: portrait)' })
 // csl({ isDesktopOrLaptop, isBigScreen, isTabletOrMobile, isPortrait });
 
-interface ColGridConfigOptions {
+interface IColGridConfigOptions {
   width?: string;
   align?: 'center' | 'right'; // reativar @!!!!!
 }
@@ -24,12 +25,12 @@ export class ColGridConfig {
   hdr: React.ReactNode;
   content: (dataRow: IGenericObject) => React.ReactNode; //@@!!!!!!! IGenericObject -> RowGrid
   //width: string;
-  options?: ColGridConfigOptions;
+  options?: IColGridConfigOptions;
   // { width: 'auto' } default
   // { width: 'minmax(auto,2rem)' }
   // { width: '1fr' , align: 'right' }
   // { width: 'minmax(3rem,8%)' }
-  constructor(hdr: React.ReactNode, content: (dataRow: IGenericObject) => React.ReactNode, options?: ColGridConfigOptions) {
+  constructor(hdr: React.ReactNode, content: (dataRow: IGenericObject) => React.ReactNode, options?: IColGridConfigOptions) {
     this.hdr = hdr;
     this.content = content;
     this.options = options;
@@ -134,14 +135,16 @@ export class ExtraLinesGridConfig {
 }
 
 interface ITableGridProps {
-  colsGridConfig: ColGridConfig[],
-  extraLinesGridConfig?: ExtraLinesGridConfig[],
-  dataRows: IGenericObject[],
-  preGrid?: React.ReactNode,
-  posGrid?: React.ReactNode
+  colsGridConfig: ColGridConfig[];
+  extraLinesGridConfig?: ExtraLinesGridConfig[];
+  dataRows: IGenericObject[];
+  preGrid?: React.ReactNode;
+  posGrid?: React.ReactNode;
+  scrollingAreaRef?: React.MutableRefObject<HTMLDivElement>;
+
   //alternColor?: boolean;
 }
-export function TableGrid({ colsGridConfig, extraLinesGridConfig, dataRows, preGrid, posGrid }: ITableGridProps) {
+export function TableGrid({ colsGridConfig, extraLinesGridConfig, dataRows, preGrid, posGrid, scrollingAreaRef }: ITableGridProps) {
   const themePlus = useTheme();
 
   // const stTableGridColumnBase: CSSProperties = {
@@ -150,14 +153,14 @@ export function TableGrid({ colsGridConfig, extraLinesGridConfig, dataRows, preG
   //   alignItems: 'start',  /* eixo cruzado era flex-direction (alinhamento na vertical) */
   //   flexWrap: 'wrap',
   //   //gap: '0.3rem',
-  //   //justifyContent: 'center', /* filhos no proprio eixo */
+  //   //justifyContent: 'center', /* filhos no próprio eixo */
   // }; 
   // const g_st2 = {
   //   containerVerticalScrollableStyle: {
   //     maxHeight: '100%',
   //     overflowY: 'auto',
   //   } as CSSProperties,
-  //   containerVerticalfullStyle: {
+  //   containerVerticalFullStyle: {
   //     display: 'grid',
   //     height: '100%',
   //     alignItems: 'start',
@@ -207,7 +210,7 @@ export function TableGrid({ colsGridConfig, extraLinesGridConfig, dataRows, preG
     return (<>
       {colsGridConfig.map((colGridConfig, index) =>
         //<div key={index} className={'header'} style={styleByOptions(colGridConfig.options)}>{colGridConfig.hdr || '-'}</div>
-        <div key={index} className={'header'}>{colGridConfig.hdr || '-'}</div>
+        <Box key={index} className={'header'}>{colGridConfig.hdr || '-'}</Box>
       )
       }</>);
   };
@@ -220,20 +223,20 @@ export function TableGrid({ colsGridConfig, extraLinesGridConfig, dataRows, preG
   //   </>);
   // };
   const Row = ({ rowGrid }: { rowGrid: RowGrid }) => {
-    //csl({ rowGrid });
+    //csd({ colsGridConfig, rowGrid });
     const classFirst = (rowGrid.index == 0 ? ' firstRow' : '');
     const classAltern = ''; // (alternColor && rowGrid.index % 2 === 1 ? g_cn.destaq1 : '');
     try {
       return (<>
         {colsGridConfig.map((colGridConfig, index) =>
           //<div key={index} className={'cel' + classFirst + classAltern} style={styleByOptions(colGridConfig.options)}>{colGridConfig.content(rowGrid)}</div>
-          <div key={index} className={'cel' + classFirst + classAltern} >{colGridConfig.content(rowGrid)}</div>
+          <Box key={index} className={'cel' + classFirst + classAltern} >{colGridConfig.content(rowGrid)}</Box>
         )}
         {extraLinesGridConfig != null &&
           <>
             {extraLinesGridConfig.map((extraLineGridConfig, index) => {
               if (extraLineGridConfig.condition(rowGrid))
-                return (<div key={index} className={'cel extraLine' + classAltern}>{extraLineGridConfig.content(rowGrid)}</div>);
+                return (<Box key={index} className={'cel extraLine' + classAltern}>{extraLineGridConfig.content(rowGrid)}</Box>);
               else
                 return null;
             })}
@@ -244,12 +247,12 @@ export function TableGrid({ colsGridConfig, extraLinesGridConfig, dataRows, preG
       LogErrorUnmanaged(error, 'TableGridRow-render');
       return (<>
         {colsGridConfig.map((_, index) =>
-          <div key={index}>
+          <Box key={index}>
             {index == 0
-              ? <div>{FriendlyErrorMsgApi(error)}</div>
-              : <div>*erro*</div>
+              ? <Box>{FriendlyErrorMsgApi(error)}</Box>
+              : <Box>*erro*</Box>
             }
-          </div>
+          </Box>
         )}
       </>);
     }
@@ -266,8 +269,9 @@ export function TableGrid({ colsGridConfig, extraLinesGridConfig, dataRows, preG
         {preGrid != null &&
           preGrid
         }
-        <Box flex={1} overflow='auto'>
+        <Box flex={1} overflow='auto' ref={scrollingAreaRef}>
           <Box display='flex' flexDirection='column' gap={0.5}>
+            {/* @!!!!!!!! */}
             <div style={{
               display: 'grid',
               gridTemplateColumns,

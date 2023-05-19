@@ -1,34 +1,33 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import _ from 'underscore';
 
 import Box from '@mui/material/Box';
 import { Stack, useTheme } from '@mui/material';
 
-import { BinSearchProp, CalcExecTime, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../../libCommon/util';
-import { csd, dbgError } from '../../../libCommon/dbg';
+import { BinSearchProp, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../../libCommon/util';
+import { csd } from '../../../libCommon/dbg';
 import { IGenericObject } from '../../../libCommon/types';
 import { BooleanToSN } from '../../../libCommon/util';
 import { PageDef } from '../../../libCommon/endPoints';
-import { isAmbDev } from '../../../libCommon/isAmb';
+import { CalcExecTime } from '../../../libCommon/calcExectime';
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
-
-import { globals } from '../../../libClient/clientGlobals';
 
 import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, SnackBarError, fontSizeGrid, fontSizeIconsInGrid } from '../../../components';
 import { GridCell, GridCellEdit, IFldChange, IGridEditFldCtrl, IGridEditMainCtrl, ValueType } from '../../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
-//import { GlobalState, useGlobalState } from '../../hooks/useGlobalState';
+
+import { isAmbDev } from '../../../app_base/envs';
+import { configApp } from '../../../app_hub/appConfig';
 
 import { IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, SelAno, SelEntity, SelRevisao } from '../../../appCydag/components';
 import { apisApp, pagesApp } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
 import { amountToStr } from '../../../appCydag/util';
-import { configApp } from '../../../appCydag/config';
 import { CentroCusto, Funcionario, Premissa, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto } from '../../../appCydag/modelTypes';
 import { CentroCustoConfigOption, IAnoCentroCustos, OrigemFunc, OrigemFuncMd, ProcCentrosCustoConfig, RevisaoValor, TipoColaboradorMd, TipoParticipPerOrcamMd, ProcessoOrcamentarioStatusMd, OperInProcessoOrcamentario } from '../../../appCydag/types';
 
 import { CmdApi_Funcionario as CmdApi, FuncionarioClient, IChangedLine, DataEdit, LineState } from '../../api/appCydag/funcionario/types';
+import { configCydag } from '../../../appCydag/configCydag';
 
 enum Phase {
   initiating = 'initiating',
@@ -79,7 +78,7 @@ class FrmFilter {
 }
 
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.funcionario.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.funcionario.apiPath, parm) };
 const pageSelf = pagesApp.funcionario;
 
 const statesCompsSubord = { setMainStatesFilter: null, setMainStatesData1: null, setMainStatesData2: null, setStatePreReservedItens: null };
@@ -392,7 +391,7 @@ export default function PageFuncionarioCrud() {
 
       //if (line.dataEdit == null) line.dataEdit = {};
 
-      const dataOriginal = funcionarioClient != null ? funcionarioClient : (new FuncionarioClient()).Fill({ origem: OrigemFunc.local, refer: `incl. ${indexPreReserve + 1}` });
+      const dataOriginal = funcionarioClient != null ? funcionarioClient : FuncionarioClient.fill({ origem: OrigemFunc.local, refer: `incl. ${indexPreReserve + 1}` });
 
       const funcId = FuncId(dataOriginal);
 
@@ -430,12 +429,12 @@ export default function PageFuncionarioCrud() {
         mesIni: { fld: 'mesIni', valueType: ValueType.number, mandatory: true } as IGridEditFldCtrl,
         tipoFim: { fld: 'tipoFim', valueType: ValueType.options, options: [new SelOption('', 'sem'), ...TipoParticipPerOrcamMd.all.filter((x) => x.plus.fim).map((x) => new SelOption(x.cod, x.descr))] } as IGridEditFldCtrl,
         mesFim: { fld: 'mesFim', valueType: ValueType.number } as IGridEditFldCtrl,
-        salario: { fld: 'salario', valueType: ValueType.amount, decimals: configApp.decimalsSalario, mandatory: true } as IGridEditFldCtrl,
+        salario: { fld: 'salario', valueType: ValueType.amount, decimals: configCydag.decimalsSalario, mandatory: true } as IGridEditFldCtrl,
         dependentes: { fld: 'dependentes', valueType: ValueType.number } as IGridEditFldCtrl,
-        valeTransp: { fld: 'valeTransp', valueType: ValueType.amount, decimals: configApp.decimalsValsInput } as IGridEditFldCtrl,
+        valeTransp: { fld: 'valeTransp', valueType: ValueType.amount, decimals: configCydag.decimalsValsInput } as IGridEditFldCtrl,
         mesPromo: { fld: 'mesPromo', valueType: ValueType.number } as IGridEditFldCtrl,
         tipoColaboradorPromo: { fld: 'tipoColaboradorPromo', valueType: ValueType.options, options: [new SelOption('', 'sem'), ...TipoColaboradorMd.all.map((x) => new SelOption(x.cod, x.descr))] } as IGridEditFldCtrl,
-        salarioPromo: { fld: 'salarioPromo', valueType: ValueType.amount, decimals: configApp.decimalsSalario } as IGridEditFldCtrl,
+        salarioPromo: { fld: 'salarioPromo', valueType: ValueType.amount, decimals: configCydag.decimalsSalario } as IGridEditFldCtrl,
       };
       //#endregion
 
@@ -477,7 +476,7 @@ export default function PageFuncionarioCrud() {
             <GridCell alignSelf='end'><GridCellEdit mainCtrl={mainCtrl} fldCtrl={fldsCtrl.idVaga} /></GridCell>
             <GridCell alignSelf='end'><GridCellEdit mainCtrl={mainCtrl} fldCtrl={fldsCtrl.tipoColaborador} /></GridCell>
             <GridCell alignSelf='end'><GridCellEdit mainCtrl={mainCtrl} fldCtrl={fldsCtrl.funcao} /></GridCell>
-            <GridCell alignSelf='end'><Box>{amountToStr(dataOriginal.salarioLegado, configApp.decimalsSalario)}</Box></GridCell>
+            <GridCell alignSelf='end'><Box>{amountToStr(dataOriginal.salarioLegado, configCydag.decimalsSalario)}</Box></GridCell>
 
             <GridCell alignSelf='end' textAlign='center'>
               <GridCellEdit mainCtrl={mainCtrl} fldCtrl={fldsCtrl.ativo} />
@@ -512,21 +511,21 @@ export default function PageFuncionarioCrud() {
           <GridCell textAlign='left'><Box>{dataOriginal.idVaga}</Box></GridCell>
           <GridCell textAlign='left'><Box>{TipoColaboradorMd.descr(dataOriginal.tipoColaborador)}</Box></GridCell>
           <GridCell textAlign='left'><Box>{dataOriginal.funcao}</Box></GridCell>
-          <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.salarioLegado, configApp.decimalsSalario)}</Box></GridCell>
+          <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.salarioLegado, configCydag.decimalsSalario)}</Box></GridCell>
 
           <GridCell textAlign='center'><Box>{BooleanToSN(dataOriginal.ativo)}</Box></GridCell>
           <GridCell textAlign='center'><Box>{TipoParticipPerOrcamMd.descr(dataOriginal.tipoIni)}</Box></GridCell>
           <GridCell textAlign='right'><Box>{dataOriginal.mesIni}</Box></GridCell>
           <GridCell textAlign='center'><Box>{TipoParticipPerOrcamMd.descr(dataOriginal.tipoFim)}</Box></GridCell>
           <GridCell textAlign='right'><Box>{dataOriginal.mesFim}</Box></GridCell>
-          <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.salario, configApp.decimalsSalario)}</Box></GridCell>
+          <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.salario, configCydag.decimalsSalario)}</Box></GridCell>
           <GridCell textAlign='right'><Box>{dataOriginal.dependentes}</Box></GridCell>
-          <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.valeTransp, configApp.decimalsValsInput)}</Box></GridCell>
+          <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.valeTransp, configCydag.decimalsValsInput)}</Box></GridCell>
           {showPromo &&
             <>
               <GridCell textAlign='center'><Box>{dataOriginal.mesPromo}</Box></GridCell>
               <GridCell textAlign='center'><Box>{TipoColaboradorMd.descr(dataOriginal.tipoColaboradorPromo)}</Box></GridCell>
-              <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.salarioPromo, configApp.decimalsSalario)}</Box></GridCell>
+              <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.salarioPromo, configCydag.decimalsSalario)}</Box></GridCell>
             </>
           }
           {premissaDespRecorrArray.map((_, index) => <GridCell key={index} textAlign='center'>s</GridCell>)}
@@ -566,7 +565,7 @@ export default function PageFuncionarioCrud() {
         </BtnLine>
       );
     };
-    
+
     return (
       <>
         <InfoComp />

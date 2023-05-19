@@ -2,11 +2,10 @@ import type { NextApiRequest } from 'next';
 import type { CookieSerializeOptions } from 'cookie';
 import { Session, applySession, SessionOptions } from 'next-iron-session';
 
-import { isAmbDev } from '../libCommon/isAmb';
-
 import { CtrlApiExec } from './util';
+import { isAmbDev } from '../app_base/envs';
 
-interface NextApiRequestSession extends NextApiRequest {
+interface INextApiRequestSession extends NextApiRequest {
   session: Session;
 }
 // type NextApiResponseSession = NextApiResponse & {
@@ -15,14 +14,14 @@ interface NextApiRequestSession extends NextApiRequest {
 
 export const CookieSession_fldFixed = 'value';
 
-export interface HttpCryptoCookieConfig {
+export interface IHttpCryptoCookieConfig {
   name: string;
   TTLSeconds?: number;
   psw: string;
 }
 
 export async function HttpCriptoCookieCmdASync(ctrlApiExec: CtrlApiExec, point: string,
-  cookieSessionConfig: HttpCryptoCookieConfig, cmd: 'set' | 'get', options: { extendExpiration?: boolean, domain?: string }, value?: any) {
+  cookieSessionConfig: IHttpCryptoCookieConfig, cmd: 'set' | 'get', options: { extendExpiration?: boolean, domain?: string }, value?: any) {
   const cookieOptions: CookieSerializeOptions = {
     // the next line allows to use the session in non-https environments like
     // Next.js dev mode (http://localhost:xxx)
@@ -36,7 +35,7 @@ export async function HttpCriptoCookieCmdASync(ctrlApiExec: CtrlApiExec, point: 
   //   value == null) //@@@!!! em algum momento está 'matando' o loggedUser
   //   dbgWarn('HttpCriptoCookieCmd', { caller: context, cmd, cookie: cookieSessionConfig.name, value: value == null ? null : 'notNull' });
 
-  const reqSession = ctrlApiExec.req as NextApiRequestSession;
+  const reqSession = ctrlApiExec.req as INextApiRequestSession;
 
   //try {
   await applySession(ctrlApiExec.req, ctrlApiExec.res, {
@@ -50,8 +49,9 @@ export async function HttpCriptoCookieCmdASync(ctrlApiExec: CtrlApiExec, point: 
     //csl({ api: `${ctrlApiExec.apiPath}(point ${point}):${JSON.stringify(ctrlApiExec.parm)}`, cmd, cookieSessionConfig, options, cookieOptions, valueSet: value });
     if (value != null) {
       reqSession.session.set(CookieSession_fldFixed, value);
-      await reqSession.session.save();
-      //csl('CookieSessionCmd set - value', JSON.stringify(data.value));
+      const result = await reqSession.session.save();
+      // csl('CookieSessionCmd ******************* set', JSON.stringify(value));
+      // csl('result', result);
     }
     else {
       reqSession.session.destroy();

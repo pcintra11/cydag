@@ -5,10 +5,8 @@ import _ from 'underscore';
 
 import { Box, Stack } from '@mui/material';
 
-import { _AppLogRedir } from '../_app';
-
 import { pagesApp } from '../../appCydag/endPoints';
-import { csd } from '../../libCommon/dbg';
+import { csd } from '../../libCommon/dbg'; 
 import { AbortProc, BtnLine, LogErrorUnmanaged, SnackBarError } from '../../components';
 import { Btn } from '../../components/ui';
 
@@ -25,7 +23,7 @@ import {
 const pageSelf = pagesApp.signIn;
 export default function PageSignInAzure() {
   const router = useRouter();
-  const { instance, accounts, inProgress } = useMsal();
+  const { instance, inProgress } = useMsal(); // accounts, 
   const { loggedUser, setUser } = useLoggedUser({ id: '_app' });
   //const [autoLoginStage, setAutoLoginStage] = React.useState(0);
   //const [msalLogged, setMsalLogged] = React.useState(false);

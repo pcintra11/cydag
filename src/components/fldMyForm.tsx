@@ -3,7 +3,7 @@ import { Controller } from 'react-hook-form';
 import { UseFormReturn } from 'react-hook-form/dist/types';
 
 // import InputLabel_mui from '@mui/material/InputLabel';
-import { useTheme } from '@mui/material';
+import { Typography as Typography_mui, useTheme } from '@mui/material';
 import FormControl_mui from '@mui/material/FormControl';
 import FormHelperText_mui from '@mui/material/FormHelperText';
 import FormControlLabel_mui from '@mui/material/FormControlLabel';
@@ -21,7 +21,7 @@ import { csd, dbgError } from '../libCommon/dbg';
 //import { FakeLink } from './ui';
 
 
-interface FrmInputProps {
+interface IFrmInputProps {
   frm?: UseFormReturn<any>;
   name?: string;
   label?: string;
@@ -64,7 +64,7 @@ export const FrmInput = ({
   rows,
   minRows,
   maxRows,
-}: FrmInputProps) => {
+}: IFrmInputProps) => {
 
   const themePlus = useTheme();
 
@@ -112,7 +112,7 @@ export const FrmInput = ({
     //   textFieldProps.helperText = textsHelperText[0];
     // else if (textsHelperText.length === 2)
     //   textFieldProps.helperText = <>{textsHelperText[0]}<br />{textsHelperText[1]}</>;
-    textFieldProps.helperText = <>{textsHelperText.map((x, i) => i == 0 ? <span key={i}>{x}</span> : <span key={i}><br />{x}</span>)}</>; //@!!!!!!!!!!!!!
+    textFieldProps.helperText = <>{textsHelperText.map((x, i) => i == 0 ? <span key={i}>{x}</span> : <span key={i}><br />{x}</span>)}</>; //@!!!!!!!!
 
     if (frm != null) {
       // nesse caso o 'defaultValue' vem da inicialização de defaultValues do useForm
@@ -298,7 +298,7 @@ export const FrmInput = ({
 //   )
 // };
 
-interface FrmCheckboxProps {
+interface IFrmCheckboxProps {
   frm?: UseFormReturn<any>;
   name?: string;
   label: string;
@@ -307,6 +307,7 @@ interface FrmCheckboxProps {
   onChange?: (ev) => void;
   onBlur?: (ev) => void;
   value?: boolean;
+  noWrap?: boolean;
 }
 export const FrmCheckbox = ({
   frm,
@@ -317,7 +318,8 @@ export const FrmCheckbox = ({
   onChange: onChangeParm,
   onBlur: onBlurParm,
   value,
-}: FrmCheckboxProps) => {
+  noWrap,
+}: IFrmCheckboxProps) => {
   if ((frm == null && name != null) ||
     (frm != null && name == null))
     throw new Error('FrmCheckbox: frm e name devem ser informados OU não informados');
@@ -342,7 +344,7 @@ export const FrmCheckbox = ({
         render={({ field: { onChange, onBlur, name, value } }) => {
           return (
             <FormControlLabel_mui
-              label={label}
+              label={noWrap ? <Typography_mui noWrap variant="body1">{label}</Typography_mui> : label}
               control={
                 <Checkbox_mui
                   onChange={(ev) => allHandlers_Event(ev, onChange, onChangeParm)}
@@ -652,7 +654,7 @@ export function FrmSetError(frm: UseFormReturn<any>, name: any, message?: string
   const nameUse = name; // || fldErrorGeneric;
   try {
     if (message != null)
-      frm.setError(nameUse, {  // possivel se houver no form o 'FrmSetErrorGeneric'
+      frm.setError(nameUse, {  // possível se houver no form o 'FrmSetErrorGeneric'
         type: 'manual',
         message,
         //shouldFocus: true, // não funcionou !
@@ -670,7 +672,7 @@ export function FrmError(frm: UseFormReturn<any>, error: Error | ErrorPlus) {
     name != null) {
     if (ObjHasProp(frm.getValues(), name)) { //@@!!!!!!
       try {
-        frm.setError(name, {  // possivel se houver no form o 'FrmSetErrorGeneric'
+        frm.setError(name, {  // possível se houver no form o 'FrmSetErrorGeneric'
           type: 'manual',
           message: message,
           //shouldFocus: true, // não funcionou !
@@ -678,11 +680,11 @@ export function FrmError(frm: UseFormReturn<any>, error: Error | ErrorPlus) {
         //frm.setFocus(name); // dá erro se o campo não existir ! @@!!!!!!
       }
       catch (error) {
-        dbgError('FrmError error', error.message);
+        dbgError('FrmError', error.message);
       }
     }
     else {
-      dbgError(`campo de formulário ${name} não consta no formulário`);
+      dbgError('FrmError', `campo de formulário ${name} não consta no formulário`);
       PopupMsg.error(message);
     }
   }

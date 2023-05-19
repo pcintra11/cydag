@@ -23,10 +23,14 @@
         "@typescript-eslint"
     ],
     "rules": {
+        // "react-hooks/rules-of-hooks": "error", //@!!!!!!!
+        // "react-hooks/exhaustive-deps": "warn",
         "indent": [
-            "warn",
+            "off",
             2,
-            { "SwitchCase": 2 }
+            {
+                "SwitchCase": 2
+            }
         ],
         "quotes": [
             "error",
@@ -44,7 +48,7 @@
         "@typescript-eslint/no-unused-vars": [
             "warn",
             {
-                "varsIgnorePattern": "pageSelf|apiSelf|csd|dummy|index|dbgInfo|dbgWarn|reject|ScopeDbg|dbg|ErrorPlus|HttpStatusCode|_|ForceWait|SnackBar|CalcExecTime|agora|configApp|result"
+                "varsIgnorePattern": "csd|index|ScopeDbg|dbg|ErrorPlus|agora|result"
             }
         ],
         "no-console": [

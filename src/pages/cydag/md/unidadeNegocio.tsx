@@ -3,14 +3,13 @@ import { useRouter } from 'next/router';
 
 import { Box, FormControl, FormControlLabel, FormLabel, Radio, RadioGroup, Stack } from '@mui/material';
 
-import { IsErrorManaged, ObjUpdAllProps, ErrorPlus, ObjDiff, CalcExecTime, ForceWait } from '../../../libCommon/util';
+import { IsErrorManaged, ObjUpdAllProps, ErrorPlus, ObjDiff, ForceWait } from '../../../libCommon/util';
 import { IGenericObject } from '../../../libCommon/types';
 import { PageDef } from '../../../libCommon/endPoints';
+import { CalcExecTime } from '../../../libCommon/calcExectime';
 import { csd } from '../../../libCommon/dbg';
 
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
-
-import { globals } from '../../../libClient/clientGlobals';
 
 import { AlertMy, PopupMsg, SnackBarError } from '../../../components';
 import { Btn, BtnLine, WaitingObs } from '../../../components';
@@ -19,11 +18,12 @@ import { FrmError, FrmInput } from '../../../components';
 import { ColGridConfig, TableGrid } from '../../../components';
 import { FrmDefaultValues, FrmSetValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 
-import { configApp } from '../../../appCydag/config';
 import { BtnCrud, IconButtonAppCrud, IconButtonAppSearch } from '../../../appCydag/components';
+
+import { configApp } from '../../../app_hub/appConfig';
+
 import { pagesApp, apisApp } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
-
 import { Entity_Crud, CmdApi_Crud as CmdApi, crudValidations } from '../../api/appCydag/unidadeNegocio/types';
 import { CategRegional, CategRegionalMd } from '../../../appCydag/types';
 
@@ -43,14 +43,14 @@ class FrmFilter {
   searchTerms: string;
 }
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.unidadeNegocio.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.unidadeNegocio.apiPath, parm) };
 const pageSelf = pagesApp.unidadeNegocio;
 export default function PageUnidadeNegocioCrud() {
   const frmFilter = useFrm<FrmFilter>({
     defaultValues: FrmDefaultValues(new FrmFilter()),
   });
   const frmData = useFrm<FrmData>({ defaultValues: {}, schema: crudValidations });
-  const categRegional = useWatchMy({ control: frmData.control, name: Entity_Crud.F.categRegional }); //#!!!!!!!!
+  const categRegional = useWatchMy({ control: frmData.control, name: Entity_Crud.F.categRegional }); //#!!!!!!!
 
   interface MainStates {
     error?: Error | ErrorPlus; phase?: Phase;
@@ -131,7 +131,7 @@ export default function PageUnidadeNegocioCrud() {
       if (phase == Phase.list)
         setMainStatesCache({ phase: Phase.list, data: null, index: null });
       else {
-        const data = phase === Phase.insert ? new Entity_Crud() : mainStates.listing.dataRows[index];
+        const data = phase === Phase.insert ? Entity_Crud.new(true) : mainStates.listing.dataRows[index];
         FrmSetValues(frmData, FrmDefaultValues(new FrmData(), data));
         setMainStatesCache({ phase, data, index });
       }

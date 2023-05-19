@@ -1,10 +1,12 @@
+import { Box } from '@mui/material';
+
 function Error({ statusCode }: { statusCode: string }) {
   return (
-    <p>
+    <Box>
       {statusCode
         ? `An error ${statusCode} occurred on server`
         : 'An error occurred on client'}
-    </p>
+    </Box>
   );
 }
 

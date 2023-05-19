@@ -1,8 +1,9 @@
-import { CookieUserConfig } from '../base/loggedUserSvr';
+import { CookieUserConfig } from '../libCommon/loggedUserSvr';
 
-import { EnvDeployConfig } from '../libCommon/envs';
+import { EnvDeployConfig } from '../app_base/envs';
 import { ConcatArrays, ErrorPlus, HttpStatusCode } from '../libCommon/util';
 import { ApiDef, CheckRoleAllowed } from '../libCommon/endPoints';
+import { csd } from '../libCommon/dbg';
 
 import { HttpCriptoCookieCmdASync } from '../libServer/httpCryptoCookie';
 import { CtrlApiExec } from '../libServer/util';
@@ -15,7 +16,6 @@ export const LoggedUserReqASync = async (ctrlApiExec: CtrlApiExec, extendCookieE
   const cookieUserConfig = CookieUserConfig();
   const loggedUserStringfy = await HttpCriptoCookieCmdASync(ctrlApiExec, 'LoggedUserReqASync', cookieUserConfig, 'get', { domain: EnvDeployConfig().domain, extendExpiration: extendCookieExpiration });
   const loggedUserReq = loggedUserStringfy != null ? LoggedUser.deserialize(loggedUserStringfy) : null;
-  //console.log({ loggedUserReq });
   return loggedUserReq;
 };
 

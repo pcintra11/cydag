@@ -1,16 +1,15 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import _ from 'underscore';
 
 import { Stack } from '@mui/material';
 
-import { BinSearchItem, BinSearchProp, CalcExecTime, ErrorPlus, ObjUpdAllProps } from '../../libCommon/util';
-import { csd, csl, dbgError } from '../../libCommon/dbg';
+import { BinSearchItem, BinSearchProp, ErrorPlus, ObjUpdAllProps } from '../../libCommon/util';
+import { csd, csl } from '../../libCommon/dbg';
 import { IGenericObject } from '../../libCommon/types';
 import { PageDef } from '../../libCommon/endPoints';
+import { CalcExecTime } from '../../libCommon/calcExectime';
 import { CallApiCliASync } from '../../fetcher/fetcherCli';
 
-import { globals } from '../../libClient/clientGlobals';
 import { SaveAsXlsx } from '../../libClient/saveAsClient';
 
 import { AbortProc, SelOption, PopupMsg, WaitingObs, SnackBarError, FakeLink } from '../../components';
@@ -25,7 +24,37 @@ import { CentroCustoConfigOption, IAnoCentroCustos, ValoresAnaliseRealPlan, Valo
 import { CmdApi_ValoresContas } from '../api/appCydag/valoresContas/types';
 import { mesesFld } from '../../appCydag/util';
 import { CmdApi_ClasseCusto, SortType_ClasseCusto } from '../api/appCydag/classeCusto/types';
-import { classeCustoPessoalArray } from '../../appCydag/config';
+
+export const classeCustoPessoalArray = [  // #!!!!!! deve ir para o MD !!!!
+  '5200201001',
+  '5200201002',
+  '5200201003',
+  '5200202001',
+  '5200202002',
+  '5200203001',
+  '5200203002',
+  '5200204001',
+  '5200204002',
+  '5200205001',
+  '5200205002',
+  '5200206003',
+  '5200206050',
+  '5200207001',
+  '5200207002',
+  '5200208001',
+  '5200208002',
+  '5200208003',
+  '5200208004',
+  '5200208005',
+  '5200208007',
+  '5200208008',
+  '5200208009',
+  '5200208011',
+  '5200208012',
+  '5200208013',
+  '5200502008',
+  '5200504030',
+];
 
 //#region ok
 enum Phase {
@@ -44,9 +73,9 @@ const fldFrmExtra = {
 
 let mount; let mainStatesCache;
 const apis = {
-  getProcsOrcCCsAuth: () => CallApiCliASync<any>(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.getProcsOrcCCsAuthQuadroCons }),
-  getContas: () => CallApiCliASync<any>(apisApp.classeCusto.apiPath, globals.windowId, { cmd: CmdApi_ClasseCusto.list, sortType: SortType_ClasseCusto.classeCusto }),
-  getItens: (filter: FrmFilter) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, globals.windowId, { cmd: CmdApi_ValoresContas.exportRealPlanValoresGet, filter }),
+  getProcsOrcCCsAuth: () => CallApiCliASync<any>(apisApp.valoresContas.apiPath, { cmd: CmdApi_ValoresContas.getProcsOrcCCsAuthQuadroCons }),
+  getContas: () => CallApiCliASync<any>(apisApp.classeCusto.apiPath, { cmd: CmdApi_ClasseCusto.list, sortType: SortType_ClasseCusto.classeCusto }),
+  getItens: (filter: FrmFilter) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, { cmd: CmdApi_ValoresContas.exportRealPlanValoresGet, filter }),
 };
 const pageSelf = pagesApp.exportaRealPlanej;
 export default function PageExportPlanej() {

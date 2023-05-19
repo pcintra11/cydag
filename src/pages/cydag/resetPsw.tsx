@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 
 import { Box, Stack } from '@mui/material';
 
-import { _AppLogRedir } from '../_app';
+import { chgUserAndRouteContext } from '../_appResources';
 
 import { ErrorPlus, IsErrorManaged, ObjUpdAllProps } from '../../libCommon/util';
 
@@ -25,27 +25,27 @@ enum Phase {
   //redirecting = 'redirecting',
 }
 
-const f = ({
-  email: 'email',
-  psw: 'psw',
-  pswConfirm: 'pswConfirm',
-});
-class FrmDataResetPsw {
+class FrmResetPsw {
   email: string;
   psw: string;
   pswConfirm: string;
+  static f = ({
+    email: 'email',
+    psw: 'psw',
+    pswConfirm: 'pswConfirm',
+  });
 }
 let mount; let mainStatesCache;
 const pageSelf = pagesApp.userResetPsw;
 export default function PageResetPsw() {
-  const frmResetPsw = useFrm<FrmDataResetPsw>({ defaultValues: FrmDefaultValues(new FrmDataResetPsw()), schema: resetPswValidations });
+  const frmResetPsw = useFrm<FrmResetPsw>({ defaultValues: FrmDefaultValues(new FrmResetPsw()), schema: resetPswValidations });
   interface MainStates {
     error?: Error | ErrorPlus; phase?: Phase; showHelp?: boolean;
   }
   const [mainStates, setMainStates] = React.useState<MainStates>({ phase: Phase.initiating });
   mainStatesCache = { ...mainStates }; const setMainStatesCache = (newValues: MainStates) => { if (!mount) return; ObjUpdAllProps(mainStatesCache, newValues); setMainStates({ ...mainStatesCache }); };
 
-  const { chgUserAndRouteStart } = React.useContext(_AppLogRedir);
+  const { chgUserAndRouteStart } = React.useContext(chgUserAndRouteContext);
   const router = useRouter();
   const { loggedUser, isLoadingUser, setUser } = useLoggedUser({ id: pageSelf.pagePath });
   const agora = new Date();
@@ -83,13 +83,13 @@ export default function PageResetPsw() {
   if (mainStates.phase == Phase.initiating) return (<WaitingObs />);
 
   //#region funções
-  const onSubmit = async (dataForm: FrmDataResetPsw) => {
+  const onSubmit = async (dataForm: FrmResetPsw) => {
     const data = NormalizePropsString(dataForm);
     try {
       //FrmClearErrorGeneric(frm);
       if (data.pswConfirm != data.psw)
         //return FrmSetError('Senhas não conferem', null, frm);
-        return FrmSetError(frmResetPsw, f.pswConfirm, 'Senha não confere');
+        return FrmSetError(frmResetPsw, FrmResetPsw.f.pswConfirm, 'Senha não confere');
       const loggedUserNow = await UserResetPswASync(router.query.token as string, data.email, data.psw, data.pswConfirm);
       // //csl({ loggedUserNow });
       // //dbg(3, 'resetPsw ok', { loggedUserNow });
@@ -108,7 +108,7 @@ export default function PageResetPsw() {
       setMainStatesCache({ showHelp: true });
     }
   };
-  const sendResetPswLink = async (dataForm) => {
+  const sendResetPswLink = async (dataForm: FrmResetPsw) => {
     try {
       const message = await UserEmailLinkASync(dataForm.email, UserLinkType.resetPsw);
       PopupMsg.success(message);
@@ -136,10 +136,10 @@ export default function PageResetPsw() {
           <Stack gap={1}>
             {isInitiating
               ? <FrmInput label='Email' value='' />
-              : <FrmInput label='Email' frm={frmResetPsw} name={f.email} autoFocus {...disabledIfInitiating} />
+              : <FrmInput label='Email' frm={frmResetPsw} name={FrmResetPsw.f.email} autoFocus {...disabledIfInitiating} />
             }
-            <FrmInput label='Senha' frm={frmResetPsw} name={f.psw} type='password' {...disabledIfInitiating} />
-            <FrmInput label='Confirmação da Senha' frm={frmResetPsw} name={f.pswConfirm} type='password' {...disabledIfInitiating} />
+            <FrmInput label='Senha' frm={frmResetPsw} name={FrmResetPsw.f.psw} type='password' {...disabledIfInitiating} />
+            <FrmInput label='Confirmação da Senha' frm={frmResetPsw} name={FrmResetPsw.f.pswConfirm} type='password' {...disabledIfInitiating} />
             <BtnLine left>
               <Btn submit {...disabledIfInitiating}>Confirma</Btn>
             </BtnLine>

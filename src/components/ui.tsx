@@ -12,7 +12,7 @@ import TextField_mui from '@mui/material/TextField';
 import MenuItem_mui from '@mui/material/MenuItem';
 
 import { styled } from '@mui/material/styles';
-import { Alert, Box, Collapse, IconButton, Stack, SxProps, useTheme } from '@mui/material';
+import { Alert, Box, Collapse, IconButton, Stack, SxProps, Typography, useTheme } from '@mui/material';
 //import withStyles from '@mui/styles/withStyles';
 import CloseIcon from '@mui/icons-material/Close';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -51,7 +51,7 @@ interface ISxMakerProps {
 }
 export function sxMaker(props: ISxMakerProps) {
   const { sizeXY, ...propsForward } = props; //  fontSize, categFontSize, fontSizeFactor
-  // const categsSize = {
+  // const categSize = {
   //   1: 24,
   //   2: 36,
   //   3: 56,
@@ -61,9 +61,9 @@ export function sxMaker(props: ISxMakerProps) {
     if (size != null)
       return size;
     // const categSizeUse = categSize == 'def' ? 2 : categSize;
-    // if (categsSize[categSizeUse] == null)
+    // if (categSize[categSizeUse] == null)
     //   throw new Error(`sxMaker: categSize ${categSize} não previsto`);
-    // return categsSize[categSizeUse];
+    // return categSize[categSizeUse];
   };
 
   const sx: IGenericObject = { ...propsForward }; // @@@!!!!! type 
@@ -180,7 +180,7 @@ export const Btn = ({ children, submit, contained, outlined, text, small, medium
   else if (text)
     propsPlus.variant = 'text';
   else
-    propsPlus.variant = themePlus.themePlusConfig?.buttomVariant;
+    propsPlus.variant = themePlus.themePlusConfig?.buttonVariant;
 
   return (
     <Button_mui {...propsForward} {...propsPlus}>{children}</Button_mui>
@@ -222,9 +222,9 @@ export function BadgeMy({ content, max, showZero, vertical, horizontal, contentS
   let sizeXY = Math.trunc(contentSize * 0.45); // tamanho do badge 
   if (sizeXY < 12)
     sizeXY = Math.trunc(contentSize * 0.70);
-  let margingExcedHoriz = Math.trunc(sizeXY * 0.60); // ele estoura a área original em aproximadamente 50%
-  if (margingExcedHoriz < 10)
-    margingExcedHoriz = 10; // quando é muito pequeno estágerando um 'padding' horizontal adicional !
+  let marginExcedHoriz = Math.trunc(sizeXY * 0.60); // ele estoura a área original em aproximadamente 50%
+  if (marginExcedHoriz < 10)
+    marginExcedHoriz = 10; // quando é muito pequeno está gerando um 'padding' horizontal adicional !
   const fontSize = Math.trunc(sizeXY * 0.80);  // para caber e tb ter padding
 
   const sx: SxProps = { marginLeft: null }; // @@@!!
@@ -240,10 +240,10 @@ export function BadgeMy({ content, max, showZero, vertical, horizontal, contentS
   const horizontalUse = horizontal || 'right';
 
   if (horizontalUse == 'left')
-    sx.paddingLeft = `${margingExcedHoriz}px`;
+    sx.paddingLeft = `${marginExcedHoriz}px`;
   else if (horizontalUse == 'right')
-    sx.paddingRight = `${margingExcedHoriz}px`;
-  //sx.width = `${sizeXY + margingExcedHoriz}px`; // mudou o position??!!
+    sx.paddingRight = `${marginExcedHoriz}px`;
+  //sx.width = `${sizeXY + marginExcedHoriz}px`; // mudou o position??!!
   //csl({ sizeXY, horizontalUse, verticalUse, sx });
 
   // const sizeBadge = sizeXY;
@@ -278,7 +278,7 @@ export function BadgeMy({ content, max, showZero, vertical, horizontal, contentS
     },
   }));
 
-  // criar um criterio para tamanho que seja universal em todos os componentes @@@@!!!
+  // criar um critério para tamanho que seja universal em todos os componentes @@@@!!!
 
   return (
     <Box sx={sx}>
@@ -340,17 +340,21 @@ interface IAvatarGroupProps {
   //categSize?: number;
   sizeXY?: number | string;
   fontSize?: number | string;
+  inline?: boolean;
   children: React.ReactNode;
 }
 export function AvatarGroupMy(props: IAvatarGroupProps) {
-  const { sizeXY, fontSize } = props; // , ...propsIgnore
+  const { sizeXY, fontSize, inline, children } = props; // , ...propsIgnore
   //csl({ props, avatares });
-  const sx = sxMaker({ sizeXY, fontSize });
+  const sx = {
+    '& .MuiAvatar-root': sxMaker({ sizeXY, fontSize }),
+    display: inline ? 'inline-flex' : undefined,
+  };
   return (
     <AvatarGroup_mui max={props.max}
-      sx={{ '& .MuiAvatar-root': sx }}
+      sx={sx}
     >
-      {props.children}
+      {children}
     </AvatarGroup_mui>
   );
   // return (
@@ -366,7 +370,7 @@ export function AvatarGroupMy(props: IAvatarGroupProps) {
 }
 
 
-interface IconButtonProps {
+interface IIconButtonProps {
   children: React.ReactNode;
   onClick?: () => void;
   disabled?: boolean;
@@ -374,7 +378,7 @@ interface IconButtonProps {
   padding?: number;
   executing?: boolean;
 }
-export function IconButtonMy(props: IconButtonProps) { // implementar no componente do icon o 'onclick' opcional @@!!!!!!
+export function IconButtonMy(props: IIconButtonProps) { // implementar no componente do icon o 'onclick' opcional @@!!!!!!
   const { children, submit, onClick, disabled, padding } = props;
   const disabledUse = props.executing ? true : disabled; // @!!!!!!!!! mudar a cor no filho?
   const propsBtn: IGenericObject = { onClick, disabled: disabledUse }; // @@@@!!!!!!
@@ -425,19 +429,43 @@ export function BtnLine({ children, left, right, bottomStick }: { children: Reac
     );
 }
 
-export function VisualBlock({ children, className }: { children: React.ReactNode, className?: string }) {
+interface IVisualBlockProps {
+  children: React.ReactNode,
+  className?: string,
+  gap?: number,
+}
+export function VisualBlock({ children, className, gap }: IVisualBlockProps) {
   const themePlus = useTheme();
   // margin não está funcionando em sx  @@@!
   //  className={`${g_cn.distribVert} ${className}`} , p: '1.0rem'  clasName @!!!!!!
+  const gapUse = gap != null ? gap : 1;
   return (
-    <Stack gap={1} p={1} sx={{ border: 1, borderColor: themePlus.themePlusDeriv.destaque2.backColor }}
+    <Stack gap={gapUse} p={1} sx={{ border: 1, borderColor: themePlus.themePlusDeriv.destaque2.backColor }}
       className={className}>
       {children}
     </Stack>
   );
 }
 
-// export function Displaimer({ children }: { children: React.ReactNode }) {
+// interface IImgFitCenterProps {
+//   src: string;
+// }
+// /* preenche todo o box, priorizando o centro da imagem */
+// export const ImgFitCenter = ({ src }: IImgFitCenterProps) => {
+//   return (
+//     <img className='fitCenter' src={src} />
+//     <style jsx>{`
+//       .fitCenter {
+//         width: 100%;
+//         height: 100%;
+//         object-fit: cover;
+//         object-position: center center;
+//       }
+//     `}</style>
+//   );
+// };
+
+// export function Disclaimer({ children }: { children: React.ReactNode }) {
 //   let className = g_cn.inLineL;
 //   if (right)
 //     className = g_cn.inLineR;
@@ -448,13 +476,28 @@ export function VisualBlock({ children, className }: { children: React.ReactNode
 //   );
 // }
 
-interface IFakeLinkProps { onClick?: () => void; disabled?: boolean; color?: string; bgcolor?: string; children: React.ReactNode }
-export function FakeLink({ onClick, disabled, color, bgcolor, children }: IFakeLinkProps) {
+interface IFakeLinkProps {
+  onClick?: () => void;
+  disabled?: boolean;
+  color?: string;
+  bgcolor?: string;
+  mr?: number;
+  ml?: number;
+  children: React.ReactNode;
+}
+export function FakeLink({ onClick, disabled, color, bgcolor, mr, ml, children }: IFakeLinkProps) {
+  const commomProps = {
+    display: 'inline',
+    mr,
+    ml,
+    color,
+    bgcolor,
+  };
   if (disabled)
-    return <Box color={color} bgcolor={bgcolor}>{children}</Box>;
+    return <Box {...commomProps}>{children}</Box>;
   else
     //return <Typography sx={{ textDecoration: 'underline', cursor: 'pointer' }} onClick={onClick}>{children}</Typography>;
-    return <Box color={color} bgcolor={bgcolor} sx={{ textDecoration: 'underline', cursor: 'pointer' }} onClick={onClick}>{children}</Box>;
+    return <Box {...commomProps} sx={{ textDecoration: 'underline', cursor: 'pointer' }} onClick={onClick}>{children}</Box>;
 }
 
 export function WhatsAppLink({ phone, textLink, message }: { phone: string, textLink?: string, message?: string }) {
@@ -481,7 +524,7 @@ export const ImgResponsive = ({ src, maxHeight = '100vh', width = '100%', style 
   };
   // className='businessImg'
   return (
-    <div style={{ width: width }}>
+    <div style={{ width }}>
       <img style={{ ...styleImg, ...style }} src={src} />
     </div>
   );
@@ -499,7 +542,7 @@ export const ImgResponsive = ({ src, maxHeight = '100vh', width = '100%', style 
 
 // export function PageContentScroll({ children }) {
 //   return (
-//     <div style={{...containerVerticalfullStyle, gridTemplateRows: '1fr'}}>
+//     <div style={{...containerVerticalFullStyle, gridTemplateRows: '1fr'}}>
 //       <div style={containerVerticalScrollableStyle}>
 //         {children}
 //       </div>
@@ -512,7 +555,7 @@ export const ImgResponsive = ({ src, maxHeight = '100vh', width = '100%', style 
 // };
 
 
-// @@!!!!!! icone de fechar não está alinhado !
+// @@!!!!!! ícone de fechar não está alinhado !
 export const AlertMy = ({ children }: { children: React.ReactNode }) => {
   const [open, setOpen] = React.useState(true);
   return (
@@ -536,8 +579,6 @@ export const AlertMy = ({ children }: { children: React.ReactNode }) => {
     </Box>
   );
 };
-
-export const Spc = () => (<span>&nbsp;</span>);
 
 interface ISwitchMyProps {
   label?: React.ReactNode;
@@ -622,7 +663,7 @@ interface IAutocompleteMyProps {
   onChange: (ev, newValue) => void,
   getOptionLabel: (option: any) => string,
   isOptionEqualToValue: (option: any, value: any) => boolean,
-  getOptionDisabled?: (option: any) => boolean,
+  //getOptionDisabled?: (option: any) => boolean,
   freeSolo?: boolean,
   disabled?: boolean,
   disableClearable?: boolean,
@@ -634,12 +675,15 @@ interface IAutocompleteMyProps {
   fontSize?: string | number; // apenas para o campo de resultado, não interfere no combo aberto
   variant?: InputVariantType;
 }
-export const AutocompleteMy = ({ width, value, onChange, getOptionLabel, isOptionEqualToValue, getOptionDisabled,
+// #!!!!!!!!! Autocomplete -> AutocompleteMy
+export const AutocompleteMy = ({ width, value, onChange, getOptionLabel, isOptionEqualToValue, //getOptionDisabled,
   freeSolo, disabled, disableClearable, multiple, limitTags, options, label, placeholder, fontSize, variant }: IAutocompleteMyProps) => {
   const themePlus = useTheme();
   const widthUse = width || '99.5%';
   const variantUse = variant || themePlus.themePlusConfig?.inputVariant;
   const disableCloseOnSelect = multiple;
+  const getOptionDisabled = (option: SelOption) => option.disabled;
+  //#!!!!!! definir a ordem dos parâmetros mais natural
   return (
     <Autocomplete_mui
       sx={{ width: widthUse, whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}
@@ -660,6 +704,66 @@ export const AutocompleteMy = ({ width, value, onChange, getOptionLabel, isOptio
       getOptionLabel={getOptionLabel}
       isOptionEqualToValue={isOptionEqualToValue}
       getOptionDisabled={getOptionDisabled}
+      noOptionsText='Nenhuma opção'
     />
   );
 };
+
+interface ITypoProps {
+  inline?: boolean;
+  bold?: boolean;
+  italic?: boolean;
+  color?: string;
+  noWrap?: boolean; // => Ellipses
+  paragraph?: boolean;
+  //component?: 'div' | 'span';
+  variant?: 'h5' | 'h6' | 'inherit'; // 'body1' | 'body2' | 'h1' | 'h2' | 'h3' | 'h4' |
+  small?: boolean; //@!!!!!!!
+  children: React.ReactNode;
+}
+export const Typo = ({ inline, bold, italic, small, color, noWrap, paragraph, variant, children }: ITypoProps) => {
+  let sx: any = {}; //@!!!! type
+  if (bold != null) sx = { ...sx, fontWeight: 'bold' };
+  if (italic != null) sx = { ...sx, fontStyle: 'italic' };
+  if (small != null) sx = { ...sx, fontSize: '20px' }; // @!!!!!!!!! bolar algo para lidar com tamanhos de fontes
+  let props: any = {}; //@!!!! type
+  if (variant != null) props = { ...props, variant };
+  if (inline) props = { ...props, component: 'span' };
+  if (paragraph) props = { ...props, paragraph: true };
+  //else props = { ...props, gutterBottom: false };
+  props = { ...props, color: color || 'inherit' };
+  //props = { ...props, fontSize: 'inherit' };
+  if (noWrap === true)
+    props = {
+      ...props,
+      noWrap: true,
+      // whiteSpace: 'nowrap',
+      // overflow: 'hidden',
+      // textOverflow: 'ellipses',
+    };
+  return (
+    <Typography {...props} sx={sx}>{children}</Typography>
+  );
+};
+
+interface ITypoLineBreak {
+  text?: string;
+}
+export const TypoLineBreak = ({ text }: ITypoLineBreak) => {
+  //const safeHtml = DOMPurify.sanitize(source.replaceAll('\n', '<br/>'));  
+  if (text == null) return <></>;
+  return (<>
+    {text.split(/\n/).map((x, index) => <Typo key={index} paragraph>{x}</Typo>)}
+  </>);
+};
+// // export const HtmlLineBreak = (source: string) => { // old
+// //   //const safeHtml = DOMPurify.sanitize(source.replaceAll('\n', '<br/>'));
+// //   if (source == null)
+// //     return '';
+// //   else if (typeof source == 'string')
+// //     //return source.replaceAll('\n', '<br/>'); // não está disponível no nodeJS, apenas no ECMA 2021 !!!
+// //     //return source.replace(/\n/g, '<br/>');
+// //     return source.split(/\n/).map((x) => <Typo paragr) '<br/>');
+// //   else
+// //     return typeof source + ' tipo de conteúdo não previsto';
+// // };

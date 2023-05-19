@@ -1,21 +1,23 @@
 import { ObjectId } from 'mongodb';
 import _ from 'underscore';
 
-import { Env, EnvApiTimeout } from '../libCommon/envs';
+import { configApp } from '../app_hub/appConfig';
 
-import { ApiSyncLog, LoggedUserBase } from '../base/db/types';
-import { ApiSyncLogModel } from '../base/db/models';
-import { CloseDbASync, ConnectDbASync, UriDb } from '../base/db/functions';
+import { ApiSyncLog, LoggedUserBase } from '../app_base/modelTypes';
+import { ApiSyncLogModel } from '../app_base/model';
+import { CloseDbASync, ConnectDbASync, UriDb } from './dbMongo';
 
+import { EnvApiTimeout, EnvInfoHost } from '../app_base/envs';
 import { HttpStatusCodeNormais } from '../libCommon/util';
 import { dbgError } from '../libCommon/dbg';
+import { CtrlContext } from '../libCommon/ctrlContext';
 
-import { ApiResultProc, CtrlApiExec } from './util';
+import { IApiResultProc, CtrlApiExec } from './util';
 
-interface ApiLogProc {
+interface IApiLogProc {
   _id: ObjectId,
   //context: string,
-  ctrlApiExec: CtrlApiExec,
+  ctrlContext: CtrlContext,
 }
 
 export async function ApiLogStart(ctrlApiExec: CtrlApiExec, loggedUserReq?: LoggedUserBase) {
@@ -25,11 +27,11 @@ export async function ApiLogStart(ctrlApiExec: CtrlApiExec, loggedUserReq?: Logg
   let dbOpened = false;
   if (UriDb() != null) {
     try {
-      await ConnectDbASync({ context: `${ctrlApiExec.context()}-ApiLogStart` });
-      ctrlApiExec.checkElapsed('ApiLogStart Connect');
+      await ConnectDbASync({ ctrlContext: ctrlApiExec.ctrlContext });
+      ctrlApiExec.ctrlContext.checkElapsed('ApiLogStart Connect');
       dbOpened = true;
     } catch (error) {
-      dbgError('ApiLogStart ConnectDbASync error', error.message);
+      dbgError('ApiLogStart', 'ConnectDb', error.message);
     }
   }
 
@@ -42,44 +44,46 @@ export async function ApiLogStart(ctrlApiExec: CtrlApiExec, loggedUserReq?: Logg
   }
 
   if (dbOpened) {
-    const apiLogDb = await ApiSyncLogModel.create({
-      appVersion: Env('appVersion'),
-      apiHost: ctrlApiExec.apiHost,
-      apiPath: ctrlApiExec.apiPath,
-      ip: ctrlApiExec.ip,
-      originHost: ctrlApiExec.originHost,
-      paramsTypeVariant: ctrlApiExec.paramsTypeVariant,
-      paramsTypeKey: ctrlApiExec.paramsTypeKey,
-      userId: loggedUserReq?.userIdStr != null ? new ObjectId(loggedUserReq.userIdStr) : null,
-      userInfo: userInfo,
-      started: agora,
-      parm: ctrlApiExec.parm,
-      sessionIdStr: loggedUserReq?.sessionIdStr,
-      referer: ctrlApiExec.referer, // @!!!!!
-    } as ApiSyncLog);
+    const apiLogDb = (await ApiSyncLogModel.create(
+      ApiSyncLog.fill({
+        appVersion: configApp.appVersion,
+        apiHost: EnvInfoHost(), // ctrlApiExec.apiHost,
+        apiPath: ctrlApiExec.apiPath,
+        ip: ctrlApiExec.ip,
+        //originHost: ctrlApiExec.originHost,
+        paramsTypeVariant: ctrlApiExec.paramsTypeVariant,
+        paramsTypeKey: ctrlApiExec.paramsTypeKey,
+        userId: loggedUserReq?.userIdStr != null ? new ObjectId(loggedUserReq.userIdStr) : null,
+        userInfo: userInfo,
+        started: agora,
+        parm: ctrlApiExec.parm,
+        sessionIdStr: loggedUserReq?.sessionIdStr,
+        referer: ctrlApiExec.referer, // @!!!!!
+      }, true)
+    ) as any)._doc as ApiSyncLog;
     apiLogDb_id = apiLogDb._id;
-    ctrlApiExec.checkElapsed('ApiLogStart create');
+    ctrlApiExec.ctrlContext.checkElapsed('ApiLogStart create');
   }
 
   if (dbOpened) {
     try {
-      await CloseDbASync({ context: `${ctrlApiExec.context()}-ApiLogStart` });
+      await CloseDbASync({ ctrlContext: ctrlApiExec.ctrlContext });
     } catch (error) {
-      dbgError('ApiLogStart CloseDbASync error', error.message);
+      dbgError('ApiLogStart', 'CloseDb', error.message);
     }
   }
 
-  const apiLogProc: ApiLogProc = {
+  const apiLogProc: IApiLogProc = {
     _id: apiLogDb_id,
     //context: varsHttp.context(),
-    ctrlApiExec,
+    ctrlContext: ctrlApiExec.ctrlContext,
   };
   return apiLogProc;
 }
 
-export async function ApiLogFinish(apiLogProc: ApiLogProc, result: ApiResultProc, deleteIfOk = false, aditionalInfo: string = undefined) {
+export async function ApiLogFinish(apiLogProc: IApiLogProc, result: IApiResultProc, deleteIfOk = false, additionalInfo: string = undefined) {
   const agora = new Date();
-  const elapsedMs = apiLogProc.ctrlApiExec.calcExecTime.elapsedMs();
+  const elapsedMs = apiLogProc.ctrlContext.calcExecTime.elapsedMs();
 
   if (apiLogProc._id == null)
     return;
@@ -88,7 +92,7 @@ export async function ApiLogFinish(apiLogProc: ApiLogProc, result: ApiResultProc
     return;
 
   try {
-    await ConnectDbASync({ context: `${apiLogProc.ctrlApiExec.context()}-ApiLogFinish` });
+    await ConnectDbASync({ ctrlContext: apiLogProc.ctrlContext });
 
     //dbg({ level: 1, context: apiLogProc.context, levelScope: ScopeDbg.api }, `api finalizada: ${elapsedMs}ms`);
     const attentionItens = [];
@@ -105,19 +109,19 @@ export async function ApiLogFinish(apiLogProc: ApiLogProc, result: ApiResultProc
     // if (shouldDelete)
     //   await ApiSyncLogModel.deleteOne({ _id: apiLogProc._id });
     // else
-    await ApiSyncLogModel.updateOne({ _id: apiLogProc._id },
-      {
+    await ApiSyncLogModel.updateOne(
+      ApiSyncLog.fill({ _id: apiLogProc._id }),
+      ApiSyncLog.fill({
         ended: agora,
         elapsedMs,
         result,
         attention: attentionItens.length > 0 ? attentionItens.join('; ') : undefined,
         shouldDelete,
-        aditionalInfo,
-      } as ApiSyncLog);
-
-    await CloseDbASync({ context: `${apiLogProc.ctrlApiExec.context()}-ApiLogFinish` });
+        additionalInfo: additionalInfo,
+      }));
+    await CloseDbASync({ ctrlContext: apiLogProc.ctrlContext });
   } catch (error) {
-    dbgError('ApiLogFinish error', error.message);
+    dbgError('ApiLogFinish', error.message);
   }
 
   return;

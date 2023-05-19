@@ -107,7 +107,7 @@ export const procsCentroCustosConfigAuthAllYears = async (loggedUserReq: LoggedU
       // ccsConfig.forEach((x) => {
       //   x.userCanWrite = userCanWrite(x);
       // });
-      procsCentrosCustoConfigAllYears.push({ ...procCentrosCustoConfig, centroCustoConfig: centroCustosConfigDb.map((x) => new CentroCustoConfig().Fill(x)) });
+      procsCentrosCustoConfigAllYears.push({ ...procCentrosCustoConfig, centroCustoConfig: centroCustosConfigDb.map((x) => CentroCustoConfig.fill(x)) });
     }
   }
   //csd('proc', JSON.stringify(procsCentrosCustoConfigAllYears, null, 2));

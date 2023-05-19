@@ -1,5 +1,5 @@
 import { ApiDef, PageDef, rolesDev } from '../libCommon/endPoints';
-import { EnvDeployConfig } from '../libCommon/envs';
+import { EnvDeployConfig } from '../app_base/envs';
 
 // appXXX
 
@@ -28,7 +28,7 @@ export const pageDummy = new PageDef(`${pathPages}/dummy`, 'Página ainda dispon
 
 export const quadroPage = {
   path: `${pathPages}/plan/quadroGeral`,
-  variant: {
+  variant: {  // o uso de 'variant' está provocando erros no refresh forçado da página #!!!!!!!! op `className` did not match. Server: "MuiBox-root css-10klw3m" Client: "MuiBox-root css-0"
     cons: 'cons',
     input: 'input',
   },

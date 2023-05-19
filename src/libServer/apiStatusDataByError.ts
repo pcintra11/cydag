@@ -1,11 +1,13 @@
 import { dbgError } from '../libCommon/dbg';
 import { ErrorPlus, HttpStatusCode } from '../libCommon/util';
 import { CategMsgSystem } from '../libCommon/logSystemMsg_cliSvr';
+import { CtrlContext } from '../libCommon/ctrlContext';
 
 import { SystemMsgSvrASync } from './systemMsgSvr';
 import { CtrlApiExec } from './util';
 
-export async function ApiStatusDataByErrorASync(error: Error | ErrorPlus, pointInApi: string, parm: object, ctrlApiExec: CtrlApiExec, aditionalInfo?: any) {
+export async function ApiStatusDataByErrorASync(error: Error | ErrorPlus, point: string, parm: object, ctrlApiExec: CtrlApiExec, additionalInfo?: any, supressLogError?: boolean) {
+  //csl(`ApiStatusDataByErrorASync, api '${ctrlApiExec.apiPath}', error: '${error.message}'`, { pointInApi, parm, additionalInfo });
   let httpStatusCode = HttpStatusCode.unexpectedError;
   let data = {};
   let managed = false;
@@ -18,23 +20,25 @@ export async function ApiStatusDataByErrorASync(error: Error | ErrorPlus, pointI
   }
   else if (error instanceof Error) { }
   else
-    dbgError('ApiStatusDataByError: parâmetro não é do tipo Error:', error);
+    dbgError('ApiStatusDataByError', 'parâmetro não é do tipo Error:', error);
 
   const apiInfo = [];
   if (ctrlApiExec.paramsTypeKey != '') apiInfo.push(`key: ${ctrlApiExec.paramsTypeKey}`);
   if (ctrlApiExec.paramsTypeVariant != '') apiInfo.push(`var: ${ctrlApiExec.paramsTypeVariant}`);
-  const point = `${ctrlApiExec.apiPath}(${ctrlApiExec.execId})(${apiInfo.join(',')})=>${pointInApi}`;
+  //const point = `${ctrlApiExec.apiPath}(${ctrlApiExec.execId})(${apiInfo.join(',')})=>${pointInApi}`;
   //if (httpStatusCode === HttpStatusCode.unexpectedError)
   if (!managed && !logged) {
-    await SystemMsgSvrASync(CategMsgSystem.error, point, error.message, ctrlApiExec, { data, parm, aditionalInfo });
-    logged = true;
+    if (!supressLogError) {
+      await SystemMsgSvrASync(CategMsgSystem.error, point, error.message, ctrlApiExec.ctrlContext, { apiInfo, data, parm, additionalInfo });
+      logged = true;
+    }
   }
   const messageUse = managed ? error.message : `${point}: ${error.message}.`;
   const _ErrorPlusObj = new ErrorPlus(messageUse, { data, httpStatusCode, managed, logged });
   return { httpStatusCode, jsonErrorData: { _ErrorPlusObj } };
 }
 
-export async function SSGErrorASync(error: Error | ErrorPlus, pointInApi: string, ctrlApiExec: CtrlApiExec, aditionalInfo?: any) {
+export async function SSGErrorASync(error: Error | ErrorPlus, ctrlContext: CtrlContext, point: string, additionalInfo?: any) {
   let data = {};
   let managed = false;
   let logged = false;
@@ -45,11 +49,11 @@ export async function SSGErrorASync(error: Error | ErrorPlus, pointInApi: string
   }
   else if (error instanceof Error) { }
   else
-    dbgError('SSGError: parâmetro não é do tipo Error:', error);
+    dbgError('SSGError', 'parâmetro não é do tipo Error:', error);
 
-  const point = `${ctrlApiExec.apiPath}=>${pointInApi}`;
+  //const point = `${ctrlContext.context}=>${point}`;
   if (!managed && !logged) {
-    await SystemMsgSvrASync(CategMsgSystem.error, point, error.message, ctrlApiExec, { data, aditionalInfo });
+    await SystemMsgSvrASync(CategMsgSystem.error, point, error.message, ctrlContext, { data, additionalInfo });
     logged = true;
   }
   const messageUse = managed ? error.message : `${point}: ${error.message}.`;

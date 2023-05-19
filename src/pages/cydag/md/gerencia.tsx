@@ -1,15 +1,13 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-
 import { Box, Stack } from '@mui/material';
 
-import { IsErrorManaged, ObjUpdAllProps, ErrorPlus, ObjDiff, CalcExecTime, ForceWait } from '../../../libCommon/util';
+import { IsErrorManaged, ObjUpdAllProps, ErrorPlus, ObjDiff, ForceWait } from '../../../libCommon/util';
 import { IGenericObject } from '../../../libCommon/types';
+import { CalcExecTime } from '../../../libCommon/calcExectime';
 import { PageDef } from '../../../libCommon/endPoints';
 
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
-
-import { globals } from '../../../libClient/clientGlobals';
 
 import { AlertMy, PopupMsg, SnackBarError } from '../../../components';
 import { Btn, BtnLine, WaitingObs } from '../../../components';
@@ -18,11 +16,11 @@ import { FrmError, FrmInput } from '../../../components';
 import { ColGridConfig, TableGrid } from '../../../components';
 import { FrmDefaultValues, FrmSetValues, NormalizePropsString, useFrm } from '../../../hooks/useMyForm';
 
-import { configApp } from '../../../appCydag/config';
+import { configApp } from '../../../app_hub/appConfig';
+
 import { BtnCrud, IconButtonAppCrud, IconButtonAppSearch } from '../../../appCydag/components';
 import { pagesApp, apisApp } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
-
 import { Entity_Crud, CmdApi_Crud as CmdApi, crudValidations } from '../../api/appCydag/gerencia/types';
 
 enum Phase {
@@ -40,7 +38,7 @@ class FrmFilter {
   searchTerms: string;
 }
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.gerencia.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.gerencia.apiPath, parm) };
 const pageSelf = pagesApp.gerencia;
 export default function PageGerenciaCrud() {
   const frmFilter = useFrm<FrmFilter>({
@@ -127,7 +125,7 @@ export default function PageGerenciaCrud() {
       if (phase == Phase.list)
         setMainStatesCache({ phase: Phase.list, data: null, index: null });
       else {
-        const data = phase === Phase.insert ? new Entity_Crud() : mainStates.listing.dataRows[index];
+        const data = phase === Phase.insert ? Entity_Crud.new(true) : mainStates.listing.dataRows[index];
         FrmSetValues(frmData, FrmDefaultValues(new FrmData(), data));
         setMainStatesCache({ phase, data, index });
       }

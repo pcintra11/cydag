@@ -1,17 +1,16 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import _ from 'underscore';
 
 import Box from '@mui/material/Box';
 import { Divider, Stack, useTheme } from '@mui/material';
 
-import { BinSearchItem, CalcExecTime, compareForBinSearch, ErrorPlus, ForceWait, NumberStrMinLen, ObjUpdAllProps } from '../../../libCommon/util';
+import { BinSearchItem, compareForBinSearch, ErrorPlus, ForceWait, NumberStrMinLen, ObjUpdAllProps } from '../../../libCommon/util';
 import { csd, dbgError } from '../../../libCommon/dbg';
 import { IGenericObject } from '../../../libCommon/types';
 import { PageDef } from '../../../libCommon/endPoints';
+import { CalcExecTime } from '../../../libCommon/calcExectime';
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
 
-import { globals } from '../../../libClient/clientGlobals';
 import { cssTextNoWrapEllipsis } from '../../../libClient/util';
 
 import { AbortProc, SelOption, PopupMsg, SwitchMy, WaitingObs, SnackBarError, fontSizeGrid, fontSizeIconsInGrid } from '../../../components';
@@ -19,14 +18,16 @@ import { HierNode } from '../../../components/hier';
 import { GridCell } from '../../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 
+import { configApp } from '../../../app_hub/appConfig';
+
 import { IconApp, IconButtonAppSearch, propsColorHeader, propsColorByTotLevel, SelAno, propsColorByCompRealPlan } from '../../../appCydag/components';
 import { apisApp, pagesApp } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
 import { amountToStr, anoAdd, percToStr } from '../../../appCydag/util';
-import { configApp } from '../../../appCydag/config';
 import { ClasseCusto, Diretoria, FatorCusto, ProcessoOrcamentario, UnidadeNegocio } from '../../../appCydag/modelTypes';
 import { ValoresComparativoAnual, ColValsComparativoAnual, CategRegional, CategRegionalMd } from '../../../appCydag/types';
 import { CmdApi_ValoresContas as CmdApi } from '../../api/appCydag/valoresContas/types';
+import { configCydag } from '../../../appCydag/configCydag';
 
 enum Phase {
   initiating = 'initiating',
@@ -73,7 +74,7 @@ class FrmFilter {
 //#endregion
 
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, parm) };
 const pageSelf = pagesApp.comparativoAnualControladoria;
 
 const statesCompsSubord = { setMainStatesData1: null as any, setMainStatesData2: null as any, showConta: false, setShowConta: null as any };
@@ -154,11 +155,11 @@ export default function PageComparativoAnualControladoria() {
     while (idPaiSum != null) {
       const nodePai = BinSearchItem(valsHierNode, idPaiSum, 'id');
       if (nodePai == null) {
-        dbgError(`nodePai ${idPaiSum} não encontrada na hierarquia (1)`);
+        dbgError('sumHierUp', `nodePai ${idPaiSum} não encontrada na hierarquia (1)`);
         break;
       }
       if (nodePai.nodeContent.vals == null) {
-        dbgError('Valores para nível totalizado não inicializados:', nodePai.id);
+        dbgError('sumHierUp', 'Valores para nível totalizado não inicializados:', nodePai.id);
         break;
       }
       if (vals != null)
@@ -181,11 +182,11 @@ export default function PageComparativoAnualControladoria() {
               [];
       const id = HierNode.nodeId(nodeType, keys);
       const node = BinSearchItem(nodes, id, 'id');
-      if (node == null) dbgError(`${id} não encontrada na hierarquia (setValsInf) (estrut: ${estrutHier})`);
-      else if (node.group) dbgError(`${id} está na hierarquia como um agrupamento (estrut: ${estrutHier})`);
+      if (node == null) dbgError('setValsInf', `${id} não encontrada na hierarquia (setValsInf) (estrut: ${estrutHier})`);
+      else if (node.group) dbgError('setValsInf', `${id} está na hierarquia como um agrupamento (estrut: ${estrutHier})`);
       else {
-        ColValsComparativoAnual.sumVals(node.nodeContent.vals, valores.vals());
-        sumHierUp(nodes, node.idPai, valores.vals());
+        ColValsComparativoAnual.sumVals(node.nodeContent.vals, valores); // .vals()
+        sumHierUp(nodes, node.idPai, valores);
       }
     });
   };
@@ -379,10 +380,10 @@ export default function PageComparativoAnualControladoria() {
         return (<>
           <GridCell {...propsColorLevel}><Box pl={paddingLeft}>{descrUse}</Box></GridCell>
 
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planAnt, configApp.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.realAnt, configApp.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planAtu, configApp.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right' {...propsColorVar}>{amountToStr(varAbs, configApp.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planAnt, configCydag.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.realAnt, configCydag.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planAtu, configCydag.decimalsValsCons)}</GridCell>
+          <GridCell textAlign='right' {...propsColorVar}>{amountToStr(varAbs, configCydag.decimalsValsCons)}</GridCell>
           <GridCell textAlign='right'>{percToStr(varPerc)}</GridCell>
         </>);
       };

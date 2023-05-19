@@ -1,12 +1,13 @@
 import { ObjectId } from 'mongodb';
 
 import { csd, dbgError } from '../libCommon/dbg';
-import { ErrorPlus, FillClass } from '../libCommon/util';
+import { CutUndef, ErrorPlus, FillClassProps } from '../libCommon/util';
 import { IGenericObject } from '../libCommon/types';
 import { FldCsvDef, FldsCsvAll } from '../libCommon/uploadCsv';
 
-import { configApp } from './config';
 import { amountParse, mesesFld, sumRound } from './util';
+import { configCydag } from './configCydag';
+import { ignoreMongoProps } from './modelTypes';
 
 class EnumMd<T> {
   cod: T;
@@ -19,6 +20,7 @@ class EnumMd<T> {
   }
 }
 
+//#region enum
 //#region RevisaoValor
 export enum RevisaoValor {
   atual = 'a',
@@ -271,31 +273,37 @@ export enum InterfaceSapStatus {
   success = 'success',
 }
 //#endregion
+//#endregion
 
 //#region classes usadas com frequência em várias páginas
 export class CentroCustoConfig {
-  centroCusto: string;
-  planejamentoEmAberto: boolean;
-  emailResponsavel: string;
-  emailPlanejador: string;
-  emailConsulta: string[];
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  centroCusto?: string;
+  planejamentoEmAberto?: boolean;
+  emailResponsavel?: string;
+  emailPlanejador?: string;
+  emailConsulta?: string[];
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new CentroCustoConfig(); }
+  static fill(values: CentroCustoConfig, init = false) { return CutUndef(FillClassProps(CentroCustoConfig.new(init), values)); }
 }
 export class ProcCentrosCustoConfig {
   _id?: ObjectId;
   ano?: string;
   status?: ProcessoOrcamentarioStatus;
   centroCustoConfig?: CentroCustoConfig[];
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ProcCentrosCustoConfig(); }
+  static fill(values: ProcCentrosCustoConfig, init = false) { return CutUndef(FillClassProps(ProcCentrosCustoConfig.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new ProcCentrosCustoConfig().Fill({
-        ...values,
-        centroCustoConfig: values.centroCustoConfig.map((x) => new CentroCustoConfig().Fill(x)),
-      });
+      return FillClassProps(ProcCentrosCustoConfig.new(),
+        {
+          ...ignoreMongoProps(values),
+          centroCustoConfig: values.centroCustoConfig.map((x) => CentroCustoConfig.fill(x)), //#!!!!!!!!!!!!!!
+        });
     } catch (error) {
-      dbgError('Erro em ProcsCentrosCustoConfig.deserialize', error.message, values);
-      return new ProcCentrosCustoConfig();
+      dbgError('ProcsCentrosCustoConfig.deserialize', error.message, values);
+      return ProcCentrosCustoConfig.new(true);
     }
   }
 }
@@ -304,20 +312,21 @@ export class CentroCustoConfigOption {
   cod?: string;
   descr?: string;
   ccConfig?: CentroCustoConfig;
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
 }
 export interface IAnoCentroCustos { ano: string, centroCustoConfigOptions: CentroCustoConfigOption[] }
 
 export class ColValsAnaliseAnual {
-  planTot: number;
-  planComplReal: number;
-  planYTD: number;
-  planMes: number;
-  realYTD: number;
-  realMes: number;
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  planTot?: number;
+  planComplReal?: number;
+  planYTD?: number;
+  planMes?: number;
+  realYTD?: number;
+  realMes?: number;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ColValsAnaliseAnual(); }
+  static fill(values: ColValsAnaliseAnual, init = false) { return CutUndef(FillClassProps(ColValsAnaliseAnual.new(init), values)); }
   static ValsReset() {
-    return new ColValsAnaliseAnual().Fill({
+    return ColValsAnaliseAnual.fill({
       planTot: 0,
       planComplReal: 0,
       planYTD: 0,
@@ -349,20 +358,21 @@ export class ValoresAnaliseAnual extends ColValsAnaliseAnual {
       centroCustoArray: 'centroCustoArray' as 'centroCustoArray',
     };
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ValoresAnaliseAnual(); }
+  static fill(values: ValoresAnaliseAnual, init = false) { return CutUndef(FillClassProps(ValoresAnaliseAnual.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new ValoresAnaliseAnual().Fill(values);
+      return FillClassProps(ValoresAnaliseAnual.new(),
+        ignoreMongoProps(values));
     } catch (error) {
-      dbgError('Erro em ValoresAnaliseAnual.deserialize', error.message, values);
-      return new ValoresAnaliseAnual();
+      dbgError('ValoresAnaliseAnual.deserialize', error.message, values);
+      return ValoresAnaliseAnual.new(true);
     }
   }
-  vals() {
-    return new ColValsAnaliseAnual().Fill(this);
-  }
+  //vals?() { return ColValsAnaliseAnual.fill(this); } //#!!!!!!!
 }
-export class ValoresAnaliseRealPlan  {
+export class ValoresAnaliseRealPlan {
   centroCusto?: string;
   classeCusto?: string;
   valMesesReal?: number[];
@@ -373,24 +383,29 @@ export class ValoresAnaliseRealPlan  {
       centroCustoArray: 'centroCustoArray' as 'centroCustoArray',
     };
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ValoresAnaliseRealPlan(); }
+  static fill(values: ValoresAnaliseRealPlan, init = false) { return CutUndef(FillClassProps(ValoresAnaliseRealPlan.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new ValoresAnaliseRealPlan().Fill(values);
+      return FillClassProps(ValoresAnaliseRealPlan.new(),
+        ignoreMongoProps(values));
     } catch (error) {
-      dbgError('Erro em ValoresAnaliseRealPlan.deserialize', error.message, values);
-      return new ValoresAnaliseRealPlan();
+      dbgError('ValoresAnaliseRealPlan.deserialize', error.message, values);
+      return ValoresAnaliseRealPlan.new(true);
     }
   }
 }
 
 export class ColValsComparativoAnual {
-  planAnt: number;
-  planAtu: number;
-  realAnt: number;
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  planAnt?: number;
+  planAtu?: number;
+  realAnt?: number;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ColValsComparativoAnual(); }
+  static fill(values: ColValsComparativoAnual, init = false) { return CutUndef(FillClassProps(ColValsComparativoAnual.new(init), values)); }
   static ValsReset() {
-    return new ColValsComparativoAnual().Fill({
+    return ColValsComparativoAnual.fill({
       planAnt: 0,
       planAtu: 0,
       realAnt: 0,
@@ -414,18 +429,19 @@ export class ValoresComparativoAnual extends ColValsComparativoAnual {
       ano: 'ano' as 'ano',
     };
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ValoresComparativoAnual(); }
+  static fill(values: ValoresComparativoAnual, init = false) { return CutUndef(FillClassProps(ValoresComparativoAnual.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new ValoresComparativoAnual().Fill(values);
+      return FillClassProps(ValoresComparativoAnual.new(),
+        ignoreMongoProps(values));
     } catch (error) {
-      dbgError('Erro em ValoresComparativoAnual.deserialize', error.message, values);
-      return new ValoresComparativoAnual();
+      dbgError('ValoresComparativoAnual.deserialize', error.message, values);
+      return ValoresComparativoAnual.new(true);
     }
   }
-  vals() {
-    return new ColValsComparativoAnual().Fill(this);
-  }
+  //vals?() { return ColValsComparativoAnual.fill(this); }
 }
 
 
@@ -445,13 +461,16 @@ export class ValoresPlanejadosDetalhes {
       centroCusto: 'centroCusto' as 'centroCusto',
     };
   }
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ValoresPlanejadosDetalhes(); }
+  static fill(values: ValoresPlanejadosDetalhes, init = false) { return CutUndef(FillClassProps(ValoresPlanejadosDetalhes.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new ValoresPlanejadosDetalhes().Fill(values);
+      return FillClassProps(ValoresPlanejadosDetalhes.new(),
+        ignoreMongoProps(values));
     } catch (error) {
-      dbgError('Erro em ValoresPlanejadosDetalhes.deserialize', error.message, values);
-      return new ValoresPlanejadosDetalhes();
+      dbgError('ValoresPlanejadosDetalhes.deserialize', error.message, values);
+      return ValoresPlanejadosDetalhes.new(true);
     }
   }
   static get fldsCsvDefUpload() {
@@ -460,9 +479,9 @@ export class ValoresPlanejadosDetalhes {
         new FldCsvDef('valMeses', {
           suppressColumn: true,
           def: (data: IGenericObject) => [
-            amountParse(data.m01, configApp.decimalsValsCalc), amountParse(data.m02, configApp.decimalsValsCalc), amountParse(data.m03, configApp.decimalsValsCalc), amountParse(data.m04, configApp.decimalsValsCalc),
-            amountParse(data.m05, configApp.decimalsValsCalc), amountParse(data.m06, configApp.decimalsValsCalc), amountParse(data.m07, configApp.decimalsValsCalc), amountParse(data.m08, configApp.decimalsValsCalc),
-            amountParse(data.m09, configApp.decimalsValsCalc), amountParse(data.m10, configApp.decimalsValsCalc), amountParse(data.m11, configApp.decimalsValsCalc), amountParse(data.m12, configApp.decimalsValsCalc),
+            amountParse(data.m01, configCydag.decimalsValsCalc), amountParse(data.m02, configCydag.decimalsValsCalc), amountParse(data.m03, configCydag.decimalsValsCalc), amountParse(data.m04, configCydag.decimalsValsCalc),
+            amountParse(data.m05, configCydag.decimalsValsCalc), amountParse(data.m06, configCydag.decimalsValsCalc), amountParse(data.m07, configCydag.decimalsValsCalc), amountParse(data.m08, configCydag.decimalsValsCalc),
+            amountParse(data.m09, configCydag.decimalsValsCalc), amountParse(data.m10, configCydag.decimalsValsCalc), amountParse(data.m11, configCydag.decimalsValsCalc), amountParse(data.m12, configCydag.decimalsValsCalc),
           ]
         }),
       ]);
@@ -470,16 +489,20 @@ export class ValoresPlanejadosDetalhes {
 }
 
 export class ValoresTotCentroCustoClasseCusto {
+  _id?: ObjectId;
   centroCusto?: string;
   classeCusto?: string;
   tot?: number;
-  Fill?(values: IGenericObject) { FillClass(this, values); return this; }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ValoresTotCentroCustoClasseCusto(); }
+  static fill(values: ValoresTotCentroCustoClasseCusto, init = false) { return CutUndef(FillClassProps(ValoresTotCentroCustoClasseCusto.new(init), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return new ValoresTotCentroCustoClasseCusto().Fill(values);
+      return FillClassProps(ValoresTotCentroCustoClasseCusto.new(),
+        ignoreMongoProps(values));
     } catch (error) {
-      dbgError('Erro em ValoresTotCentroCustoClasseCusto.deserialize', error.message, values);
-      return new ValoresTotCentroCustoClasseCusto();
+      dbgError('ValoresTotCentroCustoClasseCusto.deserialize', error.message, values);
+      return ValoresTotCentroCustoClasseCusto.new(true);
     }
   }
 }

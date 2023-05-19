@@ -2,14 +2,13 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import { ObjectId } from 'mongodb';
 //import _ from 'underscore';
 
-import { CookieUserConfig } from '../../../../base/loggedUserSvr';
-import { ConnectDbASync, CloseDbASync } from '../../../../base/db/functions';
+import { CookieUserConfig } from '../../../../libCommon/loggedUserSvr';
+import { ConnectDbASync, CloseDbASync } from '../../../../libServer/dbMongo';
 
 import { ErrorPlus, HttpStatusCode, SleepMsDevRandom } from '../../../../libCommon/util';
-import { csd, dbgWarn } from '../../../../libCommon/dbg';
-import { EnvDeployConfig } from '../../../../libCommon/envs';
+import { csd } from '../../../../libCommon/dbg';
+import { EnvDeployConfig, isAmbNone } from '../../../../app_base/envs';
 import { RolesDevArray } from '../../../../libCommon/endPoints';
-import { isAmbNone } from '../../../../libCommon/isAmb';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ReqNoParm, ResumoApi } from '../../../../libServer/util';
@@ -32,9 +31,9 @@ import { Crypt } from '../../../../libServer/crypt';
 export const accountDeveloper = 'paulocintra@cyrela.com.br';
 const apiSelf = apisApp.userAuth;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
+  await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
   const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
   const parm = ctrlApiExec.parm;
@@ -44,11 +43,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   const resumoApi = new ResumoApi(ctrlApiExec);
   const agora = new Date();
   let deleteIfOk = false;
-  await SleepMsDevRandom(null, ctrlApiExec.context());
-  ctrlApiExec.checkElapsed('ini');
+  await SleepMsDevRandom(null, ctrlApiExec.ctrlContext, 'main');
+  ctrlApiExec.ctrlContext.checkElapsed('ini');
 
   try {
-    await ConnectDbASync({ ctrlApiExec });
+    await ConnectDbASync({ ctrlContext: ctrlApiExec.ctrlContext });
     const apiLogProc = await ApiLogStart(ctrlApiExec, loggedUserReq);
 
     //#region pre-carga
@@ -69,7 +68,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         documentInsert.searchTerms = User.SearchTermsGen(documentInsert);
         await UserModel.create(documentInsert);
       }
-      ctrlApiExec.checkElapsed('check/create first');
+      ctrlApiExec.ctrlContext.checkElapsed('check/create first');
     }
     //#endregion
 
@@ -77,7 +76,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
       const cookieUserConfig = CookieUserConfig();
 
-      ctrlApiExec.checkElapsed(`pre ${parm.cmd}`);
+      ctrlApiExec.ctrlContext.checkElapsed(`pre ${parm.cmd}`);
 
       if (parm.cmd == CmdApi.signIn) {
         let loggedUserNow = null;
@@ -136,7 +135,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           const hasSomeCCResponsavel = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailResponsavel: userDb.email })) != null;
           const hasSomeCCPlanejador = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailPlanejador: userDb.email })) != null;
           const hasSomeCCConsulta = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailConsulta: userDb.email })) != null;
-          loggedUserNow = User.loggedUser(userDb, parm.email, agora, agora, agora, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta, cookieUserConfig.TTLSeconds);
+          loggedUserNow = User.loggedUser(userDb, parm.email, agora, agora, agora, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta); // , cookieUserConfig.TTLSeconds
           await CheckBlockAsync(loggedUserNow);
         }
 
@@ -164,7 +163,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             const hasSomeCCPlanejador = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailPlanejador: userDb.email })) != null;
             const hasSomeCCConsulta = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailConsulta: userDb.email })) != null;
             loggedUserFromCookie = User.loggedUser(userDb, loggedUserReq.emailSigned, loggedUserFromCookie.firstSignIn, loggedUserFromCookie.lastReSignIn,
-              loggedUserFromCookie.lastActivity, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta, cookieUserConfig.TTLSeconds);
+              loggedUserFromCookie.lastActivity, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta); // , cookieUserConfig.TTLSeconds
           }
           else
             loggedUserFromCookie = null;
@@ -183,7 +182,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           const hasSomeCCResponsavel = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailResponsavel: userDb.email })) != null;
           const hasSomeCCPlanejador = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailPlanejador: userDb.email })) != null;
           const hasSomeCCConsulta = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailConsulta: userDb.email })) != null;
-          const loggedUser = User.loggedUser(userDb, loggedUserReq.emailSigned, loggedUserReq.firstSignIn, agora, agora, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta, cookieUserConfig.TTLSeconds);
+          const loggedUser = User.loggedUser(userDb, loggedUserReq.emailSigned, loggedUserReq.firstSignIn, agora, agora, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta); // , cookieUserConfig.TTLSeconds
           loggedUser.emailSigned = loggedUserReq.emailSigned;
           //await CookieUserSetApiAccessASync(ctrlApiExec, loggedUser);
           //await UserLogWriteASync(userDb._id, Unscramble(userDb.email_messy), `${parm.cmd}`, agora, loggedUserSessionIdUse);
@@ -196,7 +195,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           throw new Error(`Cmd '${parm.cmd}' inválido.`);
       }
 
-      ctrlApiExec.checkElapsed(`pos ${parm.cmd}`);
+      ctrlApiExec.ctrlContext.checkElapsed(`pos ${parm.cmd}`);
 
     } catch (error) {
       const { httpStatusCode, jsonErrorData } = await ApiStatusDataByErrorASync(error, 'throw 1', parm, ctrlApiExec);
@@ -204,7 +203,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     }
 
     await ApiLogFinish(apiLogProc, resumoApi.resultProc(), deleteIfOk);
-    await CloseDbASync({ ctrlApiExec });
+    await CloseDbASync({ ctrlContext: ctrlApiExec.ctrlContext });
   } catch (error) {
     const { httpStatusCode, jsonErrorData } = await ApiStatusDataByErrorASync(error, 'throw 2', parm, ctrlApiExec);
     resumoApi.status(httpStatusCode).jsonData(jsonErrorData);

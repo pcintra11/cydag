@@ -1,15 +1,14 @@
-import { NotifyAdmASync } from '../base/notifyAdm';
-import { SystemLog } from '../base/db/types';
-import { CloseDbASync, ConnectDbASync, UriDb } from '../base/db/functions';
-import { SystemLogModel } from '../base/db/models';
+import { configApp } from '../app_hub/appConfig';
 
-import { Env } from '../libCommon/envs';
-import { dbgError, ScopeDbg, NivelLog, csd } from '../libCommon/dbg';
+import { SystemLog } from '../app_base/modelTypes';
+import { CloseDbASync, ConnectDbASync, UriDb } from './dbMongo';
+import { SystemLogModel } from '../app_base/model';
+
+import { dbgError, ScopeDbg, csd, dbg } from '../libCommon/dbg';
 import { colorAlert, colorErr } from '../libCommon/consoleColor';
-import { CtrlRecursion } from '../libCommon/util';
 import { CategMsgSystem } from '../libCommon/logSystemMsg_cliSvr';
-
-import { CtrlApiExec } from './util';
+import { CtrlContext } from '../libCommon/ctrlContext';
+import { CtrlRecursion } from '../libCommon/ctrlRecursion';
 
 const scopeServer = 'svr';
 const scopeClient = 'cli';
@@ -35,31 +34,32 @@ const GetCtrlRecursion = (func: string) => {
 // const countCicloNotify = 5;
 // const nrBlocksMax = 10;
 
-export async function SystemMsgSvrASync(categMsgSystem: CategMsgSystem, point: string, msg: string, ctrlApiExec: CtrlApiExec, details: object = undefined) { // vercel precisa sempre de await !
+export async function SystemMsgSvrASync(categMsgSystem: CategMsgSystem, point: string, msg: string, ctrlContext: CtrlContext, details: object = undefined) { // vercel precisa sempre de await !
   //await NewOperASync(_systemMsg(scopeServer, point, msg, details, ctrlLogs.ctrlErrors), 'SystemError');
-  await _systemMsg(categMsgSystem, scopeServer, point, msg, ctrlApiExec, details);
+  await _systemMsg(categMsgSystem, scopeServer, point, msg, ctrlContext, details);
 }
 
-export async function _SystemMsgSvrFromClientASync(categMsgSystem: CategMsgSystem, point: string, msg: string, ctrlApiExec: CtrlApiExec, details: object) {
-  await _systemMsg(categMsgSystem, scopeClient, point, msg, ctrlApiExec, details);
+export async function _SystemMsgSvrFromClientASync(categMsgSystem: CategMsgSystem, point: string, msg: string, ctrlContext: CtrlContext, details: object) {
+  await _systemMsg(categMsgSystem, scopeClient, point, msg, ctrlContext, details);
 }
 
 const prefixMsgAll = 'sys';
 
-let seqMsgCtr = 0;
-async function _systemMsg(categMsgSystem: CategMsgSystem, scope: string, point: string, msg: string, ctrlApiExec: CtrlApiExec, details: object) { // object??
+//let seqMsgCtr = 0;
+async function _systemMsg(categMsgSystem: CategMsgSystem, scope: string, point: string, msg: string, ctrlContext: CtrlContext, details: object) { // object??
   const ctrlRecursion = GetCtrlRecursion('_systemMsg');
-  if (ctrlRecursion.inExceeded(msg)) return;
+  let thisCallCtrl = null;
+  if ((thisCallCtrl = ctrlRecursion.in(msg)) == null) return;
 
-  const context = ctrlApiExec.context() + `-sysMsg(${++seqMsgCtr})`;
+  //const context = ctrlContext.context() + `-sysMsg(${++seqMsgCtr})`;
 
   let dbOpened = false;
   if (UriDb() != null) {
     try {
-      await ConnectDbASync({ context });
+      await ConnectDbASync({ ctrlContext });
       dbOpened = true;
     } catch (error) {
-      dbgError('_systemMsg ConnectDbASync error', error.message);
+      dbgError('_systemMsg', 'ConnectDbASync', error.message);
     }
   }
 
@@ -69,7 +69,7 @@ async function _systemMsg(categMsgSystem: CategMsgSystem, scope: string, point: 
     typeof details != 'object')
     csd(colorErr(`**************** typeof details ${typeof details}`));
 
-  const mainMsg = `${prefixMsgAll}-${categMsgSystem}(${scope}) - ${ctrlApiExec.apiPath} - ${point}`;
+  const mainMsg = `${prefixMsgAll}-${categMsgSystem}(${scope}) - ${ctrlContext.context} - ${point}`;
   const consolePrint = `${mainMsg} - ${msg}`;
 
   //if (scope === scopeServer) {
@@ -80,9 +80,8 @@ async function _systemMsg(categMsgSystem: CategMsgSystem, scope: string, point: 
     csd(colorAlert(consolePrint));
   // else //if (ctrlMsgs.categ === categWarning)
   //   csl(colorWarn(txt));
-  if (NivelLog(ScopeDbg.x) >= 3 &&
-    details != null)
-    csd('details', details);
+  if (details != null)
+    dbg({ level: 3, point: '_systemMsg', scopeMsg: ScopeDbg.x, ctrlContext }, { details });
   //}
 
   //dbg(3, dbgContext, `ini (${point} / ${msg})`);
@@ -103,35 +102,32 @@ async function _systemMsg(categMsgSystem: CategMsgSystem, scope: string, point: 
 
     // ctrlPoints.arMsg.push(msg);
 
-    // mudar o metodo para o controle por tempo, uma tabela apenas com uma ocorrencia por 'ponto', verificar qual o ultimo evento
-    if (categMsgSystem === CategMsgSystem.error ||
-      categMsgSystem === CategMsgSystem.alert) {
-      //csl('error - pre notifyAdm async'); 
-      //NotifyAdm(`${Env('amb')} (${scope}) - ${point} - Error`, msg);
-      await NotifyAdmASync(mainMsg, msg, ctrlApiExec, details);
-
-      //csl('error - pos notifyAdm async');
-      //   // if (ctrlPoints.arMsg.length == 1)
-      //   //   NotifyAdm(scope, point, ctrlMsgs, msg, details);
-      //   // else {
-      //   //   if ((ctrlPoints.arMsg.length % countCicloNotify) == 0)
-      //   //     NotifyAdm(scope, point, ctrlMsgs, `${ctrlPoints.arMsg.length + ctrlPoints.excluded} msgs`);
-      //   //   else
-      //   //     csl(`NotifyAdm não executado, msgsAcum ${ctrlPoints.arMsg.length}`);
-      //   //   if (ctrlPoints.arMsg.length >= (countCicloNotify * (nrBlocksMax + 1))) {
-      //   //     const nrMsgsExcluidas = ctrlPoints.arMsg.length - (countCicloNotify * nrBlocksMax);
-      //   //     ctrlPoints.arMsg.splice(0, nrMsgsExcluidas);
-      //   //     ctrlPoints.excluded += nrMsgsExcluidas;
-      //   //     NotifyAdm(scope, point, ctrlMsgs, `remoção de ${nrMsgsExcluidas} itens (${ctrlPoints.excluded} no total). Agora com ${ctrlPoints.arMsg.length}`);
-      //   //   }
-      //   // }
-    }
+    // // mudar o método para o controle por tempo, uma tabela apenas com uma ocorrencia por 'ponto', verificar qual o ultimo evento
+    // if (categMsgSystem === CategMsgSystem.error ||
+    //   categMsgSystem === CategMsgSystem.alert) {
+    //   //csl('error - pre notifyAdm async'); 
+    //   //NotifyAdm(`${Env('amb')} (${scope}) - ${point} - Error`, msg);
+    //   await NotifyAdmASync(mainMsg, msg, ctrlContext, details); //@!!!!!!!!! reativar, mas sem risco de loop
+    //     // if (ctrlPoints.arMsg.length == 1)
+    //     //   NotifyAdm(scope, point, ctrlMsgs, msg, details);
+    //     // else {
+    //     //   if ((ctrlPoints.arMsg.length % countCicloNotify) == 0)
+    //     //     NotifyAdm(scope, point, ctrlMsgs, `${ctrlPoints.arMsg.length + ctrlPoints.excluded} msgs`);
+    //     //   else
+    //     //     csl(`NotifyAdm não executado, msgsAcum ${ctrlPoints.arMsg.length}`);
+    //     //   if (ctrlPoints.arMsg.length >= (countCicloNotify * (nrBlocksMax + 1))) {
+    //     //     const nrMsgsExcluidas = ctrlPoints.arMsg.length - (countCicloNotify * nrBlocksMax);
+    //     //     ctrlPoints.arMsg.splice(0, nrMsgsExcluidas);
+    //     //     ctrlPoints.excluded += nrMsgsExcluidas;
+    //     //     NotifyAdm(scope, point, ctrlMsgs, `remoção de ${nrMsgsExcluidas} itens (${ctrlPoints.excluded} no total). Agora com ${ctrlPoints.arMsg.length}`);
+    //     //   }
+    //     // }
+    // }
 
     //dbg(3, dbgContext, `pos Notify`);
 
-    const fields: SystemLog = {
-      //app: Env('appName'),
-      appVersion: Env('appVersion'),
+    const systemLog = SystemLog.fill({
+      appVersion: configApp.appVersion,
       //appDomain: Env('appUrl_hostDomain'),
       date: new Date(),
       scope,
@@ -139,7 +135,7 @@ async function _systemMsg(categMsgSystem: CategMsgSystem, scope: string, point: 
       point,
       msg,
       details,
-    };
+    }, true);
 
     // aqui, se for chamado no 'connection' e antes de estabilizar pode dar erro
     //csl('inserindo logSystem - ini');
@@ -152,7 +148,7 @@ async function _systemMsg(categMsgSystem: CategMsgSystem, scope: string, point: 
     if (dbOpened) {
       //await NewOperASync(LogSystemModel.create(fields), `_systemMsg:${ctrlMsgs.categ}`);
       //dbg({ level: 3, levelScope: ScopeDbg.d, context: 'systemMsg' }, `create-pre`);
-      await SystemLogModel.create(fields);
+      await SystemLogModel.create(systemLog);
       //dbg({ level: 3, levelScope: ScopeDbg.d, context: 'systemMsg' }, `create-pos`);
       // await NewOperAsyncDb(
       //   (async () => {
@@ -174,7 +170,7 @@ async function _systemMsg(categMsgSystem: CategMsgSystem, scope: string, point: 
 
     //dbg(nivelLogOpersDbSuccess, dbgContext, `LogSystemModel.create - ok`);
   } catch (error) {
-    dbgError(context, `erro em _systemMsg (${point} / ${msg}): `, error.message);
+    dbgError('_systemMsg', ctrlContext.context, `(${point} / ${msg}): `, error.message);
     //csl('dados', JSON.stringify({ point, msg, details, categ: ctrlMsgs.categ, email }, null, 4));
     // throw error;
   }
@@ -184,12 +180,12 @@ async function _systemMsg(categMsgSystem: CategMsgSystem, scope: string, point: 
 
   if (dbOpened) {
     try {
-      await CloseDbASync({ context });
+      await CloseDbASync({ ctrlContext });
     } catch (error) {
-      dbgError('_systemMsg CloseDbASync error', error.message);
+      dbgError('_systemMsg', 'CloseDbASync', error.message);
     }
   }
 
-  ctrlRecursion.out();
+  ctrlRecursion.out(thisCallCtrl);
   //dbg(nivelLogOpersDbMedium, 'systemMsg', `endOfFunction`);
 }

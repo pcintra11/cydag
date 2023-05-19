@@ -1,17 +1,16 @@
 import React from 'react';
 import { useRouter } from 'next/router';
-import _ from 'underscore';
 
 import Box from '@mui/material/Box';
-import { Input, Stack, useTheme } from '@mui/material';
+import { Input, Stack, Tooltip, useTheme } from '@mui/material';
 
-import { BinSearchItem, BinSearchProp, CalcExecTime, compareForBinSearch, ErrorPlus, ForceWait, FormatDate, ObjUpdAllProps, RoundDecs } from '../../../libCommon/util';
+import { BinSearchItem, BinSearchProp, compareForBinSearch, ErrorPlus, ForceWait, FormatDate, ObjUpdAllProps, RoundDecs } from '../../../libCommon/util';
 import { csd, dbgError } from '../../../libCommon/dbg';
 import { IGenericObject } from '../../../libCommon/types';
 import { PageDef } from '../../../libCommon/endPoints';
+import { CalcExecTime } from '../../../libCommon/calcExectime';
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
 
-import { globals } from '../../../libClient/clientGlobals';
 import { cssTextNoWrapEllipsis } from '../../../libClient/util';
 
 import { AbortProc, Btn, BtnLine, IconButtonMy, SelOption, PopupMsg, SwitchMy, WaitingObs, SnackBarError, PageByVariant, fontSizeGrid, fontSizeIconsInGrid, FakeLink } from '../../../components';
@@ -20,15 +19,18 @@ import { GridCell } from '../../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 //import { GlobalState, useGlobalState } from '../../hooks/useGlobalState';
 
+import { configApp } from '../../../app_hub/appConfig';
+
 import { IconApp, IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, propsColorByTotLevel, SelRevisao, SelEntity, SelAno } from '../../../appCydag/components';
 import { apisApp, pagesApp, quadroPage } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
 import { anoAdd, mesesFld, mesesHdr, genValMeses, sumRound, sumValMeses, amountParse, amountToStr } from '../../../appCydag/util';
-import { configApp } from '../../../appCydag/config';
 import { CentroCusto, ClasseCusto, ClasseCustoRestrita, FatorCusto, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto } from '../../../appCydag/modelTypes';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatusMd, ValoresPlanejadosDetalhes, ValoresTotCentroCustoClasseCusto } from '../../../appCydag/types';
 import { CentroCustoConfigOption, IAnoCentroCustos, OrigemClasseCusto, ProcCentrosCustoConfig, RevisaoValor } from '../../../appCydag/types';
 import { CmdApi_ValoresContas as CmdApi, IChangedLine } from '../../api/appCydag/valoresContas/types';
+import { cydagColors } from '../../../appCydag/themes';
+import { configCydag } from '../../../appCydag/configCydag';
 
 //#region ok
 // let globalPersonalization: GlobalState = null;
@@ -128,7 +130,9 @@ class NodeContent {
       );
     else
       return (
-        <Box style={cssTextNoWrapEllipsis}>{this.descr}</Box>
+        <Tooltip title={this.descr}>
+          <Box style={cssTextNoWrapEllipsis}>{this.descr}</Box>
+        </Tooltip>
       );
   }
   get descrAcum() { // todos os níveis de hierarquia (para melhor msg se houver algum erro ao gravar)
@@ -148,7 +152,7 @@ const fldFrmExtra = {
 //#endregion
 
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.valoresContas.apiPath, parm) };
 let pageSelf = new PageDef('/pathForPageQuadro');
 
 const statesCompsSubord = { setMainStatesFilter: null, setMainStatesData1: null, setMainStatesData2: null, setBgColorsHier: null, showConta: false, setShowConta: null };
@@ -320,11 +324,11 @@ export default function PageQuadroGeral() {
       while (idPaiSum != null) {
         const nodePai = BinSearchItem(valsHierNode, idPaiSum, 'id');
         if (nodePai == null) {
-          dbgError(`nodePai ${idPaiSum} não encontrada na hierarquia (1)`);
+          dbgError('sumHierUp', `nodePai ${idPaiSum} não encontrada na hierarquia (1)`);
           break;
         }
         if (nodePai.nodeContent.valMeses == null) {
-          dbgError('Valores para nível totalizado não inicializados:', nodePai.id); // #!!!!!
+          dbgError('sumHierUp', 'Valores para nível totalizado não inicializados:', nodePai.id); // #!!!!!
           break;
         }
         if (valMeses != null)
@@ -352,8 +356,8 @@ export default function PageQuadroGeral() {
         }
         const id = HierNode.nodeId(nodeType, keys);
         const node = BinSearchItem(nodes, id, 'id');
-        if (node == null) dbgError(`${id} não encontrada na hierarquia (setValsInf)`);
-        else if (node.group) dbgError(`${id} está na hierarquia como um agrupamento`);
+        if (node == null) dbgError('setValsInf', `${id} não encontrada na hierarquia (setValsInf)`);
+        else if (node.group) dbgError('setValsInf', `${id} está na hierarquia como um agrupamento`);
         else {
           node.nodeContent.valMeses = valores.valMeses;
           sumHierUp(nodes, node.idPai, valores.valMeses, null, null);
@@ -365,7 +369,7 @@ export default function PageQuadroGeral() {
         const nodeType = NodeType.classeCusto;
         const id = HierNode.nodeId(nodeType, [valores.classeCusto]);
         const node = BinSearchItem(nodes, id, 'id');
-        if (node == null) dbgError(`${id} não encontrada na hierarquia ${tipo}`);
+        if (node == null) dbgError('setValTot', `${id} não encontrada na hierarquia ${tipo}`);
         else {
           if (tipo === 'planejAnt') {
             node.nodeContent.valTotPlanejAnoAnt = valores.tot;
@@ -429,7 +433,7 @@ export default function PageQuadroGeral() {
     statesCompsSubord.setMainStatesFilter = setMainStatesFilter;
     //csl('renderFilter', mainStatesFilter);
 
-    const bgColorsHier = themePlus.themePlusConfig?.colorsBackHier || [];
+    const bgColorsHier = cydagColors.colorsBackHier;
 
     const mountOptionsCC = (ano: string, initialization = false) => {
       let centroCustoOptions: CentroCustoConfigOption[] = [];
@@ -538,7 +542,7 @@ export default function PageQuadroGeral() {
   const DataComp = () => {
     const [mainStatesData1, setMainStatesData1] = React.useState<MainStatesData1>({});
     const [mainStatesData2, setMainStatesData2] = React.useState<MainStatesData2>({});
-    const [_, setBgColorsHier] = React.useState([]);
+    const [, setBgColorsHier] = React.useState([]);
     statesCompsSubord.setMainStatesData1 = setMainStatesData1;
     statesCompsSubord.setMainStatesData2 = setMainStatesData2;
     statesCompsSubord.setBgColorsHier = setBgColorsHier;
@@ -560,14 +564,14 @@ export default function PageQuadroGeral() {
       while (idPaiSum != null) {
         const nodePai = BinSearchItem(dataStructure.nodes, idPaiSum, 'id');
         if (nodePai == null) {
-          dbgError(`nodePai ${idPaiSum} não encontrada na hierarquia (2)`);
+          dbgError('adustHierUp', `nodePai ${idPaiSum} não encontrada na hierarquia (2)`);
           break;
         }
         if (nodePai.stateForceRefreshTot == null) {
-          dbgError(`nodePai ${idPaiSum} sem stateForceRefreshTot`);
+          dbgError('adustHierUp', `nodePai ${idPaiSum} sem stateForceRefreshTot`);
           break;
         }
-        deltas.forEach(x => { nodePai.nodeContent.valMeses[x.sxMes] = RoundDecs(nodePai.nodeContent.valMeses[x.sxMes] + x.val, configApp.decimalsValsCalc); });
+        deltas.forEach(x => { nodePai.nodeContent.valMeses[x.sxMes] = RoundDecs(nodePai.nodeContent.valMeses[x.sxMes] + x.val, configCydag.decimalsValsCalc); });
         nodePai.stateForceRefreshTot({});
         idPaiSum = nodePai.idPai;
       }
@@ -633,11 +637,11 @@ export default function PageQuadroGeral() {
         //const { personalizationAttrs } = usePersonalization();
 
         if (node.nodeContent.valMesesStr == null)
-          node.nodeContent.valMesesStr = node.nodeContent.valMeses.map((x) => amountToStr(x, configApp.decimalsValsInput));
+          node.nodeContent.valMesesStr = node.nodeContent.valMeses.map((x) => amountToStr(x, configCydag.decimalsValsInput));
         const [, forceRefresh] = React.useState<any>({});
         const changeValMes = (sxMes: number, valStr) => {
           try {
-            amountParse(valStr, configApp.decimalsValsInput);
+            amountParse(valStr, configCydag.decimalsValsInput);
             globalCtrl.logTouchedCells(node.id, node.nodeContent.descrAcum, valMesFld(sxMes), false);
           }
           catch (error) {
@@ -651,7 +655,7 @@ export default function PageQuadroGeral() {
         };
         const blurValMes = (sxMes: number, valStr) => {
           try {
-            const val = amountParse(valStr, configApp.decimalsValsInput);
+            const val = amountParse(valStr, configCydag.decimalsValsInput);
             //if (!isNaN(val)) {
             chgValMeses('setMes', sxMes, val);
             atuValsEdit([{ sxMes, val }]);
@@ -674,7 +678,7 @@ export default function PageQuadroGeral() {
 
         const atuValsEdit = (alts: ISxMesVal[]) => {
           alts.forEach((x) => {
-            node.nodeContent.valMesesStr[x.sxMes] = amountToStr(x.val, configApp.decimalsValsInput);
+            node.nodeContent.valMesesStr[x.sxMes] = amountToStr(x.val, configCydag.decimalsValsInput);
             globalCtrl.logTouchedCells(node.id, node.nodeContent.descrAcum, valMesFld(x.sxMes), false);
           });
           forceRefresh({});
@@ -805,9 +809,9 @@ export default function PageQuadroGeral() {
             </Box> */}
             </GridCell>
           )}
-          <GridCell textAlign='right'>{amountToStr(valTotAno, configApp.decimalsValsInput)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.valTotPlanejAnoAnt, configApp.decimalsValsInput)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.valTotRealAnoAnt, configApp.decimalsValsInput)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(valTotAno, configCydag.decimalsValsInput)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.valTotPlanejAnoAnt, configCydag.decimalsValsInput)}</GridCell>
+          <GridCell textAlign='right'>{amountToStr(node.nodeContent.valTotRealAnoAnt, configCydag.decimalsValsInput)}</GridCell>
         </>);
       };
 
@@ -854,10 +858,10 @@ export default function PageQuadroGeral() {
         const propsColorDescr = node.nodeType == 'detClasseCusto' ? propsColorByTotLevel(themePlus, level) : propsColorLevel;
         return (<>
           <GridCell {...propsColorDescr}><Box pl={paddingLeft}>{descrUse}</Box></GridCell>
-          {mesesFld.map((_, index) => <GridCell key={index} textAlign='right' {...propsColorLevel}>{amountToStr(node.nodeContent.valMeses[index], configApp.decimalsValsInput)}</GridCell>)}
-          <GridCell textAlign='right' {...propsColorLevel}>{amountToStr(valorTotAno, configApp.decimalsValsInput)}</GridCell>
-          <GridCell textAlign='right' {...propsColorLevel}>{amountToStr(node.nodeContent.valTotPlanejAnoAnt, configApp.decimalsValsInput)}</GridCell>
-          <GridCell textAlign='right' {...propsColorLevel}>{amountToStr(node.nodeContent.valTotRealAnoAnt, configApp.decimalsValsInput)}</GridCell>
+          {mesesFld.map((_, index) => <GridCell key={index} textAlign='right' {...propsColorLevel}>{amountToStr(node.nodeContent.valMeses[index], configCydag.decimalsValsInput)}</GridCell>)}
+          <GridCell textAlign='right' {...propsColorLevel}>{amountToStr(valorTotAno, configCydag.decimalsValsInput)}</GridCell>
+          <GridCell textAlign='right' {...propsColorLevel}>{amountToStr(node.nodeContent.valTotPlanejAnoAnt, configCydag.decimalsValsInput)}</GridCell>
+          <GridCell textAlign='right' {...propsColorLevel}>{amountToStr(node.nodeContent.valTotRealAnoAnt, configCydag.decimalsValsInput)}</GridCell>
         </>);
       };
 

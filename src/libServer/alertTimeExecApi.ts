@@ -1,8 +1,8 @@
-import { EnvApiTimeout } from '../libCommon/envs';
+import { EnvApiTimeout } from '../app_base/envs';
 import { ErrorPlus, HttpStatusCode } from '../libCommon/util';
 
-import { LoggedUserBase } from '../base/db/types';
-import { NotifyAdmASync } from '../base/notifyAdm';
+import { LoggedUserBase } from '../app_base/modelTypes';
+import { NotifyAdmASync } from './notifyAdm';
 
 import { CtrlApiExec } from './util';
 
@@ -14,14 +14,14 @@ export async function AlertTimeExecApiASync(elapsedMs: number, ctrlApiExec: Ctrl
       variableInfo += `; extraInfo '${extraInfo}'`;
     //const loggedUserReq = await LoggedUserReqASync(ctrlApiExec, false);
     const details = loggedUser != null ? { user: loggedUser.email } : null;
-    await NotifyAdmASync(`${ctrlApiExec.apiPath} variants '${ctrlApiExec.paramsTypeVariant}' alertExec`, variableInfo, ctrlApiExec, details);
+    await NotifyAdmASync(`${ctrlApiExec.apiPath} variants '${ctrlApiExec.paramsTypeVariant}' alertExec`, variableInfo, ctrlApiExec.ctrlContext, details);
   }
 }
 
 export async function CheckTimeOutAndAbort(ctrlApiExec: CtrlApiExec, millisecondsFolga = 1000) {
-  const elapsedMs = ctrlApiExec.calcExecTime.elapsedMs();
+  const elapsedMs = ctrlApiExec.ctrlContext.calcExecTime.elapsedMs();
   if (elapsedMs >= (EnvApiTimeout().exec - millisecondsFolga)) {
-    await NotifyAdmASync(`${ctrlApiExec.apiPath} variants '${ctrlApiExec.paramsTypeVariant}' abortedTimeOut`, `${elapsedMs}ms`, ctrlApiExec);
+    await NotifyAdmASync(`${ctrlApiExec.apiPath} variants '${ctrlApiExec.paramsTypeVariant}' abortedTimeOut`, `${elapsedMs}ms`, ctrlApiExec.ctrlContext);
     throw new ErrorPlus(`Tempo de execução parcial (${elapsedMs}ms) próximo do limite permitido pelo servidor (${EnvApiTimeout().exec}). Processo abortado.`, { httpStatusCode: HttpStatusCode.timeOut });
   }
 }

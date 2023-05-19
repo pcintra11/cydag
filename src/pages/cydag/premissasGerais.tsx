@@ -5,14 +5,14 @@ import _ from 'underscore';
 import Box from '@mui/material/Box';
 import { Input, Stack, useTheme } from '@mui/material';
 
-import { BinSearchItem, CalcExecTime, compareForBinSearch, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../libCommon/util';
+import { BinSearchItem, compareForBinSearch, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../libCommon/util';
 import { csd, dbgError } from '../../libCommon/dbg';
 import { IGenericObject } from '../../libCommon/types';
 import { BooleanToSN } from '../../libCommon/util';
 import { PageDef } from '../../libCommon/endPoints';
+import { CalcExecTime } from '../../libCommon/calcExectime';
 import { CallApiCliASync } from '../../fetcher/fetcherCli';
 
-import { globals } from '../../libClient/clientGlobals';
 import { cssTextNoWrapEllipsis } from '../../libClient/util';
 
 import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, SnackBarError, SwitchMy, fontSizeGrid, fontSizeIconsInGrid } from '../../components';
@@ -21,11 +21,12 @@ import { GridCell } from '../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../hooks/useMyForm';
 //import { GlobalState, useGlobalState } from '../../hooks/useGlobalState';
 
+import { configApp } from '../../app_hub/appConfig';
+
 import { IconApp, IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, propsColorByTotLevel, SelRevisao, SelEntity, SelAno } from '../../appCydag/components';
 import { apisApp, pagesApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 import { mesesFld, mesesHdr, genValMeses, amountToStr, amountParse } from '../../appCydag/util';
-import { configApp } from '../../appCydag/config';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatusMd, RevisaoValor, TipoColaboradorMd, TipoSegmCentroCusto } from '../../appCydag/types';
 import { AgrupPremissas, Empresa, Premissa, ProcessoOrcamentario, ValoresPremissa, empresaCoringa, agrupPremissasCoringa } from '../../appCydag/modelTypes';
 import { CmdApi_PremissaGeral as CmdApi, IChangedLine } from '../api/appCydag/premissasGerais/types';
@@ -105,7 +106,7 @@ class FrmFilter {
 }
 
 let mount; let mainStatesCache;
-const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.premissasGerais.apiPath, globals.windowId, parm) };
+const apis = { crud: (parm) => CallApiCliASync<any>(apisApp.premissasGerais.apiPath, parm) };
 const pageSelf = pagesApp.premissasGerais;
 const statesCompsSubord = { setMainStatesData1: null, setMainStatesData2: null, setMainStatesCss: null };
 
@@ -195,8 +196,8 @@ export default function PagePremissasGerais() {
     const nodes: HierNode<NodeContent>[] = [];
 
     const premissaArray = mainStates.premissaArray.filter((x) => x.anoIni <= filter.ano && x.anoFim >= filter.ano);
-    const agrupPremissasArray = [new AgrupPremissas().Fill(agrupPremissasCoringa), ...mainStates.agrupPremissasArray];
-    const empresaArray = [new Empresa().Fill(empresaCoringa), ...mainStates.empresaArray];
+    const agrupPremissasArray = [AgrupPremissas.fill(agrupPremissasCoringa), ...mainStates.agrupPremissasArray];
+    const empresaArray = [Empresa.fill(empresaCoringa), ...mainStates.empresaArray];
 
     // if (filter.empresa == null &&
     //   filter.agrupPremissas == null)
@@ -286,7 +287,7 @@ export default function PagePremissasGerais() {
       valoresArray.forEach((valores) => {
         const premissa = mainStates.premissaArray.find((x) => x.cod == valores.premissa);
         if (premissa == null)
-          dbgError(`premissa ${valores.premissa} não encontrada`);
+          dbgError('setValsInf', `premissa ${valores.premissa} não encontrada`);
         else {
           let nodeType = 'premissa';
           const keys = [valores.premissa];
@@ -304,8 +305,8 @@ export default function PagePremissasGerais() {
           }
           const id = HierNode.nodeId(nodeType, keys);
           const node = BinSearchItem(nodes, id, 'id');
-          if (node == null) dbgError(`${id} não encontrada na hierarquia (setValsInf)`, valores);
-          else if (node.group) dbgError(`${id} está na hierarquia como um agrupamento`);
+          if (node == null) dbgError('setValsInf', `${id} não encontrada na hierarquia (setValsInf)`, valores);
+          else if (node.group) dbgError('setValsInf', `${id} está na hierarquia como um agrupamento`);
           else {
             node.nodeContent.ativa = valores.ativa;
             node.nodeContent.valMeses = valores.valMeses;
@@ -358,8 +359,8 @@ export default function PagePremissasGerais() {
       getItens(filter);
     };
 
-    const agrupPremissasOptions = [new AgrupPremissas().Fill(agrupPremissasCoringa), ...mainStates.agrupPremissasArray].map((x) => new SelOption(x.cod, x.descr));
-    const empresaOptions = [new Empresa().Fill(empresaCoringa), ...mainStates.empresaArray].map((x) => new SelOption(x.cod, x.descr));
+    const agrupPremissasOptions = [AgrupPremissas.fill(agrupPremissasCoringa), ...mainStates.agrupPremissasArray].map((x) => new SelOption(x.cod, x.descr));
+    const empresaOptions = [Empresa.fill(empresaCoringa), ...mainStates.empresaArray].map((x) => new SelOption(x.cod, x.descr));
     return (
       <form onSubmit={frmFilter.handleSubmit(getItensSubmit)}>
         <Stack direction='row' alignItems='center' gap={1}>
@@ -491,7 +492,7 @@ export default function PagePremissasGerais() {
           if (cmd == 'clear') {
             mesesFld.forEach((_, sxMes) => {
               const val = null;
-              if (node.nodeContent.valMeses[sxMes] != val) { // #!!!!!!!! não limpa se tiver erro !!!!
+              if (node.nodeContent.valMeses[sxMes] != val) { // #!!!!!!! não limpa se tiver erro !!!!
                 someChange = true;
                 node.nodeContent.valMeses[sxMes] = val;
                 newVals.push({ sxMes, val });
@@ -680,7 +681,7 @@ export default function PagePremissasGerais() {
       const nodeIdsNew = [...nodeIds];
       const itemId = nodeIdsNew.find(x => x.id == id);
       if (itemId == null)
-        dbgError(`id ${id} não encontrado (setClassOpenClose)`);
+        dbgError('LocalCssComp', `id ${id} não encontrado (setClassOpenClose)`);
       else {
         itemId.open = open;
         setNodeIds(nodeIdsNew);
