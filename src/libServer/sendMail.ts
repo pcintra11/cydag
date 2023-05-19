@@ -11,6 +11,7 @@ import { CalcExecTime } from '../libCommon/calcExectime';
 import { LogSentMessagesFn } from './util';
 import { CtrlContext } from '../libCommon/ctrlContext';
 import { CtrlRecursion } from '../libCommon/ctrlRecursion';
+import { CutUndef, FillClassProps } from '../libCommon/util';
 
 interface IEmailSend {
   host: string;
@@ -22,7 +23,7 @@ interface IEmailSend {
   secure: boolean;
 }
 
-export interface ISendEmailParams { //#!!!!!!!!!!!!! class + fill
+export class SendEmailParams {
   to: string | Mail.Address;
   bcc?: string;
   subject: string;
@@ -31,6 +32,9 @@ export interface ISendEmailParams { //#!!!!!!!!!!!!! class + fill
   replyTo?: string | Mail.Address;
   forceErrPsw?: boolean;
   forceErrTO?: boolean;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new SendEmailParams(); }
+  static fill(values: SendEmailParams, init = false) { return CutUndef(FillClassProps(SendEmailParams.new(init), values)); }
 }
 
 const _ctrlRecursion: { func: string, ctrlRecursion: CtrlRecursion }[] = [];
@@ -44,10 +48,10 @@ const GetCtrlRecursion = (func: string) => {
 
 // mensagens do App
 
-export async function SendMailASync(sendEmailParams: ISendEmailParams, ctrlContext: CtrlContext, timeOut?: number, logFn?: LogSentMessagesFn) {
+export async function SendMailASync(sendEmailParams: SendEmailParams, ctrlContext: CtrlContext, timeOut?: number, logFn?: LogSentMessagesFn) {
   return await _SendMailASync(sendEmailParams, ctrlContext, null, timeOut, logFn);
 }
-export async function SendMailOptionsASync(sendEmailParams: ISendEmailParams, ctrlContext: CtrlContext, emailConfig: IEmailSend = null) {
+export async function SendMailOptionsASync(sendEmailParams: SendEmailParams, ctrlContext: CtrlContext, emailConfig: IEmailSend = null) {
   return await _SendMailASync(sendEmailParams, ctrlContext, emailConfig);
 }
 
@@ -57,7 +61,7 @@ let seqMailCtr = 0;
 
 export const sysEmailSupport = '*support*';
 
-async function _SendMailASync(sendEmailParams: ISendEmailParams, ctrlContext: CtrlContext, emailConfig: IEmailSend = null, timeOut?: number, logFn?: LogSentMessagesFn) {
+async function _SendMailASync(sendEmailParams: SendEmailParams, ctrlContext: CtrlContext, emailConfig: IEmailSend = null, timeOut?: number, logFn?: LogSentMessagesFn) {
   // Generate test SMTP service account from ethereal.email
   // Only needed if you don't have a real mail account for testing
   // const testAccount = await nodemailer.createTestAccount();

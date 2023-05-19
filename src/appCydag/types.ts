@@ -299,7 +299,7 @@ export class ProcCentrosCustoConfig {
       return FillClassProps(ProcCentrosCustoConfig.new(),
         {
           ...ignoreMongoProps(values),
-          centroCustoConfig: values.centroCustoConfig.map((x) => CentroCustoConfig.fill(x)), //#!!!!!!!!!!!!!!
+          centroCustoConfig: values.centroCustoConfig.map((x) => CentroCustoConfig.fill(x)),
         });
     } catch (error) {
       dbgError('ProcsCentrosCustoConfig.deserialize', error.message, values);

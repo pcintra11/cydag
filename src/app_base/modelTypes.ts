@@ -4,7 +4,7 @@ import { dbgError } from '../libCommon/dbg';
 import { IGenericObject } from '../libCommon/types';
 import { CutUndef, DateFromStrISO, FillClassProps } from '../libCommon/util';
 
-import { ISendEmailParams } from '../libServer/sendMail';
+import { SendEmailParams } from '../libServer/sendMail';
 
 export class LoggedUserBase {
   sessionIdStr?: string;
@@ -42,7 +42,7 @@ export class SentMessage {
 
 export class SendMailLog {
   _id?: ObjectId;
-  sendEmailParams?: ISendEmailParams;
+  sendEmailParams?: SendEmailParams;
   started?: Date;
   ended?: Date;
   elapsedMs?: number;

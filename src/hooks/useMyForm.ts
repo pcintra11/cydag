@@ -43,7 +43,7 @@ export function FrmDefaultValues<T>(frmInitValues: T, valuesSet?: any): T {
     if (valuesSet != null &&
       valuesSet[prop] != null)
       valueFinal = valuesSet[prop];
-    result[prop] = valueFinal;  //#!!!!!!!!!!!!!!!!!! retestar, não ajusta mais o primeiro objeto !!
+    result[prop] = valueFinal;  //#!!!!!!!!!!!!!!!!!!!!!! retestar, não ajusta mais o primeiro objeto !!
   }
   return result;
 }

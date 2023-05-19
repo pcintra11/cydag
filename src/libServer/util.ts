@@ -7,7 +7,7 @@ import jwtThen from 'jwt-then';
 import { v1 as uuidv1 } from 'uuid';
 
 import { EnvDeployConfig, EnvSvrCtrlLog } from '../app_base/envs';
-import { AddToDate, CompareDates, DateFromStrISO, DateToStrISO, ErrorPlus, FilterRelevantWordsForSearch, LanguageSearch, SleepMs, StrLeft } from '../libCommon/util';
+import { AddToDate, CompareDates, CutUndef, DateFromStrISO, DateToStrISO, ErrorPlus, FillClassProps, FilterRelevantWordsForSearch, LanguageSearch, SleepMs, StrLeft } from '../libCommon/util';
 import { colorsMsg, csd, dbg, dbgError, dbgWarn, ScopeDbg } from '../libCommon/dbg';
 import { HttpStatusCode, IdByTime, DispAbrev } from '../libCommon/util';
 import { IGenericObject } from '../libCommon/types';
@@ -268,9 +268,12 @@ export const SearchTermsForFindPtBr = (textSearch?: string, codesSearch?: string
 //   return NumberOrDef(ServerVarEnv(env), def);
 // }
 
-export interface IApiResultProc {
+export class ApiResultProc {
   statusCode: HttpStatusCode;
   data: IGenericObject;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new ApiResultProc(); }
+  static fill(values: ApiResultProc, init = false) { return CutUndef(FillClassProps(ApiResultProc.new(init), values)); }
 }
 
 export class ResumoApi { // @@@@!!!! nome!
@@ -332,10 +335,10 @@ export class ResumoApi { // @@@@!!!! nome!
     dbgA(2, 'res.redirect');
   }
   resultProc() {
-    return {
+    return ApiResultProc.fill({
       statusCode: this.#_statusCode,
       data: this.#_data,
-    } as IApiResultProc;  //@!!!!!!!!!!!!!!!!! usar fill
+    });
   }
 }
 
@@ -373,7 +376,7 @@ export function ValidateObjectFirstError(data: IGenericObject, schema: yup.Objec
     return {
       fldName: error.path,
       msg: error.message,
-    } as IFldError;  //@!!!!!!!!!!!!!!!!! usar fill
+    } as IFldError;
   }
 }
 

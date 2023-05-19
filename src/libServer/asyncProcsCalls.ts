@@ -13,7 +13,7 @@ import { CtrlContext } from '../libCommon/ctrlContext';
 
 import { CallApiSvrASync } from '../fetcher/fetcherSvr';
 
-import { ISendEmailParams, SendMailASync } from './sendMail';
+import { SendEmailParams, SendMailASync } from './sendMail';
 import { LogSentMessagesFn } from './util';
 
 export enum AsyncProcTypes {
@@ -34,10 +34,10 @@ const apiToCall = apisBase.asyncProc.apiPath;
 //   if (callsLastMinute.length >= 20)
 //     throw new Error(`AsyncProc type '${type}' abortado - chamadas não finalizadas nos últimos 60 segundos: ${callsLastMinute.length}.`);
 // }
-export async function SendEmailAsyncApi(sendEmailParams: ISendEmailParams, ctrlContext: CtrlContext, forceDelay?: number) {
+export async function SendEmailAsyncApi(sendEmailParams: SendEmailParams, ctrlContext: CtrlContext, forceDelay?: number) {
   await CallAsyncApi(AsyncProcTypes.sendMail, null, sendEmailParams.subject, sendEmailParams, true, ctrlContext, forceDelay);
 }
-export async function NotifAdmSendEmailAsyncApi(sendEmailParams: ISendEmailParams, ctrlContext: CtrlContext, forceDelay?: number) {
+export async function NotifAdmSendEmailAsyncApi(sendEmailParams: SendEmailParams, ctrlContext: CtrlContext, forceDelay?: number) {
   await CallAsyncApi(AsyncProcTypes.notifAdmMail, null, sendEmailParams.subject, sendEmailParams, true, ctrlContext, forceDelay);
 }
 
@@ -66,7 +66,7 @@ export async function CallAsyncApi(type: AsyncProcTypes, customType: string, inf
   }
 }
 
-export async function SendMailASyncManaged(sendEmailParams: ISendEmailParams, ctrlContext: CtrlContext, timeOut?: number, logFn?: LogSentMessagesFn) {
+export async function SendMailASyncManaged(sendEmailParams: SendEmailParams, ctrlContext: CtrlContext, timeOut?: number, logFn?: LogSentMessagesFn) {
   let dbOpened = false;
   if (UriDb() != null) {
     try {

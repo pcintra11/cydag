@@ -19,7 +19,7 @@ import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { ResumoApi, GetCtrlApiExec } from '../../../../libServer/util';
 import { ApiStatusDataByErrorASync } from '../../../../libServer/apiStatusDataByError';
 import cookieHttp from '../../../../libServer/cookiesHttp';
-import { ISendEmailParams, SendMailASync, SendMailOptionsASync, sysEmailSupport } from '../../../../libServer/sendMail';
+import { SendEmailParams, SendMailASync, SendMailOptionsASync, sysEmailSupport } from '../../../../libServer/sendMail';
 import { CorsMiddlewareAsync } from '../../../../libServer/cors';
 import { HttpCriptoCookieCmdASync, IHttpCryptoCookieConfig } from '../../../../libServer/httpCryptoCookie';
 import { NewPromiseExecUntilCloseDb, NewPromiseExecUntilResponse, IPromiseCtrl } from '../../../../libServer/opersASync';
@@ -216,7 +216,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
         const junkData: Junk = { key: `${idProc}-${item}`, date: agora, textField: textItem };
         const dontWaitPromiseNow = item == dontWaitPromise;
         dbgX(1, `${procIndex} - item startado`);
-        const sendEmailParams = { to: sysEmailSupport, subject: textItem, ...forceErrorsMail(item) } as ISendEmailParams;  //@!!!!!!!!!!!!!!!!! usar fill
+        const sendEmailParams = SendEmailParams.fill({ to: sysEmailSupport, subject: textItem, ...forceErrorsMail(item) });
         const logFnMail = async (resultOk, resultError) => await SentMessageLogASync({ userId: null, type: 'email', target: sysEmailSupport, message: sendEmailParams.subject }, resultOk, resultError, ctrlApiExec.ctrlContext);
         if (tipoExec == 'N') {
           if (toDo == 'M' || toDo == 'MD') {

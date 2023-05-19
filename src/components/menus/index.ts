@@ -4,7 +4,7 @@ import QueryString from 'query-string';
 import { csd, dbgError } from '../../libCommon/dbg';
 import { PageDef } from '../../libCommon/endPoints';
 import { IGenericObject } from '../../libCommon/types';
-import { IdByTime } from '../../libCommon/util';
+import { CutUndef, FillClassProps, IdByTime } from '../../libCommon/util';
 
 export enum MenuEntryType {
   group = 'group',
@@ -13,27 +13,31 @@ export enum MenuEntryType {
   divider = 'divider',
 }
 export class MenuEntry {
-  type: MenuEntryType;
+  type?: MenuEntryType;
   content?: React.ReactNode; // ancora do sub menu ou texto para o link da página
   groupItens?: MenuEntry[]; // apenas se 'group'
   pageDef?: PageDef; // apenas se 'page' 
   query?: IGenericObject;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new MenuEntry(); }
+  static fill(values: MenuEntry, init = false) { return CutUndef(FillClassProps(MenuEntry.new(init), values)); }
+
   // public get isGroup() { return this.type == 'group'; } //@@!!!!!
   // public get isPagePath() { return this.type == 'pagePath' };
   static Group(content: React.ReactNode, groupItens: MenuEntry[]) {
-    return { type: MenuEntryType.group, content, groupItens } as MenuEntry; //@!!!!!!!!!!!!!! usar fill
+    return MenuEntry.fill({ type: MenuEntryType.group, content, groupItens });
   }
   static PagePath(pageDef: PageDef, contentUse: React.ReactNode = null, query?: IGenericObject) {
     if (pageDef?.pagePath == null)
       dbgError('MenuEntry', 'PagePath para path nulo');
     const content = contentUse != null ? contentUse : (pageDef.txtDynamicMenu || pageDef.pagePath);
-    return { type: MenuEntryType.pagePath, content, pageDef, query } as MenuEntry;
+    return MenuEntry.fill({ type: MenuEntryType.pagePath, content, pageDef, query });
   }
   static OnlyShow(content: React.ReactNode) {
-    return { type: MenuEntryType.onlyShow, content } as MenuEntry;
+    return MenuEntry.fill({ type: MenuEntryType.onlyShow, content });
   }
   static Divider() {
-    return { type: MenuEntryType.divider } as MenuEntry;
+    return MenuEntry.fill({ type: MenuEntryType.divider });
   }
 }
 

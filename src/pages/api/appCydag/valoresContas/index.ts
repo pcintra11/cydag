@@ -30,7 +30,7 @@ import { anoAdd, mesesFld, roundInterface, sumValMeses } from '../../../../appCy
 import { accessAllCCs, ccsAuthArray, CheckProcCentroCustosAuth, IAuthCC, procsCentroCustosConfigAuthAllYears } from '../../../../appCydag/utilServer';
 
 import { CmdApi_ValoresContas as CmdApi, IChangedLine } from './types';
-import { calcContaDespCorr, contasCalc, FuncionariosForCalc, premissaCod, IPremissaValores, IValsContaCalc } from './calcsCydag';
+import { calcContaDespCorr, contasCalc, FuncionariosForCalc, premissaCod, PremissaValores, ValsContaCalc } from './calcsCydag';
 import { isAmbNone } from '../../../../app_base/envs';
 
 const apiSelf = apisApp.valoresContas;
@@ -702,7 +702,7 @@ const getValPremissa = (premissaCod: string, premissas: Premissa[], premissasVal
   if (valoresPrior1.length + valoresPrior2.length == 0)
     return null;
   else
-    return { premissa, valoresPrior1, valoresPrior2 } as IPremissaValores; //#!!!!!!!!!!!!!!!!!!!
+    return PremissaValores.fill({ premissa, valoresPrior1, valoresPrior2 });
 };
 
 //#ctrlContext
@@ -732,7 +732,7 @@ export const ValoresPlanejadosCalc = async (processoOrcamentario: ProcessoOrcame
     const funcionarios = await FuncionarioModel.find({ ano, ...filtroCC }).lean().sort({ centroCusto: 1 });
     const terceiros = await TerceiroModel.find({ ano, revisao, ...filtroCC }).lean().sort({ centroCusto: 1 });
     const viagens = await ViagemModel.find({ ano, revisao, ...filtroCC }).lean().sort({ centroCusto: 1 });
-    const pushVals = (centroCusto, classeCusto, idDetalhe, descr, valsContaCalc: IValsContaCalc, infoMemoriaCalc = {}, showCalc = showCalcGlobal) => {
+    const pushVals = (centroCusto, classeCusto, idDetalhe, descr, valsContaCalc: ValsContaCalc, infoMemoriaCalc = {}, showCalc = showCalcGlobal) => {
       if (valsContaCalc.anyValue) {
         vals.push(ValoresPlanejadosDetalhes.fill({ //#!!!!!!!!!!!!!!!!!!
           centroCusto, classeCusto, idDetalhe, descr,
@@ -802,7 +802,7 @@ export const ValoresPlanejadosCalc = async (processoOrcamentario: ProcessoOrcame
 
         pushVals(processoOrcamentarioCentroCusto.centroCusto, contasCalc.vt.classeCusto, null, null, contasCalc.vt.calc(funcionariosForCalc, showCalcFunc));
 
-        interface IValsContaCalcDets { classeCusto: string; idDetalhe: string; descr?: string, valsContaCalc: IValsContaCalc }
+        interface IValsContaCalcDets { classeCusto: string; idDetalhe: string; descr?: string, valsContaCalc: ValsContaCalc }
 
         const premissas_despCorr_vals: any = {}; // 5200502003 = tel ramal; 5200504020 = SAP (dois tipos de premissas)
         const valsDespRecorrArray: IValsContaCalcDets[] = [];

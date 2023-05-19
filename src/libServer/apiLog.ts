@@ -12,7 +12,7 @@ import { HttpStatusCodeNormais } from '../libCommon/util';
 import { dbgError } from '../libCommon/dbg';
 import { CtrlContext } from '../libCommon/ctrlContext';
 
-import { IApiResultProc, CtrlApiExec } from './util';
+import { ApiResultProc, CtrlApiExec } from './util';
 
 interface IApiLogProc {
   _id: ObjectId,
@@ -81,7 +81,7 @@ export async function ApiLogStart(ctrlApiExec: CtrlApiExec, loggedUserReq?: Logg
   return apiLogProc;
 }
 
-export async function ApiLogFinish(apiLogProc: IApiLogProc, result: IApiResultProc, deleteIfOk = false, additionalInfo: string = undefined) {
+export async function ApiLogFinish(apiLogProc: IApiLogProc, result: ApiResultProc, deleteIfOk = false, additionalInfo: string = undefined) {
   const agora = new Date();
   const elapsedMs = apiLogProc.ctrlContext.calcExecTime.elapsedMs();
 
