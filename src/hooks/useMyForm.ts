@@ -43,7 +43,7 @@ export function FrmDefaultValues<T>(frmInitValues: T, valuesSet?: any): T {
     if (valuesSet != null &&
       valuesSet[prop] != null)
       valueFinal = valuesSet[prop];
-    result[prop] = valueFinal;  //#!!!!!!!!!!!!!!!!!!!!!! retestar, não ajusta mais o primeiro objeto !!
+    result[prop] = valueFinal;
   }
   return result;
 }
@@ -73,7 +73,7 @@ export function FrmSetValues(frm, values) { //@@!!!!! type !!
 }
 
 export function NormalizePropsString<T>(dataForm: T) {
-  const result = {} as T; //@!!!!!!!!!!!!!! usar new T()?
+  const result = {} as T;
   if (dataForm == null) return undefined;
   for (let index = 0; index < Object.keys(dataForm).length; index++) {
     const prop = Object.keys(dataForm)[index];

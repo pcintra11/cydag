@@ -21,7 +21,7 @@ import { ApiStatusDataByErrorASync } from '../../../../libServer/apiStatusDataBy
 import cookieHttp from '../../../../libServer/cookiesHttp';
 import { SendEmailParams, SendMailASync, SendMailOptionsASync, sysEmailSupport } from '../../../../libServer/sendMail';
 import { CorsMiddlewareAsync } from '../../../../libServer/cors';
-import { HttpCriptoCookieCmdASync, IHttpCryptoCookieConfig } from '../../../../libServer/httpCryptoCookie';
+import { HttpCriptoCookieCmdASync, HttpCryptoCookieConfig } from '../../../../libServer/httpCryptoCookie';
 import { NewPromiseExecUntilCloseDb, NewPromiseExecUntilResponse, IPromiseCtrl } from '../../../../libServer/opersASync';
 import { SendEmailAsyncApi } from '../../../../libServer/asyncProcsCalls';
 import { SystemMsgSvrASync } from '../../../../libServer/systemMsgSvr';
@@ -315,11 +315,11 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
       resumoApi.jsonData({ horaFim: HoraDebug(), parm, value: result });
     }
     else if (parm.cmd == CmdApi_Playg.cookieHttpCrypto) {
-      const httpCryptoCookieConfig: IHttpCryptoCookieConfig = {
+      const httpCryptoCookieConfig = HttpCryptoCookieConfig.fill({
         name: parm.name,
         TTLSeconds: 30 * 24 * 60 * 60,
-        psw: parm.psw == '' ? '123456789012345678901234567890ab' : parm.psw, // minimo de 32
-      };
+        psw: parm.psw == '' ? '123456789012345678901234567890ab' : parm.psw, // mínimo de 32
+      });
       const result: IGenericObject = {};
       if (parm.cmdCookie == 'set')
         await HttpCriptoCookieCmdASync(ctrlApiExec, parm.cmdCookie, httpCryptoCookieConfig, 'set', { domain: EnvDeployConfig().domain }, parm.value);

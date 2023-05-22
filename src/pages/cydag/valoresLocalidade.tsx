@@ -14,7 +14,7 @@ import { CallApiCliASync } from '../../fetcher/fetcherCli';
 import { cssTextNoWrapEllipsis } from '../../libClient/util';
 
 import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, SnackBarError, fontSizeGrid, fontSizeIconsInGrid } from '../../components';
-import { GridCell, GridCellEdit, IFldChange, IGridEditFldCtrl, IGridEditMainCtrl, ValueType } from '../../components/grid';
+import { GridCell, GridCellEdit, IFldChange, GridEditFldCtrl, GridEditMainCtrl, ValueType } from '../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../hooks/useMyForm';
 //import { GlobalState, useGlobalState } from '../../hooks/useGlobalState';
 
@@ -264,9 +264,9 @@ export default function PageValoresLocalidades() {
         if (!initiating)
           globalCtrl.setChangedLine(idLine, { localidade: dataOriginal.localidade }, dataEdit);
       };
-      const mainCtrl: IGridEditMainCtrl = { dataOriginal: dataOriginal, fldNewValue, fontSizeGrid };
+      const mainCtrl = GridEditMainCtrl.fill({ dataOriginal: dataOriginal, fldNewValue, fontSizeGrid });
       const fldsCtrl = {
-        valMeses: { fld: 'valMeses', valueType: ValueType.amount, decimals: configCydag.decimalsValsInput, arrayItens: mesesFld.length } as IGridEditFldCtrl,
+        valMeses: GridEditFldCtrl.fill({ fld: 'valMeses', valueType: ValueType.amount, decimals: configCydag.decimalsValsInput, arrayItens: mesesFld.length }),
       };
       //#endregion
 

@@ -12,7 +12,7 @@ import { CalcExecTime } from '../../../libCommon/calcExectime';
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
 
 import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, SnackBarError, fontSizeGrid, fontSizeIconsInGrid } from '../../../components';
-import { GridCellEdit, GridCell, IFldChange, IGridEditFldCtrl, IGridEditMainCtrl, ValueType } from '../../../components/grid';
+import { GridCellEdit, GridCell, IFldChange, GridEditFldCtrl, GridEditMainCtrl, ValueType } from '../../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 //import { GlobalState, useGlobalState } from '../../hooks/useGlobalState';
 
@@ -361,12 +361,12 @@ export default function PageViagem() {
         if (!initiating)
           globalCtrl.setChangedLine(idLine, { _id: dataOriginal._id?.toString() }, lineState, dataEdit);
       };
-      const mainCtrl: IGridEditMainCtrl = { dataOriginal: dataOriginal, fldNewValue, fontSizeGrid };
+      const mainCtrl = GridEditMainCtrl.fill({ dataOriginal: dataOriginal, fldNewValue, fontSizeGrid });
       const fldsCtrl = {
-        localidadeDestino: { fld: 'localidadeDestino', valueType: ValueType.options, options: localidadeDestinoOptions, mandatory: true } as IGridEditFldCtrl,
-        funcId: { fld: 'funcId', valueType: ValueType.options, options: funcIdOptions } as IGridEditFldCtrl,
-        qtdViagens: { fld: 'qtdViagens', valueType: ValueType.number, mandatory: true } as IGridEditFldCtrl,
-        mediaPernoites: { fld: 'mediaPernoites', valueType: ValueType.number, mandatory: true } as IGridEditFldCtrl,
+        localidadeDestino: GridEditFldCtrl.fill({ fld: 'localidadeDestino', valueType: ValueType.options, options: localidadeDestinoOptions, mandatory: true }),
+        funcId: GridEditFldCtrl.fill({ fld: 'funcId', valueType: ValueType.options, options: funcIdOptions }),
+        qtdViagens: GridEditFldCtrl.fill({ fld: 'qtdViagens', valueType: ValueType.number, mandatory: true }),
+        mediaPernoites: GridEditFldCtrl.fill({ fld: 'mediaPernoites', valueType: ValueType.number, mandatory: true }),
       };
       //#endregion
 
@@ -456,10 +456,10 @@ export default function PageViagem() {
         if (!initiating)
           globalCtrl.setChangedLine(idLine, { _id: dataOriginal._id?.toString() }, lineState, dataEdit);
       };
-      const mainCtrl: IGridEditMainCtrl = { dataOriginal: dataOriginal, fldNewValue, fontSizeGrid };
+      const mainCtrl = GridEditMainCtrl.fill({ dataOriginal: dataOriginal, fldNewValue, fontSizeGrid });
       const fldsCtrl = {
-        obs: { fld: 'obs', valueType: ValueType.string, mandatory: true } as IGridEditFldCtrl,
-        valor: { fld: 'valor', valueType: ValueType.amount, decimals: configCydag.decimalsValsInput, mandatory: true } as IGridEditFldCtrl,
+        obs: GridEditFldCtrl.fill({ fld: 'obs', valueType: ValueType.string, mandatory: true }),
+        valor: GridEditFldCtrl.fill({ fld: 'valor', valueType: ValueType.amount, decimals: configCydag.decimalsValsInput, mandatory: true }),
       };
       //#endregion
 

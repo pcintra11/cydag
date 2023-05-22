@@ -1146,6 +1146,7 @@ export class FuncionarioRevisao {
   static fill(values: FuncionarioRevisao, init = false) { return CutUndef(FillClassProps(FuncionarioRevisao.new(init), values)); }
 }
 export class Funcionario {
+  _id?: ObjectId;
   ano?: string;
   centroCusto?: string;
   origem?: OrigemFunc;

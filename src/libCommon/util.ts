@@ -977,7 +977,7 @@ export const CutUndef = <T>(obj: T) => {
 };
 
 interface IObjUpdAllPropsConfig { onlyPropsInTarget?: boolean, propsAlsoAccept: string[] }
-export const ObjUpdAllProps = <T>(objTarget: T, objSource: object, config?: IObjUpdAllPropsConfig) => { // #!!!!!!!!! sai config, retorno o objeto na própria classe!
+export const ObjUpdAllProps = <T>(objTarget: T, objSource: object, config?: IObjUpdAllPropsConfig) => { // #!!!!!!!!!!!! sai config, retorno o objeto na própria classe!
   // atualiza todas as propriedades de um object com base em outro object (crud update)
   const propsError = [];
   Object.keys(objSource).forEach((prop) => {

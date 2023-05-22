@@ -13,7 +13,7 @@ import { CalcExecTime } from '../../../libCommon/calcExectime';
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
 
 import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, SnackBarError, fontSizeGrid, fontSizeIconsInGrid } from '../../../components';
-import { GridCell, GridCellEdit, IFldChange, IGridEditFldCtrl, IGridEditMainCtrl, ValueType } from '../../../components/grid';
+import { GridCell, GridCellEdit, IFldChange, GridEditFldCtrl, GridEditMainCtrl, ValueType } from '../../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 
 import { isAmbDev } from '../../../app_base/envs';
@@ -417,24 +417,24 @@ export default function PageFuncionarioCrud() {
         if (!initiating)
           globalCtrl.setChangedLine(idLine, { origem: dataOriginal.origem, refer: dataOriginal.refer }, lineState, dataEdit, fld);
       };
-      const mainCtrl: IGridEditMainCtrl = { dataOriginal: dataOriginal, fldNewValue, fontSizeGrid };
+      const mainCtrl = GridEditMainCtrl.fill({ dataOriginal: dataOriginal, fldNewValue, fontSizeGrid });
       const fldsCtrl = {
-        nome: { fld: 'nome', mandatory: true } as IGridEditFldCtrl,
-        idVaga: { fld: 'idVaga' } as IGridEditFldCtrl,
-        tipoColaborador: { fld: 'tipoColaborador', valueType: ValueType.options, options: TipoColaboradorMd.all.map((x) => new SelOption(x.cod, x.descr)), mandatory: true } as IGridEditFldCtrl,
-        funcao: { fld: 'funcao' } as IGridEditFldCtrl,
+        nome: GridEditFldCtrl.fill({ fld: 'nome', mandatory: true }),
+        idVaga: GridEditFldCtrl.fill({ fld: 'idVaga' }),
+        tipoColaborador: GridEditFldCtrl.fill({ fld: 'tipoColaborador', valueType: ValueType.options, options: TipoColaboradorMd.all.map((x) => new SelOption(x.cod, x.descr)), mandatory: true }),
+        funcao: GridEditFldCtrl.fill({ fld: 'funcao' }),
 
-        ativo: { fld: 'ativo', valueType: ValueType.boolean } as IGridEditFldCtrl,
-        tipoIni: { fld: 'tipoIni', valueType: ValueType.options, options: TipoParticipPerOrcamMd.all.filter((x) => x.plus.ini).map((x) => new SelOption(x.cod, x.descr)), mandatory: true } as IGridEditFldCtrl,
-        mesIni: { fld: 'mesIni', valueType: ValueType.number, mandatory: true } as IGridEditFldCtrl,
-        tipoFim: { fld: 'tipoFim', valueType: ValueType.options, options: [new SelOption('', 'sem'), ...TipoParticipPerOrcamMd.all.filter((x) => x.plus.fim).map((x) => new SelOption(x.cod, x.descr))] } as IGridEditFldCtrl,
-        mesFim: { fld: 'mesFim', valueType: ValueType.number } as IGridEditFldCtrl,
-        salario: { fld: 'salario', valueType: ValueType.amount, decimals: configCydag.decimalsSalario, mandatory: true } as IGridEditFldCtrl,
-        dependentes: { fld: 'dependentes', valueType: ValueType.number } as IGridEditFldCtrl,
-        valeTransp: { fld: 'valeTransp', valueType: ValueType.amount, decimals: configCydag.decimalsValsInput } as IGridEditFldCtrl,
-        mesPromo: { fld: 'mesPromo', valueType: ValueType.number } as IGridEditFldCtrl,
-        tipoColaboradorPromo: { fld: 'tipoColaboradorPromo', valueType: ValueType.options, options: [new SelOption('', 'sem'), ...TipoColaboradorMd.all.map((x) => new SelOption(x.cod, x.descr))] } as IGridEditFldCtrl,
-        salarioPromo: { fld: 'salarioPromo', valueType: ValueType.amount, decimals: configCydag.decimalsSalario } as IGridEditFldCtrl,
+        ativo: GridEditFldCtrl.fill({ fld: 'ativo', valueType: ValueType.boolean }),
+        tipoIni: GridEditFldCtrl.fill({ fld: 'tipoIni', valueType: ValueType.options, options: TipoParticipPerOrcamMd.all.filter((x) => x.plus.ini).map((x) => new SelOption(x.cod, x.descr)), mandatory: true }),
+        mesIni: GridEditFldCtrl.fill({ fld: 'mesIni', valueType: ValueType.number, mandatory: true }),
+        tipoFim: GridEditFldCtrl.fill({ fld: 'tipoFim', valueType: ValueType.options, options: [new SelOption('', 'sem'), ...TipoParticipPerOrcamMd.all.filter((x) => x.plus.fim).map((x) => new SelOption(x.cod, x.descr))] }),
+        mesFim: GridEditFldCtrl.fill({ fld: 'mesFim', valueType: ValueType.number }),
+        salario: GridEditFldCtrl.fill({ fld: 'salario', valueType: ValueType.amount, decimals: configCydag.decimalsSalario, mandatory: true }),
+        dependentes: GridEditFldCtrl.fill({ fld: 'dependentes', valueType: ValueType.number }),
+        valeTransp: GridEditFldCtrl.fill({ fld: 'valeTransp', valueType: ValueType.amount, decimals: configCydag.decimalsValsInput }),
+        mesPromo: GridEditFldCtrl.fill({ fld: 'mesPromo', valueType: ValueType.number }),
+        tipoColaboradorPromo: GridEditFldCtrl.fill({ fld: 'tipoColaboradorPromo', valueType: ValueType.options, options: [new SelOption('', 'sem'), ...TipoColaboradorMd.all.map((x) => new SelOption(x.cod, x.descr))] }),
+        salarioPromo: GridEditFldCtrl.fill({ fld: 'salarioPromo', valueType: ValueType.amount, decimals: configCydag.decimalsSalario }),
       };
       //#endregion
 

@@ -4,6 +4,7 @@ import { Box, Input, SxProps } from '@mui/material';
 import { amountParse, amountToStr } from '../appCydag/util';
 import { SelectMy, SelOption, SwitchMy } from './ui';
 import { csd } from '../libCommon/dbg';
+import { CutUndef, FillClassProps } from '../libCommon/util';
 
 interface IGridCell {
   textAlign?: 'right' | 'left' | 'center',
@@ -77,25 +78,25 @@ export interface IFldChange {
 }
 
 /**
- * Controles globais para todas as celulas
+ * Controles globais para todas as células
  */
-export interface IGridEditMainCtrl { // #!!!!!!!!!!!!!!! class + fill
-  /**
-   * valores originais
-   */
-  dataOriginal: any;
+export class GridEditMainCtrl {
+  dataOriginal?: any;
+  fontSizeGrid?: string | number;
   /**
    * Função que será chamada para compartilhar os valores editados
    */
   fldNewValue: (fldChange: IFldChange) => void;
-  fontSizeGrid: string | number
-} // ; setStateSubords: ISetStateSubords[]
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new GridEditMainCtrl(); }
+  static fill(values: GridEditMainCtrl, init = false) { return CutUndef(FillClassProps(GridEditMainCtrl.new(init), values)); }
+}
 
 /**
- * Controle para cada celula editada
+ * Controle para cada célula editada
  */
-export interface IGridEditFldCtrl { // #!!!!!!!!!!!!!!! class + fill
-  fld: string;
+export class GridEditFldCtrl {
+  fld?: string;
   arrayItens?: number;
   valueType?: ValueType;
   decimals?: number;
@@ -104,8 +105,11 @@ export interface IGridEditFldCtrl { // #!!!!!!!!!!!!!!! class + fill
   /**
    * atuVal => 'setState' para o chamador forçar algum valor (replicação de valores em array, zerar todas colunas, etc)
    */
-  atuVal?: any
-} // (value: any) => void | ((value: any) => void)[]
+  atuVal?: any;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new GridEditFldCtrl(); }
+  static fill(values: GridEditFldCtrl, init = false) { return CutUndef(FillClassProps(GridEditFldCtrl.new(init), values)); }
+}
 
 const valueOriginalForEdit = (dataOriginal: any, fld: string, index?: number, valueType?: ValueType, decimals?: number) => {
   let result: any;
@@ -118,7 +122,7 @@ const valueOriginalForEdit = (dataOriginal: any, fld: string, index?: number, va
   //csd({ fld, valorOrig, valueType, result });
   return result;
 };
-export const GridCellEdit = ({ mainCtrl, fldCtrl, index, disabled }: { mainCtrl: IGridEditMainCtrl, fldCtrl: IGridEditFldCtrl, index?: number, disabled?: boolean }) => {
+export const GridCellEdit = ({ mainCtrl, fldCtrl, index, disabled }: { mainCtrl: GridEditMainCtrl, fldCtrl: GridEditFldCtrl, index?: number, disabled?: boolean }) => {
   // o valor editado é sempre string ou boolean, nunca numérico
   // o valor para envio ao db será undefined se for vazio ('')
   const { fld, arrayItens, valueType, decimals, options, mandatory } = fldCtrl;

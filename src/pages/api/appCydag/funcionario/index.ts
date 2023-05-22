@@ -78,7 +78,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         CheckProcCentroCustosAuth(loggedUserReq, processoOrcamentarioCentroCusto, authCC);
         if (parm.cmd == CmdApi.itensGet) {
           const filterDb: any = { ano, centroCusto };
-          const funcionarios = await FuncionarioModel.find(filterDb).lean().sort({ origem: 1, refer: 1 });
+          const funcionariosAux = await FuncionarioModel.find(filterDb).lean().sort({ origem: 1, refer: 1 });
+          const funcionarios = funcionariosAux.filter((funcionario) => funcionario[Funcionario.funcionarioRevisao(revisao)] != null);
           const premissaDespRecorrArray = await PremissaModel.find({ anoIni: { $lte: ano }, anoFim: { $gte: ano }, revisao: RevisaoValor.atual, despRecorrFunc: true }).lean().sort({ cod: 1 });
 
           const funcionariosClient = funcionarios.map((funcionario) => {
@@ -195,7 +196,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             if (changedLine.lineState === LineState.inserted)
               await FuncionarioModel.create({ ano, centroCusto, origem, refer, ...funcionarioData, created: agora });
             else if (changedLine.lineState === LineState.updated)
-              await FuncionarioModel.updateOne(Funcionario.fill({ ano, centroCusto, origem, refer }), funcionarioData); //#!!!!!!!!!!!!
+              await FuncionarioModel.updateOne(Funcionario.fill({ ano, centroCusto, origem, refer }), funcionarioData);
             else if (changedLine.lineState === LineState.deleted)
               await FuncionarioModel.deleteOne(Funcionario.fill({ ano, centroCusto, origem, refer }));
             else
@@ -281,10 +282,13 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 throw new Error(errosThisLine.join(', '));
 
               const documentInsert = Funcionario.fill({
-                ...documentCsvDb,
+                ...OnlyPropsInClass(documentCsvDb,Funcionario.new()),
                 ano,
                 origem: OrigemFunc.legado,
-                revisaoAtual: FuncionarioRevisao.fill({ ...documentCsvDb, ativo: true }),
+                revisaoAtual: {
+                  ...FuncionarioRevisao.fill(OnlyPropsInClass(documentCsvDb, FuncionarioRevisao.new())),
+                  ativo: true,
+                },
                 lastUpdated: agora,
                 created: agora,
               }, true);
@@ -380,7 +384,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
         const filterCC = centroCustoArray.length > 0 ? { centroCusto: { $in: centroCustoArrayUse } } : {};
         const filterDb: any = { ano, ...filterCC };
-        const funcionarios = await FuncionarioModel.find(filterDb).lean().sort({ centroCusto: 1, origem: 1, refer: 1 });
+        const funcionariosAux = await FuncionarioModel.find(filterDb).lean().sort({ centroCusto: 1, origem: 1, refer: 1 });
+        const funcionarios = funcionariosAux.filter((funcionario) => funcionario[Funcionario.funcionarioRevisao(revisao)] != null);
 
         const funcionariosClient = funcionarios.map((funcionario) => {
           const funcionarioRevisao = funcionario[Funcionario.funcionarioRevisao(revisao)];

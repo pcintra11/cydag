@@ -4,6 +4,7 @@ import { Session, applySession, SessionOptions } from 'next-iron-session';
 
 import { CtrlApiExec } from './util';
 import { isAmbDev } from '../app_base/envs';
+import { CutUndef, FillClassProps } from '../libCommon/util';
 
 interface INextApiRequestSession extends NextApiRequest {
   session: Session;
@@ -14,14 +15,17 @@ interface INextApiRequestSession extends NextApiRequest {
 
 export const CookieSession_fldFixed = 'value';
 
-export interface IHttpCryptoCookieConfig {
-  name: string;
+export class HttpCryptoCookieConfig {
+  name?: string;
   TTLSeconds?: number;
-  psw: string;
+  psw?: string;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  static new(init?: boolean) { return new HttpCryptoCookieConfig(); }
+  static fill(values: HttpCryptoCookieConfig, init = false) { return CutUndef(FillClassProps(HttpCryptoCookieConfig.new(init), values)); }
 }
 
 export async function HttpCriptoCookieCmdASync(ctrlApiExec: CtrlApiExec, point: string,
-  cookieSessionConfig: IHttpCryptoCookieConfig, cmd: 'set' | 'get', options: { extendExpiration?: boolean, domain?: string }, value?: any) {
+  cookieSessionConfig: HttpCryptoCookieConfig, cmd: 'set' | 'get', options: { extendExpiration?: boolean, domain?: string }, value?: any) {
   const cookieOptions: CookieSerializeOptions = {
     // the next line allows to use the session in non-https environments like
     // Next.js dev mode (http://localhost:xxx)
@@ -70,7 +74,7 @@ export async function HttpCriptoCookieCmdASync(ctrlApiExec: CtrlApiExec, point: 
     //csl({ api: `${ctrlApiExec.apiPath}(point ${point})-${JSON.stringify(ctrlApiExec.parm)}`, cmd, cookieSessionConfig, options, cookieOptions, valueGet: value });
     return value;
   }
-  // else if (cmd == GlobalStateCmd.renew) { // apenas extende o tempo de vida do cookie
+  // else if (cmd == GlobalStateCmd.renew) { // apenas extender o tempo de vida do cookie
   //   let value = reqSession.session.get(CookieSession_fldFixed);
   //   if (value)
   //     await reqSession.session.save();

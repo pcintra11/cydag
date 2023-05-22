@@ -4,7 +4,7 @@ import _ from 'underscore';
 import { ConnectDbASync, CloseDbASync } from '../../../../libServer/dbMongo';
 import { NotifyAdmASync } from '../../../../libServer/notifyAdm';
 
-import { BinSearchIndex, BinSearchItem, BinSearchProp, compareForBinSearch, compareForBinSearchArray, CtrlCollect, DateDisp, ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
+import { BinSearchIndex, BinSearchItem, BinSearchProp, compareForBinSearch, compareForBinSearchArray, CtrlCollect, DateDisp, ErrorPlus, OnlyPropsInClass, SleepMsDevRandom } from '../../../../libCommon/util';
 import { csd, dbgError } from '../../../../libCommon/dbg';
 import { CallApiSvrASync } from '../../../../fetcher/fetcherSvr';
 
@@ -632,7 +632,7 @@ export const ValoresImputadosGet = async (processoOrcamentario: ProcessoOrcament
   if (withDetails) {
     const db = await ValoresImputadosModel.find(filterDb, { _id: 0, lastUpdated: 0 })
       .lean().sort({ centroCusto: 1, classeCusto: 1, idDetalhe: 1 });
-    vals = db.map((x) => ValoresPlanejadosDetalhes.fill(x));
+    vals = db.map((x) => ValoresPlanejadosDetalhes.fill(OnlyPropsInClass(x, ValoresPlanejadosDetalhes.new())));
   }
   else {
     const db = await ValoresImputadosModel.aggregate([
@@ -656,7 +656,7 @@ export const ValoresImputadosGet = async (processoOrcamentario: ProcessoOrcament
       },
       { $sort: { centroCusto: 1, classeCusto: 1 } },
     ]);
-    vals = db.map((x) => ValoresPlanejadosDetalhes.fill(x));
+    vals = db.map((x) => ValoresPlanejadosDetalhes.fill(OnlyPropsInClass(x, ValoresPlanejadosDetalhes.new())));
   }
 
   if (sumarizaCCs)
@@ -672,7 +672,7 @@ export const ValoresPlanejadosHistoricoGet = async (processoOrcamentario: Proces
   let vals: ValoresPlanejadosDetalhes[] = [];
   const db = await ValoresPlanejadosHistoricoModel.find(filterDb, { _id: 0 })
     .lean().sort({ centroCusto: 1, classeCusto: 1 });
-  vals = db.map((x) => ValoresPlanejadosDetalhes.fill(x));
+  vals = db.map((x) => ValoresPlanejadosDetalhes.fill(OnlyPropsInClass(x, ValoresPlanejadosDetalhes.new())));
   if (sumarizaCCs)
     vals = (new CtrlCollect<ValoresPlanejadosDetalhes>(['classeCusto'], { fldsSum: [{ fld: 'valMeses', arrayLen: mesesFld.length }] }, vals)).getArray();
   return vals;
@@ -716,7 +716,7 @@ export const ValoresPlanejadosCalc = async (processoOrcamentario: ProcessoOrcame
       withDetails === false &&
       showCalcGlobal === false)) {
     const valsCalc = await ValoresPlanejadosCalcModel.find({ ano, revisao, ...filtroCC }).lean().sort({ centroCusto: 1, classeCusto: 1 });
-    valsCalc.forEach((x) => vals.push(ValoresPlanejadosDetalhes.fill(x)));
+    valsCalc.forEach((x) => vals.push(ValoresPlanejadosDetalhes.fill(OnlyPropsInClass(x, ValoresPlanejadosDetalhes.new()))));
   }
   else {
     // premissas
@@ -734,7 +734,7 @@ export const ValoresPlanejadosCalc = async (processoOrcamentario: ProcessoOrcame
     const viagens = await ViagemModel.find({ ano, revisao, ...filtroCC }).lean().sort({ centroCusto: 1 });
     const pushVals = (centroCusto, classeCusto, idDetalhe, descr, valsContaCalc: ValsContaCalc, infoMemoriaCalc = {}, showCalc = showCalcGlobal) => {
       if (valsContaCalc.anyValue) {
-        vals.push(ValoresPlanejadosDetalhes.fill({ //#!!!!!!!!!!!!!!!!!!
+        vals.push(ValoresPlanejadosDetalhes.fill({
           centroCusto, classeCusto, idDetalhe, descr,
           valMeses: valsContaCalc.valMeses,
           //...mesesFld.reduce((prev, curr, index) => ({ ...prev, [curr]: valsContaCalc.valMeses[index] }), {})

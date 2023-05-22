@@ -1,6 +1,6 @@
 import _ from 'underscore';
 
-import { compareForBinSearch, CtrlCollect, ErrorPlus, StrRight } from '../../../../libCommon/util';
+import { compareForBinSearch, CtrlCollect, ErrorPlus, OnlyPropsInClass, StrRight } from '../../../../libCommon/util';
 
 import { anoAdd, mesesFld, multiplyValMeses, sumValMeses } from '../../../../appCydag/util';
 import { CategRegional, OrigemFunc, ProcessoOrcamentarioStatus, RevisaoValor, TipoColaborador, TipoParticipPerOrcam, TipoPlanejViagem, TipoSegmCentroCusto } from '../../../../appCydag/types';
@@ -396,10 +396,12 @@ export const DataTestCydag = async (cmd: CmdApi_FuncAdm) => {
 
       const funcDataIncl = funcionariosAdd.map((x) => {
         const item = Funcionario.fill({
-          ..._.omit(x, ['salarioBase', 'tipoIni', 'mesIni', 'tipoFim', 'mesFim', 'despsRecorr', 'mesPromo', 'tipoColaboradorPromo', 'salarioPromo']), created: agora, lastUpdated: agora,
+          ...OnlyPropsInClass(x, Funcionario.new()),
+          created: agora, lastUpdated: agora,
           salario_messy: x.origem === OrigemFunc.legado ? Funcionario.scrambleSalario(x.salarioBase, x.centroCusto, x.refer) : undefined,
           revisaoAtual: FuncionarioRevisao.fill({
-            ..._.omit(x, ['centroCusto', 'origem', 'refer', 'nome', 'tipoColaborador', 'funcao', 'salarioBase', 'salarioPromo', 'idVaga', 'idCentroCustoRh']), ativo: true,
+            ...OnlyPropsInClass(x, FuncionarioRevisao.new()),
+            ativo: true,
             salario_messy: Funcionario.scrambleSalario(x.salarioBase, x.centroCusto, x.refer),
             salarioPromo_messy: x.salarioPromo == null ? null : Funcionario.scrambleSalario(x.salarioPromo, x.centroCusto, x.refer),
           }),

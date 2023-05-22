@@ -8,7 +8,7 @@ import { dbgError } from '../../../../libCommon/dbg';
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ReqNoParm, ResumoApi } from '../../../../libServer/util';
 import { ApiStatusDataByErrorASync } from '../../../../libServer/apiStatusDataByError';
-import { HttpCriptoCookieCmdASync, IHttpCryptoCookieConfig } from '../../../../libServer/httpCryptoCookie';
+import { HttpCriptoCookieCmdASync, HttpCryptoCookieConfig } from '../../../../libServer/httpCryptoCookie';
 import { CorsMiddlewareAsync } from '../../../../libServer/cors';
 import { AlertTimeExecApiASync } from '../../../../libServer/alertTimeExecApi';
 
@@ -26,11 +26,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   const resumoApi = new ResumoApi(ctrlApiExec);
 
   try {
-    const cookieSessionConfig: IHttpCryptoCookieConfig = {
+    const cookieSessionConfig = HttpCryptoCookieConfig.fill({
       name: parm.cookieName,
       TTLSeconds: null,
       psw: SESSION_GENERIC_PSW,
-    };
+    });
     if (parm.cmd == HttpCriptoCookieCmd.set) {
       await HttpCriptoCookieCmdASync(ctrlApiExec, 'main', cookieSessionConfig, 'set', { domain: EnvDeployConfig().domain }, parm.value);
       resumoApi.jsonData({});

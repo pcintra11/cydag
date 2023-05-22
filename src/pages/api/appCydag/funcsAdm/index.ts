@@ -157,7 +157,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
       else if (parm.cmd == CmdApi_FuncAdm.setTesteDataPlan ||
         parm.cmd == CmdApi_FuncAdm.setTesteDataInterfaceSap) {
-        const msgsProc = await DataTestCydag(parm.cmd); // #!!!!!!!!!!
+        const msgsProc = await DataTestCydag(parm.cmd);
         resumoApi.jsonData({ value: { msgsProc } });
       }
 

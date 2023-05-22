@@ -108,7 +108,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           shouldDelete = true;
           dbgX(1, 'ok', resultOk);
         } catch (error) {
-          //await SystemMsgSvrASync(CategMsgSystem.error, asyncProc.type, error.message, ctrlApiExec.ctrlContext, parm); // gravar log @!!!!!!!!!
+          //await SystemMsgSvrASync(CategMsgSystem.error, asyncProc.type, error.message, ctrlApiExec.ctrlContext, parm); // gravar log @!!!!!!!!!!!
           resultError = error.message;
         }
       }

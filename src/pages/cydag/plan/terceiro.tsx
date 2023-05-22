@@ -12,7 +12,7 @@ import { CalcExecTime } from '../../../libCommon/calcExectime';
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
 
 import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, SnackBarError, fontSizeGrid, fontSizeIconsInGrid } from '../../../components';
-import { GridCellEdit, GridCell, IFldChange, IGridEditFldCtrl, IGridEditMainCtrl, ValueType } from '../../../components/grid';
+import { GridCellEdit, GridCell, IFldChange, GridEditFldCtrl, GridEditMainCtrl, ValueType } from '../../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 //import { GlobalState, useGlobalState } from '../../hooks/useGlobalState';
 
@@ -364,12 +364,12 @@ export default function PageTerceiroCrud() {
         if (!initiating)
           globalCtrl.setChangedLine(idLine, { refer: dataOriginal.refer }, lineState, dataEdit);
       };
-      const mainCtrl: IGridEditMainCtrl = { dataOriginal: dataOriginal, fldNewValue, fontSizeGrid };
+      const mainCtrl = GridEditMainCtrl.fill({ dataOriginal: dataOriginal, fldNewValue, fontSizeGrid });
       const fldsCtrl = {
-        nome: { fld: 'nome', mandatory: true } as IGridEditFldCtrl,
-        fornecedor: { fld: 'fornecedor', mandatory: true } as IGridEditFldCtrl,
-        funcaoTerceiros: { fld: 'funcaoTerceiros', valueType: ValueType.options, options: mainStates.funcaoTerceirosArray.map((x) => new SelOption(x.cod, x.descr)), mandatory: true } as IGridEditFldCtrl,
-        valMeses: { fld: 'valMeses', valueType: ValueType.amount, decimals: configCydag.decimalsValsInput, arrayItens: mesesFld.length } as IGridEditFldCtrl,
+        nome: GridEditFldCtrl.fill({ fld: 'nome', mandatory: true }),
+        fornecedor: GridEditFldCtrl.fill({ fld: 'fornecedor', mandatory: true }),
+        funcaoTerceiros: GridEditFldCtrl.fill({ fld: 'funcaoTerceiros', valueType: ValueType.options, options: mainStates.funcaoTerceirosArray.map((x) => new SelOption(x.cod, x.descr)), mandatory: true }),
+        valMeses: GridEditFldCtrl.fill({ fld: 'valMeses', valueType: ValueType.amount, decimals: configCydag.decimalsValsInput, arrayItens: mesesFld.length }),
       };
       //#endregion
 
