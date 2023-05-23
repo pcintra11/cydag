@@ -122,11 +122,13 @@ class NodeContent {
   descrComp?(nodeClasseCusto: boolean) {
     if (nodeClasseCusto)
       return (
-        <Stack direction='row' alignItems='center' gap={0.5}>
-          <Box className='showConta'>{this.cod}</Box>
-          <Box className='showConta'>-</Box>
-          <Box style={cssTextNoWrapEllipsis}>{this.descr}</Box>
-        </Stack>
+        <Tooltip title={this.descr}>
+          <Stack direction='row' alignItems='center' gap={0.5}>
+            <Box className='showConta'>{this.cod}</Box>
+            <Box className='showConta'>-</Box>
+            <Box style={cssTextNoWrapEllipsis}>{this.descr}</Box>
+          </Stack>
+        </Tooltip>
       );
     else
       return (
