@@ -393,8 +393,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           const salario = Funcionario.unscrambleSalario(funcionarioRevisao.salario_messy, funcionario.centroCusto, funcionario.refer);
           const salarioPromo = Funcionario.unscrambleSalario(funcionarioRevisao.salarioPromo_messy, funcionario.centroCusto, funcionario.refer);
           const result = FuncionarioClient.fill({
-            ...funcionario,
-            ...funcionarioRevisao,
+            ...OnlyPropsInClass(funcionario, FuncionarioClient.new()),
+            ...OnlyPropsInClass(funcionarioRevisao, FuncionarioClient.new()),
             salarioLegado,
             salario,
             salarioPromo,
