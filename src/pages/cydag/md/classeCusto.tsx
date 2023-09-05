@@ -10,7 +10,7 @@ import { PageDef } from '../../../libCommon/endPoints';
 
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
 
-import { AlertMy, FrmSetError, PopupMsg, SnackBarError } from '../../../components';
+import { AlertMy, FrmSetError, PopupMsg, Tx } from '../../../components';
 import { Btn, BtnLine, WaitingObs } from '../../../components';
 import { AbortProc, LogErrorUnmanaged } from '../../../components';
 import { FrmError, FrmInput } from '../../../components';
@@ -84,7 +84,8 @@ export default function PageClasseCustoCrud() {
       await ForceWait(calcExecTimeSearch.elapsedMs(), configApp.forceWaitMinimumMs);
       setMainStatesCache({ listing: { searching: false, dataRows: documents, partialResults: apiReturn.value.partialResults } });
     } catch (error) {
-      SnackBarError(error, `${pageSelf.pagePath}-onSubmit`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-onSubmit`);
+      PopupMsg.error(error);
     }
   };
   const checkData = (data: FrmData) => {
@@ -154,7 +155,8 @@ export default function PageClasseCustoCrud() {
         setMainStatesCache({ fatorCustoArray });
       })
       .catch((error) => {
-        SnackBarError(error, `${pageSelf.pagePath}-listFatorCusto`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-listFatorCusto`);
+        PopupMsg.error(error);
       });
     return () => { mount = false; };
   }, [router.isReady, isLoadingUser, loggedUser?.email]);
@@ -180,27 +182,27 @@ export default function PageClasseCustoCrud() {
     if (mainStates.phase == Phase.list) {
       const colsGridConfig = [
         new ColGridConfig(
-          <Stack direction='row' alignItems='center' gap={1} justifyContent='center'>
+          <Stack direction='row' alignItems='center' spacing={1} justifyContent='center'>
             <IconButtonAppCrud icon='create' onClick={() => setPhase(Phase.insert)} />
           </Stack>,
           ({ index }: { index: number }) => (
-            <Stack direction='row' alignItems='center' gap={1}>
+            <Stack direction='row' alignItems='center' spacing={1}>
               <IconButtonAppCrud icon='edit' onClick={() => setPhase(Phase.update, index)} />
               <IconButtonAppCrud icon='delete' onClick={() => setPhase(Phase.delete, index)} />
             </Stack>
           )
         ),
-        new ColGridConfig('Classe Custo', ({ data }: { data: Entity_Crud }) => data.classeCusto),
-        new ColGridConfig('Linha de Custo', ({ data }: { data: Entity_Crud }) => FatorCusto.descrFator(data.fatorCusto, mainStates.fatorCustoArray, 15)),
-        new ColGridConfig('Seq', ({ data }: { data: Entity_Crud }) => data.seqApresent),
-        new ColGridConfig('Origem', ({ data }: { data: Entity_Crud }) => OrigemClasseCustoMd.descr(data.origem)),
-        new ColGridConfig('Descrição', ({ data }: { data: Entity_Crud }) => data.descr, { width: '1fr' }),
+        new ColGridConfig(<Tx>Classe Custo</Tx>, ({ data }: { data: Entity_Crud }) => <Tx>{data.classeCusto}</Tx>),
+        new ColGridConfig(<Tx>Linha de Custo</Tx>, ({ data }: { data: Entity_Crud }) => <Tx>{FatorCusto.descrFator(data.fatorCusto, mainStates.fatorCustoArray, 15)}</Tx>),
+        new ColGridConfig(<Tx>Seq</Tx>, ({ data }: { data: Entity_Crud }) => <Tx>{data.seqApresent}</Tx>),
+        new ColGridConfig(<Tx>Origem</Tx>, ({ data }: { data: Entity_Crud }) => <Tx>{OrigemClasseCustoMd.descr(data.origem)}</Tx>),
+        new ColGridConfig(<Tx>Descrição</Tx>, ({ data }: { data: Entity_Crud }) => <Tx>{data.descr}</Tx>, { width: '1fr' }),
       ];
 
       return (
-        <Stack gap={1} height='100%'>
+        <Stack spacing={1} height='100%'>
           <form onSubmit={frmFilter.handleSubmit(onSubmitList)}>
-            <Stack direction='row' alignItems='center' gap={1}>
+            <Stack direction='row' alignItems='center' spacing={1}>
               <Box flex={1}>
                 <FrmInput placeholder='termos de busca' frm={frmFilter} name={Entity_Crud.F.searchTerms} width='100%' autoFocus />
               </Box>
@@ -210,10 +212,10 @@ export default function PageClasseCustoCrud() {
           <Box flex={1} overflow='hidden'>
             {mainStates.listing.searching
               ? <WaitingObs text='buscando' />
-              : <Stack gap={1} height='100%'>
+              : <Stack spacing={1} height='100%'>
                 {(mainStates.listing.partialResults) && <AlertMy>Resultados parciais</AlertMy>}
-                {(mainStates.filterApplyed && mainStates.listing.dataRows.length == 0) && <Box>Nada encontrado</Box>}
-                <TableGrid
+                {(mainStates.filterApplyed && mainStates.listing.dataRows.length == 0) && <Tx>Nada encontrado</Tx>}
+                <TableGrid fullHeightScroll
                   colsGridConfig={colsGridConfig}
                   dataRows={mainStates.listing.dataRows}
                 />
@@ -249,9 +251,9 @@ export default function PageClasseCustoCrud() {
     // };
 
     return (
-      <Stack gap={1} height='100%' overflow='auto'>
+      <Stack spacing={1} height='100%' overflow='auto'>
         <form onSubmit={frmData.handleSubmit(phaseCrud.onSubmit)}>
-          <Stack gap={1}>
+          <Stack spacing={1}>
             <FrmInput label='Classe Custo' frm={frmData} name={Entity_Crud.F.classeCusto} autoFocus={isInsert} disabled={!isInsert} />
             <FrmInput label='Descrição' frm={frmData} name={Entity_Crud.F.descr} autoFocus={!isInsert} disabled={isDelete} />
 

@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 
-import { AbortProc, LogErrorUnmanaged } from '../../components';
+import { AbortProc, LogErrorUnmanaged, Tx } from '../../components';
 
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 import { pagesApp } from '../../appCydag/endPoints';
@@ -25,11 +25,9 @@ export default function PageSignOut() {
 
   try {
     return (
-      <>
-        <div>
-          Desconectado
-        </div>
-      </>
+      <Tx>
+        Desconectado
+      </Tx>
     );
   } catch (error) {
     LogErrorUnmanaged(error, `${pageSelf.pagePath}-render`);

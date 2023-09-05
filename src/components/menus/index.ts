@@ -4,7 +4,7 @@ import QueryString from 'query-string';
 import { csd, dbgError } from '../../libCommon/dbg';
 import { PageDef } from '../../libCommon/endPoints';
 import { IGenericObject } from '../../libCommon/types';
-import { CutUndef, FillClassProps, IdByTime } from '../../libCommon/util';
+import { CutUndef, FillClassProps } from '../../libCommon/util';
 
 export enum MenuEntryType {
   group = 'group',
@@ -14,26 +14,30 @@ export enum MenuEntryType {
 }
 export class MenuEntry {
   type?: MenuEntryType;
-  content?: React.ReactNode; // ancora do sub menu ou texto para o link da página
+  content?: React.ReactNode | string; // ancora do sub menu ou texto para o link da página
   groupItens?: MenuEntry[]; // apenas se 'group'
   pageDef?: PageDef; // apenas se 'page' 
   query?: IGenericObject;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new MenuEntry(); }
-  static fill(values: MenuEntry, init = false) { return CutUndef(FillClassProps(MenuEntry.new(init), values)); }
+  static new() { return new MenuEntry(); }
+  static fill(values: MenuEntry) { return CutUndef(FillClassProps(MenuEntry.new(), values)); }
 
   // public get isGroup() { return this.type == 'group'; } //@@!!!!!
   // public get isPagePath() { return this.type == 'pagePath' };
-  static Group(content: React.ReactNode, groupItens: MenuEntry[]) {
+  static Group(content: React.ReactNode | string, groupItens: MenuEntry[]) {
     return MenuEntry.fill({ type: MenuEntryType.group, content, groupItens });
   }
-  static PagePath(pageDef: PageDef, contentUse: React.ReactNode = null, query?: IGenericObject) {
+  // static PagePath(pageDef: PageDef, contentUse: React.ReactNode = null, query?: IGenericObject) {
+  //   if (pageDef?.pagePath == null)
+  //     dbgError('MenuEntry', 'PagePath para path nulo');
+  //   const content = contentUse != null ? contentUse : (PageDef.MenuText(pageDef));
+  //   return MenuEntry.fill({ type: MenuEntryType.pagePath, content, pageDef, query });
+  // }
+  static PagePath(pageDef: PageDef, content: React.ReactNode | string, query?: IGenericObject) {
     if (pageDef?.pagePath == null)
       dbgError('MenuEntry', 'PagePath para path nulo');
-    const content = contentUse != null ? contentUse : (pageDef.txtDynamicMenu || pageDef.pagePath);
     return MenuEntry.fill({ type: MenuEntryType.pagePath, content, pageDef, query });
   }
-  static OnlyShow(content: React.ReactNode) {
+  static OnlyShow(content: React.ReactNode | string) {
     return MenuEntry.fill({ type: MenuEntryType.onlyShow, content });
   }
   static Divider() {
@@ -41,20 +45,23 @@ export class MenuEntry {
   }
 }
 
-export interface IMenuEntriesForMenuTypesData {
+export class MenuEntriesForMenuTypesData {
   menuEntries?: MenuEntry[]; // menu lateral
   menuEntriesLeft?: MenuEntry[]; // menu barraSuperior
   menuEntriesRight?: MenuEntry[]; // menu barraSuperior
+  static new() { return new MenuEntriesForMenuTypesData(); }
+  static fill(values: MenuEntriesForMenuTypesData) { return CutUndef(FillClassProps(MenuEntriesForMenuTypesData.new(), values)); }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const routerPageDef = (pageDefCall: PageDef, router: NextRouter, query: IGenericObject, pageDefCurr: PageDef) => {
   let queryUse: any = {};
   if (query != null)
     queryUse = { ...queryUse, ...query };
   if (pageDefCall.options?.variant != null)
     queryUse.variant = pageDefCall.options.variant;
-  if (pageDefCall === pageDefCurr)
-    queryUse._rnd = IdByTime();
+  //if (pageDefCall === pageDefCurr)
+  //  queryUse._rnd = IdByTime(); 
   if (Object.keys(queryUse).length == 0)
     queryUse = undefined;
   //csl({ pageDef, pathname: pageDef.pagePath, query });

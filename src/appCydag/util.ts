@@ -49,19 +49,19 @@ export const roundInterface = (val: number | null) => {
   else return RoundDecs(val, configCydag.decimalsValsCalc);
 };
 
-export const amountToStr = (val: number, decimals: number) => {
+export const amountToStrApp = (val: number, decimals: number) => {
   return AmountPtBrFormat(val, decimals);
 };
-export const percToStr = (val: number | null, decimals = 1) => {
+export const percToStrApp = (val: number | null, decimals = 1) => {
   if (val == null)
     return '';
   return AmountPtBrFormat(val * 100, decimals) + '%';
 };
 
-export const amountParse = (valStr: string, decimals: number) => { //  = configApp.decimalsCalc
+export const amountParseApp = (valStr: string, decimals: number) => { //  = configApp.decimalsCalc
   return AmountPtBrParse(valStr, decimals, true);
 };
-export const amountParseValsCalc = (valStr: string) => {
+export const amountParseValsCalcApp = (valStr: string) => {
   return RoundDecs(AmountPtBrParse(valStr, 2, true), configCydag.decimalsValsCalc);
 };
 

@@ -2,40 +2,60 @@ import React from 'react';
 import publicIp from 'public-ip';
 import { GetServerSidePropsResult } from 'next';
 import { useRouter } from 'next/router';
+import { isBrowser, isDesktop, isMobile, isTablet, isAndroid, isIOS, osVersion, osName, getUA, deviceType, isChrome, isFirefox } from 'react-device-detect';
+
+import dynamic from 'next/dynamic';
+const ReactJson = dynamic(() => import('react-json-view'), { ssr: false });
 
 import Box from '@mui/material/Box'; //@!!!!!!!
 import Stack from '@mui/material/Stack';
 import HorizontalRule from '@mui/icons-material/HorizontalRule';
 
-import { ObjUpdAllProps } from '../../libCommon/util';
-import { csd, dbgTest } from '../../libCommon/dbg';
+import { FillClassProps } from '../../libCommon/util';
+import { csd, dbgError, dbgTest } from '../../libCommon/dbg';
 
-import { AbortProc, LogErrorUnmanaged } from '../../components';
+import { AbortProc, LogErrorUnmanaged, Tx, fullHeightScroll } from '../../components';
 
+import { LoggedUserBase } from '../../app_base/loggedUserBase';
 import { pagesSuporte } from '../../app_suporte/endPoints';
+
+import { useLoggedUser } from '../../appCydag/useLoggedUser';
+import { GetLoggedUserFromHttpCookieASync } from '../../appCydag/getLoggedUserFromHttpCookieASync';
+import { LoggedUser } from '../../appCydag/loggedUser';
 
 //import { useLoggedUser } from '../../../hooks/useLoggedUser';
 //import Link from 'next/link';
 
 interface IPageProps {
-  // envsMain: object;
-  // envsOthers: object;
+  envsSvr: string[];
   envsClient: string[];
 }
 
 // @@@@! por que não habilita o menu 'user'?
-let mount = false; let mainStatesCache = null;
+class MainStates {
+  forcePageRestart?: any;
+  preparing?: 'initiating' | 'ready';
+  error?: Error;
+  ipv4?: string;
+  ipv6?: string;
+  loggedUserCookieHttp?: LoggedUser;
+  static new(init?: boolean) {
+    const obj = new MainStates();
+    if (init) {
+      obj.forcePageRestart = new Object();
+      obj.preparing = 'initiating';
+    }
+    return obj;
+  }
+}
+let mount = false; const mainStatesCache = MainStates.new();
 const pageSelf = pagesSuporte.inspect;
 export default function PageInspect(props: IPageProps) { // 
-  interface IMainStates {
-    ipv4?: string;
-    ipv6?: string;
-  }
-  const [mainStates, setMainStates] = React.useState<IMainStates>({});
-  mainStatesCache = { ...mainStates }; const setMainStatesCache = (newValues: IMainStates) => { if (!mount) return; ObjUpdAllProps<IMainStates>(mainStatesCache, newValues); setMainStates({ ...mainStatesCache }); };
+  const [mainStates, setMainStates] = React.useState(MainStates.new());
+  FillClassProps(mainStatesCache, mainStates); const setMainStatesCache = (newValues: MainStates) => { if (!mount) return; FillClassProps(mainStatesCache, newValues); setMainStates({ ...mainStatesCache }); };
 
   const router = useRouter();
-  //const { loggedUser } = useLoggedUser(false);
+  const { loggedUser, isLoadingUser } = useLoggedUser({ id: 'inspect' });
 
   // let modoProps;
   // let envsClient: string[];
@@ -44,89 +64,110 @@ export default function PageInspect(props: IPageProps) { //
   //   envsClient = props.pageProps.envsClient;
   // }
   // else {
-  const modoProps = 'normal';
+  //const modoProps = 'normal';
   const envsClient = props.envsClient;
+  const envsSvr = props.envsSvr;
   //}
 
-  React.useEffect(() => {
-    mount = true;
-    dbgTest();
-    let isMounted = true;
+  const getIp = (async (ipType: 'v4' | 'v6') => {
+    //dbg(3, 'page', `getting ${ipType}`);
+    let ip = null;
+    try {
+      if (ipType === 'v4')
+        ip = await publicIp.v4();
+      else if (ipType === 'v6')
+        ip = await publicIp.v6();
+    } catch (error) {
+      ip = `${error.message}`;
+    }
+    //dbg(3, 'page', `setting ${ipType}: ${ip}`);
+    if (mount) {
+      if (ipType === 'v4')
+        setMainStatesCache({ ipv4: ip });
+      else if (ipType === 'v6')
+        setMainStatesCache({ ipv6: ip });
+    }
+  });
 
-    const getIp = (async (ipType: 'v4' | 'v6') => {
-      //dbg(3, 'page', `getting ${ipType}`);
-      let ip = null;
+  React.useEffect(() => {
+    if (!router.isReady) return;
+    mount = true;
+    setMainStatesCache(MainStates.new(true));
+    return () => { mount = false; };
+  }, [router?.asPath, router.isReady]);
+
+  React.useEffect(() => {
+    (async () => {
       try {
-        if (ipType === 'v4')
-          ip = await publicIp.v4();
-        else if (ipType === 'v6')
-          ip = await publicIp.v6();
+        if (mainStates.preparing === 'initiating') {
+          dbgTest();
+          getIp('v4');
+          getIp('v6');
+          const loggedUserCookieHttp = await GetLoggedUserFromHttpCookieASync('inspect');
+          setMainStatesCache({ preparing: 'ready', loggedUserCookieHttp });
+        }
       } catch (error) {
-        ip = `${error.message}`;
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-init`);
+        setMainStatesCache({ error });
       }
-      //dbg(3, 'page', `setting ${ipType}: ${ip}`);
-      if (isMounted) {
-        if (ipType === 'v4')
-          setMainStatesCache({ ipv4: ip });
-        else if (ipType === 'v6')
-          setMainStatesCache({ ipv6: ip });
-      }
-    });
-    getIp('v4');
-    getIp('v6');
-    return () => { isMounted = false; };
-  }, [router?.asPath]);
+    })();
+  }, [mainStates.forcePageRestart, mainStates.preparing]);
+  if (mainStates.error != null) return <AbortProc error={mainStates.error} tela={pageSelf.pagePath} />;
+  //if (mainStates.preparing != 'ready') return (<WaitingObs />);
+
+  const reactDevDetect = { isBrowser, isDesktop, isMobile, isTablet, isAndroid, isIOS, osVersion, osName, getUA, deviceType, isChrome, isFirefox };
+  csd({ reactDevDetect });
 
   try {
     return (
-      <Stack gap={1} height='100%' overflow='auto'>
+      <Stack spacing={1} {...fullHeightScroll}>
         <HorizontalRule />
 
         <Box>
-          <Box>modo props: {modoProps}</Box>
-          <Box>ipv4: {mainStates.ipv4}</Box>
-          <Box>ipv6: {mainStates.ipv6}</Box>
+          <Tx>ipv4: {mainStates.ipv4}</Tx>
+          <Tx>ipv6: {mainStates.ipv6}</Tx>
         </Box>
 
-        <Box mt={3}>
-          <Box>EnvsClient</Box>
+        {/* <Box mt={3}>
+          <Tx>EnvsClient</Tx>
           <Box>
-            {envsClient.map((x, i) => <Box key={i}>{x}</Box>)}
+            {envsClient.map((x, i) => <Tx key={i}>{x}</Tx>)}
           </Box>
-        </Box>
+        </Box> */}
+
+        <ReactJson src={reactDevDetect} name='reactDevDetect' collapsed={true} collapseStringsAfterLength={30} />
+
+        {isLoadingUser
+          ? <Tx>loadingUser</Tx>
+          : <>
+            {loggedUser != null
+              ? <ReactJson src={loggedUser} name='loggedUser' collapsed={true} collapseStringsAfterLength={30} />
+              : <Tx>loggedUser null</Tx>
+            }
+          </>
+        }
+
+        {mainStates.preparing != 'ready'
+          ? <Tx>preparing: {mainStates.preparing}</Tx>
+          : <>
+            {mainStates.loggedUserCookieHttp != null
+              ? <ReactJson src={mainStates.loggedUserCookieHttp} name='loggedUserCookieHttp' collapsed={true} collapseStringsAfterLength={30} />
+              : <Tx>loggedUserCookieHttp null</Tx>
+            }
+          </>
+        }
+
+        <ReactJson src={envsClient} name='envsClient' collapsed={true} collapseStringsAfterLength={30} />
+
+        {(loggedUser != null && LoggedUserBase.isDev(loggedUser)) &&
+          <ReactJson src={envsSvr} name='envsSvr' collapsed={true} collapseStringsAfterLength={30} />
+        }
 
         {/* <Box>
           <p>Warnings</p>
           <pre>{JSON.stringify(logs.ctrlWarnings, null, 4)}</pre>
-        </Box>
-
-        <hr />
-
-        <Box>
-          <p>Errors</p>
-          <pre>{JSON.stringify(logs.ctrlErrors, null, 4)}</pre>
         </Box> */}
 
-        {/* {loggedUser &&
-          <Box>
-            <p>LoggedUser</p>
-            <pre>{JSON.stringify(loggedUser, null, 4)}</pre>
-          </Box>
-        } */}
-
-        {/* <hr />
-
-        <Box>
-          <p>EnvsMain</p>
-          <pre>{JSON.stringify(envsMain, null, 4)}</pre>
-        </Box>
-
-        <hr />
-
-        <Box>
-          <p>EnvsOthers</p>
-          <pre>{JSON.stringify(envsOthers, null, 4)}</pre>
-        </Box> */}
       </Stack>
     );
   } catch (error) {
@@ -135,11 +176,12 @@ export default function PageInspect(props: IPageProps) { //
   }
 }
 
-export async function getServerSideProps(): Promise<GetServerSidePropsResult<IPageProps>> { // context: NextPageContext
+export async function getServerSideProps(): Promise<GetServerSidePropsResult<IPageProps>> { // 
+  //context: NextPageContext
   //const logs = GetCtrlLogs();
   //@@!!!!!!!!! super lento por que??
   dbgTest();
-  const envsMain = {};
+  const envsSvr = [];
   const envsClient = [];
   const envsOthers = {};
   for (const key in process.env) {
@@ -150,15 +192,18 @@ export async function getServerSideProps(): Promise<GetServerSidePropsResult<IPa
     else if (key.startsWith('SITE_') ||
       key == 'CLOUDINARY_URL' ||
       key == 'NODE_ENV')
-      envsMain[key] = process.env[key];
+      envsSvr.push(`${key}: ${process.env[key]}`);
     else
       envsOthers[key] = process.env[key];
   }
 
-  csd({ envsMain });
+  csd({ envsSvr });
   csd({ envsClient });
 
   return {
-    props: { envsClient }, // { envsMain, envsOthers }, // will be passed to the page component as props
+    props: {
+      envsClient,
+      envsSvr,
+    }, // { envsMain, envsOthers }, // will be passed to the page component as props
   };
 }

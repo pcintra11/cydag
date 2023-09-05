@@ -7,7 +7,7 @@ import { GetCtrlApiExec, ResumoApi } from '../../../../libServer/util';
 import { ApiStatusDataByErrorASync } from '../../../../libServer/apiStatusDataByError';
 
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  const ctrlApiExec = GetCtrlApiExec(req, res);
+  const ctrlApiExec = GetCtrlApiExec(req, res, null);
   const parm = ctrlApiExec.parm;
   const resumoApi = new ResumoApi(ctrlApiExec);
 

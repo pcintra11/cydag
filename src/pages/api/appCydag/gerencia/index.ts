@@ -31,8 +31,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
-  const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
+  const loggedUserReq = await LoggedUserReqASync(req, res);
+  const ctrlApiExec = GetCtrlApiExec(req, res, loggedUserReq, ['cmd'], ['_id']);
   const parm = ctrlApiExec.parm;
 
   const resumoApi = new ResumoApi(ctrlApiExec);

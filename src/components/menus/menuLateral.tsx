@@ -9,11 +9,11 @@ import ExpandMore from '@mui/icons-material/ExpandMore';
 
 import { PageDef } from '../../libCommon/endPoints';
 
-import { useMediaQueryMy } from '../../hooks/useMediaQueryMy';
+//import { useMediaQueryMy } from '../../hooks/useMediaQueryMy';
 
 import { preserveStateContext } from '../../pages/_appResources';
 
-import { ImgResponsive } from '../ui';
+import { ImgResponsive, Tx } from '../ui';
 import { useMenuLateral } from './useMenulateral';
 import { MenuEntry, MenuEntryType, routerPageDef, MenuLateralContext } from '.';
 
@@ -23,13 +23,16 @@ interface IMenuLateralProps {
   imgApp: string;
   children: React.ReactNode;
 }
+
+const compByType = (content: React.ReactNode | string, bolder?: boolean) => typeof content === 'string' ? <Tx bold={bolder}>{content}</Tx> : <>{content}</>;
+
 export const MenuLateral: React.FC<IMenuLateralProps> = ({ menuEntries, pageDefCurr, imgApp, children }: IMenuLateralProps) => {
   const { variant: menuLateralVariant } = useMenuLateral();
   const { preserveStateResetAll } = React.useContext(preserveStateContext);
   const router = useRouter();
 
   const { isMenuOpen, closeMenu } = React.useContext(MenuLateralContext);
-  const useMediaQueryData = useMediaQueryMy();
+  //const useMediaQueryData = useMediaQueryMy();
 
   interface IRenderItemProps {
     menuEntry: MenuEntry;
@@ -43,7 +46,7 @@ export const MenuLateral: React.FC<IMenuLateralProps> = ({ menuEntries, pageDefC
     if (menuEntry.type == MenuEntryType.group)
       return (<>
         <ListItemButton onClick={() => setOpen(!open)} sx={sx}>
-          {menuEntry.content}
+          {compByType(menuEntry.content)}
           {open ? <ExpandLess /> : <ExpandMore />}
         </ListItemButton>
         <Collapse in={open} timeout='auto' unmountOnExit>
@@ -56,10 +59,10 @@ export const MenuLateral: React.FC<IMenuLateralProps> = ({ menuEntries, pageDefC
       //const match = pageDef?.pagePath == menuEntry.pageDef.pagePath && !actualPagePath.endsWith('dummy');
       const isPageCurrent = pageDefCurr == menuEntry.pageDef && !pageDefCurr?.pagePath.endsWith('dummy');
       const handlePagePath = () => { closeMenu(); preserveStateResetAll(); routerPageDef(menuEntry.pageDef, router, menuEntry.query, pageDefCurr); };
-      return (<ListItemButton selected={isPageCurrent} onClick={handlePagePath} sx={sx}>{menuEntry.content}</ListItemButton>);
+      return (<ListItemButton selected={isPageCurrent} onClick={handlePagePath} sx={sx}>{compByType(menuEntry.content)}</ListItemButton>);
     }
     else if (menuEntry.type == MenuEntryType.onlyShow)
-      return (<ListItemText sx={sx}>{menuEntry.content}</ListItemText>);
+      return (<ListItemText sx={sx}>{compByType(menuEntry.content)}</ListItemText>);
     else if (menuEntry.type == MenuEntryType.divider)
       return (<Divider />);
     else
@@ -67,7 +70,7 @@ export const MenuLateral: React.FC<IMenuLateralProps> = ({ menuEntries, pageDefC
   };
 
   //const menuWidth = useMediaQueryData.lgDown ? theme.spacing(20) : theme.spacing(25);
-  const menuWidth = useMediaQueryData.lgDown ? '180px' : '200px'; // pode dar pau, de pagina gerada na compilação ser diferente da pagina renderizada? //@!!!!!!!!
+  const menuWidth = '180px'; // useMediaQueryData.lgDown ? '180px' : '200px'; // pode dar pau, de pagina gerada na compilação ser diferente da pagina renderizada? //@!!!!!!!!
 
   return (
     <Box height='100%'>

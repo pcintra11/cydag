@@ -1,16 +1,15 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { apisBase } from '../../../app_base/endPoints';
 import { ConnectDbASync, CloseDbASync, UriDb } from '../../../libServer/dbMongo';
-
-import { isAmbNone } from '../../../app_base/envs';
-
 import { CorsWhitelist } from '../../../libServer/corsWhiteList';
 import { ResumoApi, GetCtrlApiExec, ReqNoParm } from '../../../libServer/util';
 import { ApiStatusDataByErrorASync } from '../../../libServer/apiStatusDataByError';
 import { CorsMiddlewareAsync } from '../../../libServer/cors';
 import { _SystemMsgSvrFromClientASync } from '../../../libServer/systemMsgSvr';
 import { AlertTimeExecApiASync } from '../../../libServer/alertTimeExecApi';
+
+import { apisBase } from '../../../app_base/endPoints';
+import { isAmbNone } from '../../../app_base/envs';
 
 //import { CategMsgSystem } from './logSystemMsg_cliSvr';
 
@@ -20,7 +19,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
   await CorsMiddlewareAsync(req, res, CorsWhitelist());
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  const ctrlApiExec = GetCtrlApiExec(req, res, ['categ', 'point']);
+  const ctrlApiExec = GetCtrlApiExec(req, res, null, ['categ', 'point']);
   const parm = ctrlApiExec.parm;
   const resumoApi = new ResumoApi(ctrlApiExec);
 

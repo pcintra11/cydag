@@ -1,14 +1,14 @@
 import { useRouter } from 'next/router';
 
-import { Box, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 
-import { Btn, BtnLine } from '../components';
+import { Btn, BtnLine, Tx } from '../components';
 
 export default function Custom404() {
   const router = useRouter();
   return (
-    <Stack gap={1}>
-      <Box>Página não encontrada.</Box>
+    <Stack spacing={1}>
+      <Tx>Página não encontrada.</Tx>
 
       <BtnLine left>
         <Btn onClick={() => router.push('/')}>Página de entrada</Btn>

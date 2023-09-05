@@ -50,7 +50,7 @@ export const procsCentroCustosConfigAuthAllYears = async (loggedUserReq: LoggedU
   //   if (!accessAllCCs(loggedUserReq, authCC)) {
   //     const selectByCCAttrib: any[] = [{ $eq: ['$emailResponsavel', loggedUserReq.email] }];
   //     if (authCC.incluiPlanejadorCC === true) selectByCCAttrib.push({ $eq: ['$emailPlanejador', loggedUserReq.email] });
-  //     if (authCC.incluiConsultaCC === true) selectByCCAttrib.push({ $eq: ['$emailConsulta', loggedUserReq.email] }); // #!!!!! aqui não está selecionando (campo array??)
+  //     if (authCC.incluiConsultaCC === true) selectByCCAttrib.push({ $eq: ['$emailConsulta', loggedUserReq.email] }); // !!!!! aqui não está selecionando (campo array??)
   //     condsCCConfig.push({ $or: selectByCCAttrib });
   //   }
   //   const procsCentrosCustoConfigMongo = await ProcessoOrcamentarioModel.aggregate([ //@@!!!!! aqui tem limitação para o CosmoDb

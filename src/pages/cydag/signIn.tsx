@@ -4,7 +4,7 @@ import _ from 'underscore';
 
 import { Stack } from '@mui/material';
 
-import { chgUserAndRouteContext } from '../_appResources';
+//import { chgUserAndRouteContext } from '../_appResources';
 
 import { IsErrorManaged, ObjUpdAllProps, ErrorPlus } from '../../libCommon/util';
 import { dbg, ScopeDbg } from '../../libCommon/dbg';
@@ -42,9 +42,9 @@ export default function PageSignIn() {
   const [mainStates, setMainStates] = React.useState<MainStates>({ phase: Phase.initiating });
   mainStatesCache = { ...mainStates }; const setMainStatesCache = (newValues: MainStates) => { if (!mount) return; ObjUpdAllProps(mainStatesCache, newValues); setMainStates({ ...mainStatesCache }); };
 
-  const { chgUserAndRouteStart } = React.useContext(chgUserAndRouteContext);
+  //const { chgUserAndRouteStart } = React.useContext(chgUserAndRouteContext);
   const router = useRouter();
-  const { loggedUser, isLoadingUser } = useLoggedUser({ id: pageSelf.pagePath });
+  const { loggedUser, isLoadingUser, setUser } = useLoggedUser({ id: pageSelf.pagePath });
   //const agora = new Date();
 
   const dbgX = (...params) => dbg({ level: 3, ctrlContext: ctrlContextFromGlobals(pageSelf.pagePath) }, ...params);
@@ -96,8 +96,9 @@ export default function PageSignIn() {
         nextPagePathName = router.query.pageNeedAuthentication as string;
         nextPageQuery = _.omit(router.query, 'pageNeedAuthentication');
       }
-      chgUserAndRouteStart({ loggedUser: loggedUserNow, pagePath: nextPagePathName, query: nextPageQuery });
-      //setTimeout(() => router.push(pagesApp.logRedir.pagePath), 0);
+      //chgUserAndRouteStart({ loggedUser: loggedUserNow, pagePath: nextPagePathName, query: nextPageQuery });
+      setUser(loggedUserNow, pageSelf.pagePath);
+      router.push({ pathname: nextPagePathName, query: nextPageQuery });
     } catch (error) {
       LogErrorUnmanaged(error, `${pageSelf.pagePath}-onSubmit`);
       if (!IsErrorManaged(error)) {
@@ -128,10 +129,10 @@ export default function PageSignIn() {
     const disabledIfInitiating = isInitiating ? { disabled: true } : {};
 
     return (
-      <Stack gap={1} height='100%' overflow='auto'>
+      <Stack spacing={1} height='100%' overflow='auto'>
         {isInitiating && <WaitingObs />}
         <form onSubmit={frmSignIn.handleSubmit(onSubmit)}>
-          <Stack gap={1}>
+          <Stack spacing={1}>
             {isInitiating
               ? <FrmInput label='Email' value='' />
               : <FrmInput label='Email' frm={frmSignIn} name={User.F.email} autoFocus {...disabledIfInitiating} />
@@ -139,8 +140,8 @@ export default function PageSignIn() {
             <FrmInput label='Senha' frm={frmSignIn} name={User.F.psw} type='password' {...disabledIfInitiating} />
             <BtnLine left>
               <Btn submit {...disabledIfInitiating}>Entrar</Btn>
-              <FakeLink onClick={frmSignIn.handleSubmit(sendResetPswLink)}>Esqueci a senha (reset)</FakeLink>
             </BtnLine>
+            <FakeLink onClick={frmSignIn.handleSubmit(sendResetPswLink)}>Esqueci a senha (reset)</FakeLink>
           </Stack>
         </form>
       </Stack>

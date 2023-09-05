@@ -14,7 +14,7 @@ import { CallApiCliASync } from '../../../fetcher/fetcherCli';
 
 import { SaveAsXlsx } from '../../../libClient/saveAsClient';
 
-import { AlertMy, FrmCheckbox, SnackBarError, VisualBlock } from '../../../components';
+import { AlertMy, FrmCheckbox, PopupMsg, Tx, VisualBlock } from '../../../components';
 import { Btn, BtnLine, WaitingObs } from '../../../components';
 import { AbortProc, LogErrorUnmanaged } from '../../../components';
 import { FrmError, FrmInput } from '../../../components';
@@ -91,7 +91,8 @@ export default function PageUserCrud() {
       await ForceWait(calcExecTimeSearch.elapsedMs(), configApp.forceWaitMinimumMs);
       setMainStatesCache({ listing: { searching: false, dataRows: documents, partialResults: apiReturn.value.partialResults } });
     } catch (error) {
-      SnackBarError(error, `${pageSelf.pagePath}-onSubmit`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-onSubmit`);
+      PopupMsg.error(error);
     }
   };
   const onSubmitInsert = async (dataForm: FrmData) => {
@@ -118,7 +119,7 @@ export default function PageUserCrud() {
     // });
     efetiva(CmdApi.delete, mainStates.data._id.toString(), mainStates.index);
   };
-  const efetiva = async (cmdApi: CmdApi, _id: string, index?: number, data?: any) => {
+  const efetiva = async (cmdApi: CmdApi, _idStr: string, index?: number, data?: any) => {
     try {
       let dataRowsRefresh = [...mainStates.listing.dataRows];
       if (cmdApi == CmdApi.insert) {
@@ -126,11 +127,11 @@ export default function PageUserCrud() {
         dataRowsRefresh = [...dataRowsRefresh, Entity_Crud.deserialize(apiReturn.value)];
       }
       else if (cmdApi == CmdApi.update) {
-        const apiReturn = await apis.crud({ cmd: cmdApi, _id, data });
+        const apiReturn = await apis.crud({ cmd: cmdApi, _idStr, data });
         dataRowsRefresh[index] = Entity_Crud.deserialize(apiReturn.value);
       }
       else if (cmdApi == CmdApi.delete) {
-        await apis.crud({ cmd: cmdApi, _id });
+        await apis.crud({ cmd: cmdApi, _idStr });
         dataRowsRefresh.splice(index, 1);
       }
       setMainStatesCache({ phase: Phase.list, listing: { ...mainStates.listing, dataRows: dataRowsRefresh }, data: null, index: null });
@@ -156,7 +157,8 @@ export default function PageUserCrud() {
         setMainStatesCache({ downloadInProgress: false });
       })
       .catch((error) => {
-        SnackBarError(error, `${pageSelf.pagePath}-download`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-download`);
+        PopupMsg.error(error);
         setMainStatesCache({ downloadInProgress: false });
       });
   };
@@ -213,24 +215,24 @@ export default function PageUserCrud() {
     if (mainStates.phase == Phase.list) {
       const colsGridConfig = [
         new ColGridConfig(
-          <Stack direction='row' alignItems='center' gap={1} justifyContent='center'>
+          <Stack direction='row' alignItems='center' spacing={1} justifyContent='center'>
             <IconButtonAppCrud icon='create' onClick={() => setPhase(Phase.insert)} />
           </Stack>,
           ({ data, index }: { data: Entity_Crud, index: number }) => (
-            <Stack direction='row' alignItems='center' gap={1}>
+            <Stack direction='row' alignItems='center' spacing={1}>
               <IconButtonAppCrud icon='edit' onClick={() => setPhase(Phase.update, index)} />
               <IconButtonAppCrud icon='delete' onClick={() => setPhase(Phase.delete, index)} disabled={data.email == loggedUser.email} />
             </Stack>
           )
         ),
-        new ColGridConfig('Email', ({ data }: { data: Entity_Crud }) => data.email),
-        new ColGridConfig('Nome', ({ data }: { data: Entity_Crud }) => data.nome, { width: '1fr' }),
+        new ColGridConfig(<Tx>Email</Tx>, ({ data }: { data: Entity_Crud }) => <Tx>{data.email}</Tx>),
+        new ColGridConfig(<Tx>Nome</Tx>, ({ data }: { data: Entity_Crud }) => <Tx>{data.nome}</Tx>, { width: '1fr' }),
       ];
 
       return (
-        <Stack gap={1} height='100%'>
+        <Stack spacing={1} height='100%'>
           <form onSubmit={frmFilter.handleSubmit(onSubmitList)}>
-            <Stack direction='row' alignItems='center' gap={1}>
+            <Stack direction='row' alignItems='center' spacing={1}>
               <Box flex={1}>
                 <FrmInput placeholder='termos de busca' frm={frmFilter} name={Entity_Crud.F.searchTerms} width='100%' autoFocus />
               </Box>
@@ -241,10 +243,10 @@ export default function PageUserCrud() {
           <Box flex={1} overflow='hidden'>
             {mainStates.listing.searching
               ? <WaitingObs text='buscando' />
-              : <Stack gap={1} height='100%'>
+              : <Stack spacing={1} height='100%'>
                 {(mainStates.listing.partialResults) && <AlertMy>Resultados parciais</AlertMy>}
-                {(mainStates.filterApplyed && mainStates.listing.dataRows.length == 0) && <Box>Nada encontrado</Box>}
-                <TableGrid
+                {(mainStates.filterApplyed && mainStates.listing.dataRows.length == 0) && <Tx>Nada encontrado</Tx>}
+                <TableGrid fullHeightScroll
                   colsGridConfig={colsGridConfig}
                   dataRows={mainStates.listing.dataRows}
                 />
@@ -270,14 +272,14 @@ export default function PageUserCrud() {
     const isDelete = mainStates.phase == Phase.delete;
 
     return (
-      <Stack gap={1} height='100%' overflow='auto'>
+      <Stack spacing={1} height='100%' overflow='auto'>
         <form onSubmit={frmData.handleSubmit(phaseCrud.onSubmit)}>
-          <Stack gap={1}>
+          <Stack spacing={1}>
             <FrmInput label='Email' frm={frmData} name={Entity_Crud.F.email} autoFocus={isInsert} disabled={!isInsert} />
             <FrmInput label='Nome' frm={frmData} name={Entity_Crud.F.nome} autoFocus={!isInsert} disabled={isDelete} />
             <FrmCheckbox label='Ativo' frm={frmData} name={Entity_Crud.F.ativo} disabled={isDelete || mainStates.data.email == loggedUser.email} />
             <VisualBlock>
-              <Box>Perfis</Box>
+              <Tx>Perfis</Tx>
               <FrmCheckbox label='Gestor de Controladoria' frm={frmData} name={FormField.roleGestorContr} disabled={isDelete || mainStates.data.email == loggedUser.email} />
               <FrmCheckbox label='Operacional de Controladoria' frm={frmData} name={FormField.roleOperContr} disabled={isDelete} />
               <FrmCheckbox label='Acessa Salários' frm={frmData} name={FormField.roleAcessaSalarios} disabled={isDelete} />

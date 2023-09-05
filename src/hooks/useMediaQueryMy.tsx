@@ -2,25 +2,24 @@ import { useMediaQuery, useTheme } from '@mui/material';
 
 export const useMediaQueryMy = () => {
   const themePlus = useTheme();
-  const smDown = useMediaQuery(themePlus.breakpoints.down('sm')); // < 600px?
-  const mdDown = useMediaQuery(themePlus.breakpoints.down('md')); // < 900px?
-  const lgDown = useMediaQuery(themePlus.breakpoints.down('lg')); // < 1200px?
-  const xlDown = useMediaQuery(themePlus.breakpoints.down('xl')); // < 1536px?
-  const xxl = useMediaQuery(themePlus.breakpoints.up('xl')); // >= 1536px?
+  const xsUp = useMediaQuery(themePlus.breakpoints.up('xs')); // >= 0
+  const smUp = useMediaQuery(themePlus.breakpoints.up('sm')); // >= 600px?
+  const mdUp = useMediaQuery(themePlus.breakpoints.up('md')); // >= 900px?
+  const lgUp = useMediaQuery(themePlus.breakpoints.up('lg')); // >= 1200px?
+  const xlUp = useMediaQuery(themePlus.breakpoints.up('xl')); // >= 1536px?
   const widthCategory =
-    //xsDown ? 'xs' :
-    smDown ? 'sm' :
-      mdDown ? 'md' :
-        lgDown ? 'lg' :
-          xlDown ? 'xl' :
-            xxl ? 'xxl' : '??';
+    xlUp ? 'xl' :
+      lgUp ? 'lg' :
+        mdUp ? 'md' :
+          smUp ? 'sm' :
+            xsUp ? 'xs' : '??';
   //csl('DevConfigBar', { widthCategory, smDown, mdDown, lgDown, xlDown, xxl });
   return {
-    smDown,
-    mdDown,
-    lgDown,
-    xlDown,
-    xxl,
+    xsUp,
+    smUp,
+    mdUp,
+    lgUp,
+    xlUp,
     widthCategory
   };
 };

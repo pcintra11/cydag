@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { CSSProperties } from 'react';
 
 import Avatar_mui from '@mui/material/Avatar';
 import AvatarGroup_mui from '@mui/material/AvatarGroup';
@@ -12,7 +12,7 @@ import TextField_mui from '@mui/material/TextField';
 import MenuItem_mui from '@mui/material/MenuItem';
 
 import { styled } from '@mui/material/styles';
-import { Alert, Box, Collapse, IconButton, Stack, SxProps, Typography, useTheme } from '@mui/material';
+import { Alert, Box, Collapse, Grid, IconButton, Stack, SxProps, Typography, useTheme, TypographyProps } from '@mui/material';
 //import withStyles from '@mui/styles/withStyles';
 import CloseIcon from '@mui/icons-material/Close';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -23,6 +23,9 @@ import Switch_mui from '@mui/material/Switch';
 import { IGenericObject } from '../libCommon/types';
 import { csd } from '../libCommon/dbg';
 import { InputVariantType } from '../styles/themeTools';
+
+import { isAmbPrd } from '../app_base/envs';
+import { imgGabaritoArray } from '../app_suporte/imgsTest';
 
 export type ThemeColors = 'primary' | 'secondary' | 'success' | 'error';
 //type SpecialColors = 'like' | 'dislike';
@@ -41,6 +44,19 @@ export type ThemeColors = 'primary' | 'secondary' | 'success' | 'error';
 
 export const fontSizeGrid = '10px';
 export const fontSizeIconsInGrid = '14px';
+
+export const fullHeightScroll = { height: '100%', overflow: 'auto' }; // => scroll
+
+export const BodyDetail = ({ children, scroll }: { children: React.ReactNode, scroll?: boolean }) => {
+  const themePlus = useTheme();
+  return (
+    <Stack direction='row' justifyContent='center' height='100%' overflow={scroll ? 'auto' : 'hidden'} >
+      <Box maxWidth={themePlus.themePlusConfig?.maxWidthDetail} width='100%' height='100%' overflow={scroll ? 'visible' : 'hidden'}>
+        {children}
+      </Box>
+    </Stack>
+  );
+};
 
 interface ISxMakerProps {
   //categSizeXY?: number;
@@ -265,7 +281,7 @@ export function BadgeMy({ content, max, showZero, vertical, horizontal, contentS
   else if (sizeXY >= 10)
     border = `1px solid ${themePlus.palette.background.paper}`;
 
-  const StyledBadge = styled(Badge_mui)<BadgeProps_mui>(() => ({ // { theme }
+  const StyledBadge = styled(Badge_mui)<BadgeProps_mui>(() => ({ // { theme } //@!!!!!!!!! styled
     '& .MuiBadge-badge': {
       //left: '-0%',
       fontSize,
@@ -380,7 +396,7 @@ interface IIconButtonProps {
 }
 export function IconButtonMy(props: IIconButtonProps) { // implementar no componente do icon o 'onclick' opcional @@!!!!!!
   const { children, submit, onClick, disabled, padding } = props;
-  const disabledUse = props.executing ? true : disabled; // @!!!!!!!!! mudar a cor no filho?
+  const disabledUse = props.executing ? true : disabled;
   const propsBtn: IGenericObject = { onClick, disabled: disabledUse }; // @@@@!!!!!!
   if (submit)
     propsBtn.type = 'submit';
@@ -397,7 +413,7 @@ export function WaitingObs({ text = 'Favor aguardar' }: { text?: string }) {
   return (
     <Box sx={{ width: '100%' }}>
       {text != null &&
-        <Box>{text}</Box>
+        <Tx>{text}</Tx>
       }
       <LinearProgress_mui />
     </Box>
@@ -412,8 +428,8 @@ export function BtnLine({ children, left, right, bottomStick }: { children: Reac
   //const propsForward = bottomStick ? {  } : {}; //@!!!!!!!!! color
   if (bottomStick)
     return (
-      <Box position='sticky' bottom={0} p='0.5' bgcolor={themePlus.themePlusDeriv.destaque1.backColor}>
-        <Stack direction='row' alignItems='center' gap={1} justifyContent={justifyContent} flexWrap='wrap' >
+      <Box position='sticky' bottom={0} p='0.5' bgcolor={themePlus.themePlusDeriv?.destaque1.backColor}>
+        <Stack direction='row' alignItems='center' spacing={1} justifyContent={justifyContent} flexWrap='wrap' >
           {children}
         </Stack>
       </Box>
@@ -422,7 +438,7 @@ export function BtnLine({ children, left, right, bottomStick }: { children: Reac
 
     return (
       <Box>
-        <Stack direction='row' alignItems='center' gap={1} justifyContent={justifyContent} flexWrap='wrap' >
+        <Stack direction='row' alignItems='center' spacing={1} justifyContent={justifyContent} flexWrap='wrap' >
           {children}
         </Stack>
       </Box>
@@ -430,20 +446,19 @@ export function BtnLine({ children, left, right, bottomStick }: { children: Reac
 }
 
 interface IVisualBlockProps {
-  children: React.ReactNode,
-  className?: string,
-  gap?: number,
+  children: React.ReactNode;
+  //className?: string;
+  //spacing?: number;
 }
-export function VisualBlock({ children, className, gap }: IVisualBlockProps) {
+export function VisualBlock({ children }: IVisualBlockProps) {
   const themePlus = useTheme();
   // margin não está funcionando em sx  @@@!
-  //  className={`${g_cn.distribVert} ${className}`} , p: '1.0rem'  clasName @!!!!!!
-  const gapUse = gap != null ? gap : 1;
+  //  className={`${g_cn.distribVert} ${className}`} , p: '1.0rem'  className @!!!!!!
+  //const spacingUse = spacing != null ? spacing : 1;
   return (
-    <Stack gap={gapUse} p={1} sx={{ border: 1, borderColor: themePlus.themePlusDeriv.destaque2.backColor }}
-      className={className}>
+    <Box p={1} sx={{ border: 1, borderColor: themePlus.themePlusDeriv?.destaque2.backColor }}>
       {children}
-    </Stack>
+    </Box>
   );
 }
 
@@ -481,23 +496,51 @@ interface IFakeLinkProps {
   disabled?: boolean;
   color?: string;
   bgcolor?: string;
-  mr?: number;
-  ml?: number;
-  children: React.ReactNode;
+  children: string;
+  visibilityHidden?: boolean;
+  sx?: SxProps
 }
-export function FakeLink({ onClick, disabled, color, bgcolor, mr, ml, children }: IFakeLinkProps) {
+/**
+ * É inline, tem que estar sempre em um Box 
+ */
+export function FakeLink({ onClick, disabled, visibilityHidden, color, bgcolor, sx, children }: IFakeLinkProps) {
   const commomProps = {
-    display: 'inline',
-    mr,
-    ml,
     color,
     bgcolor,
   };
+  let sxUse: SxProps = sx || {};
+  if (visibilityHidden) sxUse = { ...sxUse, visibility: 'hidden' };
   if (disabled)
-    return <Box {...commomProps}>{children}</Box>;
+    return (<Tx inline noWrap {...commomProps} sx={sxUse}>{children}</Tx>);
   else
-    //return <Typography sx={{ textDecoration: 'underline', cursor: 'pointer' }} onClick={onClick}>{children}</Typography>;
-    return <Box {...commomProps} sx={{ textDecoration: 'underline', cursor: 'pointer' }} onClick={onClick}>{children}</Box>;
+    //return <Box sx={{ display: 'inline' }} onClick={onClick}><Tx inline link {...commomProps}>{children}</Tx></Box>;
+    //return <Typography component='span' noWrap sx={sxUse} onClick={onClick}><Tx inline link {...commomProps}>{children}</Tx></Typography>;
+    return (<Tx inline noWrap {...commomProps} sx={{ ...sxUse, textDecoration: 'underline', cursor: 'pointer' }}
+      onClick={onClick}>{children}</Tx>);
+}
+interface IMyLinkProps {
+  onClick?: () => void;
+  disabled?: boolean;
+  color?: string;
+  bgcolor?: string;
+  children: React.ReactNode;
+  visibilityHidden?: boolean;
+  sx?: SxProps
+}
+export function MyLink({ onClick, disabled, visibilityHidden, color, bgcolor, sx, children }: IMyLinkProps) {
+  // MyLink @!!!!!!!!, usar Link do Mui, efeito sobre texto e sobre imagens / cores
+  const commomProps = {
+    color,
+    bgcolor,
+    onClick: undefined,
+  };
+  let sxUse: SxProps = sx || {};
+  if (visibilityHidden) sxUse = { ...sxUse, visibility: 'hidden' };
+  if (disabled !== true) {
+    sxUse = { ...sxUse, textDecoration: 'underline', cursor: 'pointer' };
+    commomProps.onClick = onClick;
+  }
+  return <Box display='inline' {...commomProps} sx={sxUse}>{children}</Box>;
 }
 
 export function WhatsAppLink({ phone, textLink, message }: { phone: string, textLink?: string, message?: string }) {
@@ -507,30 +550,174 @@ export function WhatsAppLink({ phone, textLink, message }: { phone: string, text
   return (
     <a href={
       `${encodeURI(href)}`
-    } target='_blank' rel='noreferrer'>{textLink || phone}</a>
+    } target='_blank' rel='noreferrer'><Tx>{textLink || phone}</Tx></a>
   );
 }
 
-export const ImgResponsive = ({ src, maxHeight = '100vh', width = '100%', style = {} }:
-  { src: string, maxHeight?: string, width?: string, style?: React.CSSProperties }) => {
-  // a imagem respeitará as proporções, nada será cortado
-  const styleImg = {
-    display: 'block',
-    width: 'auto',
-    height: 'auto',
-    maxHeight: maxHeight,
-    maxWidth: '100%',
-    margin: 'auto',
+// interface IImgResponsiveProps {
+//   src: string;
+//   maxHeight?: string;
+//   width?: string;
+//   style?: React.CSSProperties;
+// }
+// /**
+//  * a imagem respeitará as proporções, nada será cortado
+//  */
+// export const ImgResponsive = ({ src, maxHeight = '100vh', width = '100%', style = {} }: IImgResponsiveProps) => {
+//   const styleImg = {
+//     display: 'block',
+//     width: 'auto', height: 'auto',
+//     maxHeight: maxHeight,
+//     maxWidth: '100%',
+//     margin: 'auto',
+//   };
+//   // className='businessImg'
+//   return (
+//     <div style={{ width }}>
+//       <img style={{ ...styleImg, ...style }} src={src} />
+//     </div>
+//   );
+// };
+
+// interface IImgResponsiveProps {
+//   src: string;
+//   maxHeight?: string;
+//   maxWidth?: string;
+//   style?: CSSProperties;
+// }
+// export const ImgResponsive = ({ src, maxHeight, maxWidth, style }: IImgResponsiveProps) => {
+//   // https://github.com/aneldev/dyna-image#readme
+//   return (
+//     <Box>
+//       <img style={{ ...style, display: 'block', margin: 'auto', width: 'auto', height: 'auto', maxWidth: maxWidth || '100%', maxHeight: maxHeight || '100%' }} src={src} />
+//     </Box>
+//   );
+// };
+
+export type objectFitTypes = 'fill' | 'contain' | 'cover' | 'none' | 'scale-down';
+interface IImgResponsiveProps {
+  src: string;
+  objectFit?: objectFitTypes;
+  objectPosition?: string;
+  maxHeight?: string;
+  borderRadius?: string;
+  //info?: string; // para debug
+}
+/**
+ * cover: ocupa toda a área, mantendo a proporção e cortando a imagem (mostra apenas o centro) ou estica para completar (resolução pior)
+ * fill: ocupa toda a área, mas distorce a imagem (estica ou distorce)
+ * contain: mostra a imagem original mantendo a proporção, (com bordas nas laterais se alguma dimensão da área for maior), (estica as pequenas até completar a dimensão mais justa)
+ * none: mostra a imagem original, não completa a area, mas corta
+ * scale-down: ????
+ */
+export const ImgResponsive = ({ src, objectFit, objectPosition, maxHeight, borderRadius }: IImgResponsiveProps) => {
+  // https://github.com/aneldev/dyna-image#readme
+  const styleImgUse: CSSProperties = {
+    width: '100%', height: '100%', maxHeight, overflow: 'hidden',
+    objectFit: objectFit || 'cover',
+    objectPosition: objectPosition || 'center center',  // 'center center', 'left top', 'right bottom', '50% 50%'
+    borderRadius,
+    //...(styleImg || {}),
   };
-  // className='businessImg'
+  const [imgCircle, setImgCircle] = React.useState(0);
+  const [imgSrc, setImgSrc] = React.useState(src);
+
+  React.useEffect(() => {
+    setImgSrc(src);
+    setImgCircle(0);
+  }, [src]);
+
+  if (src == null) return (<></>);
+
+  const imsgsUse = [{ name: 'original', fileName: null, url: src }, ...imgGabaritoArray];
+  const ChangeSrcImg = (sent: number) => {
+    let nextImg = imgCircle + sent;
+    if (nextImg >= imsgsUse.length) nextImg = 0;
+    if (nextImg < 0) nextImg = imsgsUse.length - 1;
+    //csd('img', nextImg, imsgsUse[nextImg].name, imsgsUse[nextImg].url);
+    setImgSrc(imsgsUse[nextImg].url);
+    setImgCircle(nextImg);
+  };
+
+  // https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_image_text   (text over image)
   return (
-    <div style={{ width }}>
-      <img style={{ ...styleImg, ...style }} src={src} />
-    </div>
+    <>
+      {isAmbPrd()
+        ? <img src={imgSrc} style={styleImgUse} />
+        :
+        <div style={{ position: 'relative' }}>
+          <img src={imgSrc} style={styleImgUse} />
+          <div style={{ position: 'absolute', color: 'white', backgroundColor: 'gray', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+            <a href={imsgsUse[imgCircle].url} target='_blank' rel='noreferrer'>abrir {imsgsUse[imgCircle].name}</a>
+          </div>
+          <div style={{ position: 'absolute', color: 'white', backgroundColor: 'gray', left: '8px', bottom: '8px' }}>
+            <FakeLink onClick={() => ChangeSrcImg(-1)}>menos</FakeLink>
+          </div>
+          <div style={{ position: 'absolute', color: 'white', backgroundColor: 'gray', right: '8px', bottom: '8px' }}>
+            <FakeLink onClick={() => ChangeSrcImg(+1)}>mais</FakeLink>
+          </div>
+        </div>
+      }
+    </>
   );
 };
 
-// export function ModalError({ text }: { text: string }) {
+interface IPresentationTextAndImageProps {
+  img?: string;
+  textComps?: React.ReactNode[];
+  imgPos?: boolean;
+}
+/**
+ * Considerando um bloco de texto e outro com imagem cria um grid responsivo de apresentação, 
+ * como se fosse um carrousel
+ * - scroll automático para os textos
+ * - textos serão centralizados se forem apresentados ao lado da imagem (grid)
+ */
+export const PresentationTextAndImage = ({ img, textComps, imgPos }: IPresentationTextAndImageProps) => {
+  const sxGridItem: SxProps = {}; // border: '1px solid red' };
+  return (
+    <>
+      <Stack display={{ xs: 'block', sm: 'none' }} height='100%' overflow='auto' spacing={1}>
+        <Stack height='100%' spacing={1} overflow='auto'>
+          {img &&
+            <Box maxHeight='90%' minHeight='30%'>
+              <ImgResponsive src={img} objectFit='contain' />
+            </Box>
+          }
+          {textComps &&
+            <Box textAlign='center'>
+              {textComps}
+            </Box>
+          }
+        </Stack>
+      </Stack>
+      <Box display={{ xs: 'none', sm: 'block' }} height='100%' overflow='hidden'>
+        <Grid container spacing={0} alignItems='center'
+          height='100%' overflow='hidden' width='100%'
+          direction={{ sm: 'row', md: (imgPos ? 'row-reverse' : 'row') }}
+          columns={[img, textComps].filter((x) => x != null).length}>
+          {img &&
+            <Grid item xs={1} sx={sxGridItem} height='100%' overflow='auto'>
+              <Stack justifyContent='center' height='100%' px={1}>
+                <ImgResponsive src={img} objectFit='contain' />
+              </Stack>
+            </Grid>
+          }
+          {textComps &&
+            <Grid item xs={1} sx={sxGridItem} height='100%' overflow='auto'>
+              <Box display='flex' height='100%'>
+                <Box m='auto' textAlign='center'>
+                  {textComps}
+                </Box>
+              </Box>
+            </Grid>
+          }
+        </Grid >
+      </Box>
+    </>
+  );
+};
+// export function ModalError({text}: {text: string }) {
 //   const [open, setOpen] = useState(false);
 //   const handleOpen = () => setOpen(true);
 //   const handleClose = () => setOpen(false);
@@ -549,11 +736,6 @@ export const ImgResponsive = ({ src, maxHeight = '100vh', width = '100%', style 
 //     </div>
 //   );
 // }
-
-// export const Ty = ({ children }: { children: React.ReactNode }) => {
-//   return (<Typography>{children}</Typography>);
-// };
-
 
 // @@!!!!!! ícone de fechar não está alinhado !
 export const AlertMy = ({ children }: { children: React.ReactNode }) => {
@@ -604,8 +786,8 @@ export class SelOption<T = string>  {
     this.descr = descr;
     this.disabled = disabled;
   }
-  show(withCod = false) {
-    if (!withCod)
+  show(withCode = false) {
+    if (!withCode)
       return this.descr;
     if (this.cod == null)
       return this.descr;
@@ -616,12 +798,12 @@ export class SelOption<T = string>  {
 }
 
 interface ISelectMyProps {
-  width?: string,
-  value: string | number,
-  onChange: (ev) => void,
-  displayEmpty?: boolean,
-  options: SelOption<any>[],
-  placeHolder?: string,
+  width?: string;
+  value: string | number;
+  onChange: (ev) => void;
+  displayEmpty?: boolean;
+  options: SelOption<any>[];
+  placeHolder?: string;
   fontSize?: string | number;
   error?: boolean;
   disabled?: boolean;
@@ -658,20 +840,20 @@ disabled={isDelete}
 </TextField> */}
 
 interface IAutocompleteMyProps {
-  width?: string,
-  value: any,
-  onChange: (ev, newValue) => void,
-  getOptionLabel: (option: any) => string,
-  isOptionEqualToValue: (option: any, value: any) => boolean,
-  //getOptionDisabled?: (option: any) => boolean,
-  freeSolo?: boolean,
-  disabled?: boolean,
-  disableClearable?: boolean,
-  multiple?: boolean,
+  width?: string;
+  value: any;
+  onChange: (ev, newValue) => void;
+  getOptionLabel: (option: any) => string;
+  isOptionEqualToValue: (option: any, value: any) => boolean;
+  //getOptionDisabled?: (option: any) => boolean;
+  freeSolo?: boolean;
+  disabled?: boolean;
+  disableClearable?: boolean;
+  multiple?: boolean;
   limitTags?: number;
-  options: SelOption[] | string[],
-  label?: string,
-  placeholder?: string,
+  options: SelOption[] | string[];
+  label?: string;
+  placeholder?: string;
   fontSize?: string | number; // apenas para o campo de resultado, não interfere no combo aberto
   variant?: InputVariantType;
 }
@@ -684,6 +866,7 @@ export const AutocompleteMy = ({ width, value, onChange, getOptionLabel, isOptio
   const disableCloseOnSelect = multiple;
   const getOptionDisabled = (option: SelOption) => option.disabled;
   //#!!!!!! definir a ordem dos parâmetros mais natural
+  //           inputProps={{ ...params.inputProps, style: { fontSize } }} @!!!!!!! style
   return (
     <Autocomplete_mui
       sx={{ width: widthUse, whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}
@@ -709,61 +892,95 @@ export const AutocompleteMy = ({ width, value, onChange, getOptionLabel, isOptio
   );
 };
 
-interface ITypoProps {
+export interface ITxProps extends TypographyProps {
   inline?: boolean;
   bold?: boolean;
   italic?: boolean;
-  color?: string;
-  noWrap?: boolean; // => Ellipses
-  paragraph?: boolean;
-  //component?: 'div' | 'span';
-  variant?: 'h5' | 'h6' | 'inherit'; // 'body1' | 'body2' | 'h1' | 'h2' | 'h3' | 'h4' |
-  small?: boolean; //@!!!!!!!
-  children: React.ReactNode;
+  small?: boolean;
+  visibilityHidden?: boolean;
+  lineClamp?: number; // máximo de linhas exibidas, com ellipses para inidicar que foi truncada
+  sx?: SxProps;
 }
-export const Typo = ({ inline, bold, italic, small, color, noWrap, paragraph, variant, children }: ITypoProps) => {
-  let sx: any = {}; //@!!!! type
-  if (bold != null) sx = { ...sx, fontWeight: 'bold' };
-  if (italic != null) sx = { ...sx, fontStyle: 'italic' };
-  if (small != null) sx = { ...sx, fontSize: '20px' }; // @!!!!!!!!! bolar algo para lidar com tamanhos de fontes
-  let props: any = {}; //@!!!! type
-  if (variant != null) props = { ...props, variant };
-  if (inline) props = { ...props, component: 'span' };
-  if (paragraph) props = { ...props, paragraph: true };
-  //else props = { ...props, gutterBottom: false };
-  props = { ...props, color: color || 'inherit' };
-  //props = { ...props, fontSize: 'inherit' };
-  if (noWrap === true)
-    props = {
-      ...props,
-      noWrap: true,
-      // whiteSpace: 'nowrap',
-      // overflow: 'hidden',
-      // textOverflow: 'ellipses',
+export const Tx = ({ children, inline, bold, italic, small, visibilityHidden, lineClamp, sx, ...props }: ITxProps) => {
+  let sxUse: SxProps = sx || {};
+  if (lineClamp != null)
+    sxUse = {
+      ...sxUse,
+      display: '-webkit-box',
+      overflow: 'hidden',
+      WebkitBoxOrient: 'vertical',
+      WebkitLineClamp: lineClamp,
     };
+  if (bold) sxUse = { ...sxUse, fontWeight: 'bold' };
+  if (italic) sxUse = { ...sxUse, fontStyle: 'italic' };
+  if (visibilityHidden) sxUse = { ...sxUse, visibility: 'hidden' };
+  let propsUse: any = { ...props };
+  if (small) propsUse = { ...propsUse, variant: 'body2' };
+  if (inline) propsUse = { ...propsUse, component: 'span' };
   return (
-    <Typography {...props} sx={sx}>{children}</Typography>
+    <Typography {...propsUse} sx={sxUse}>{children}</Typography>
   );
 };
 
 interface ITypoLineBreak {
   text?: string;
 }
-export const TypoLineBreak = ({ text }: ITypoLineBreak) => {
-  //const safeHtml = DOMPurify.sanitize(source.replaceAll('\n', '<br/>'));  
+export const TxLineBreak = ({ text }: ITypoLineBreak) => {
+  //const safeHtml = DOMPurify.sanitize(source.replaceAll('\n', '<br />'));  
   if (text == null) return <></>;
   return (<>
-    {text.split(/\n/).map((x, index) => <Typo key={index} paragraph>{x}</Typo>)}
+    {text.split(/\n/).map((x, index) => <Tx key={index}>{x}</Tx>)}
   </>);
 };
 // // export const HtmlLineBreak = (source: string) => { // old
-// //   //const safeHtml = DOMPurify.sanitize(source.replaceAll('\n', '<br/>'));
+// //   //const safeHtml = DOMPurify.sanitize(source.replaceAll('\n', '<br />'));
 // //   if (source == null)
 // //     return '';
 // //   else if (typeof source == 'string')
-// //     //return source.replaceAll('\n', '<br/>'); // não está disponível no nodeJS, apenas no ECMA 2021 !!!
-// //     //return source.replace(/\n/g, '<br/>');
-// //     return source.split(/\n/).map((x) => <Typo paragr) '<br/>');
+// //     //return source.replaceAll('\n', '<br />'); // não está disponível no nodeJS, apenas no ECMA 2021 !!!
+// //     //return source.replace(/\n/g, '<br />');
+// //     return source.split(/\n/).map((x) => <Typo paragr) '<br />');
 // //   else
 // //     return typeof source + ' tipo de conteúdo não previsto';
 // // };
+
+export const SwiperWidthAutoCss = () => //@!!!!!!!!!
+  <style jsx global>{`
+    .swiper-slide, .swiper-slide:nth-child(2n), .swiper-slide:nth-child(3n) {
+      width: auto;
+    }       
+  `}</style>;
+
+export const SwiperAutoPlayCss = () => // prever o 'hide' qdo 'estopar' @!!!!!!!!
+  <style jsx global>{`
+    .autoplay-progress {
+      position: absolute;
+      left: 50%; bottom: 10px;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      width: 48px; height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: var(--swiper-theme-color);
+    }
+    .autoplay-progress svg {
+      --progress: 0;
+      position: absolute;
+      left: 0;
+      top: 0px;
+      z-index: 10;
+      width: 100%;
+      height: 100%;
+      stroke-width: 4px;
+      stroke: var(--swiper-theme-color);
+      fill: none;
+      stroke-dashoffset: calc(125.6 * (1 - var(--progress)));
+      stroke-dasharray: 125.6;
+      transform: rotate(-90deg);
+    }  
+  `}</style>;
+
+
+

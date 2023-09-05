@@ -4,6 +4,7 @@ import { CtrlRecursion } from '../libCommon/ctrlRecursion';
 import { CheckProps, PrimitivesType } from '../libCommon/checkProps';
 import { OnClient } from '../libCommon/sideProc';
 import { csd, dbgWarn } from '../libCommon/dbg';
+import { CutUndef, FillClassProps } from '../libCommon/util';
 
 const _ctrlRecursion: { func: string, ctrlRecursion: CtrlRecursion }[] = [];
 const GetCtrlRecursion = (func: string) => {
@@ -21,7 +22,7 @@ enum Amb {
   //devCompiled = 'devCompiled',
   none = 'none',
 }
-export function GetAmb() {
+function GetAmb() {
   try {
     const amb = Env('amb'); // aqui tá dando erro qdo é chamada notifyAdm - apenas na primeira vez apos compilação @@!!!!! (ordem dos imports!)
     if (amb != Amb.dev &&
@@ -46,8 +47,7 @@ const nullOrObj = (valueStr) => {
     return null;
   try {
     return JSON.parse(valueStr);
-  }
-  catch (error) {
+  } catch (error) {
     // eslint-disable-next-line no-console
     console.log(`valor JSON '${valueStr}' inválido`);
     return null;
@@ -104,10 +104,10 @@ export function Env(envName: EnvName, suffix?: string) {
     else if (envName == 'friendlyErrorMsg') value = process.env.NEXT_PUBLIC_APP_FRIENDLY_ERROR_MESSAGE;
 
     else
-      throw new Error(`Env(${envName}) não prevista`);
+      throw new Error('Variável não prevista');
 
     if (value == null)
-      throw new Error(`Env(${envName}) não configurada`);
+      throw new Error('Valor obrigatório');
   } catch (error) {
     ctrlRecursion.out(thisCallCtrl);
     throw new Error(`Env(${envName}), value: ${value}: ${error.message}`);
@@ -132,7 +132,7 @@ export function EnvSvrDatabase(database: string) {
 
   let value: string = null;
   try {
-    if (OnClient()) throw new Error(`EnvSvrDatabase(${database}) requisitada no client`);
+    if (OnClient()) throw new Error('Variável server requisitada no client');
     //const envVar = envName.replace(/^(database)/,'SITE_DATABASE_');
     const envVar = `SITE_DATABASE_${database.toUpperCase()}`;
     value = process.env[envVar];
@@ -165,16 +165,14 @@ export function EnvSvr(envName: EnvNameSvr) {
   if ((thisCallCtrl = ctrlRecursion.in(envName)) == null) return;
   let value: string = null;
   try {
-    if (OnClient())
-      throw new Error(`EnvSvr(${envName}) requisitada no client`);
+    if (OnClient()) throw new Error('Variável server requisitada no client');
     if (envName == 'googleClientKey') value = process.env.SITE_GOOGLE_CLIENT_KEY;
     else if (envName == 'keyScrambleApp') value = process.env.SITE_KEY_SCRAMBLEAPP;
-    else throw new Error(`EnvSvr(${envName}) não prevista`);
-    if (value == null)
-      throw new Error(`EnvSvr(${envName}) não configurada`);
+    else throw new Error('Variável não prevista');
+    if (value == null) throw new Error('Variável obrigatória');
   } catch (error) {
     ctrlRecursion.out(thisCallCtrl);
-    throw error;
+    throw new Error(`EnvSvr(${envName}), value: ${value}: ${error.message}`);
   }
   ctrlRecursion.out(thisCallCtrl);
   return value;
@@ -198,21 +196,23 @@ export function EnvInfoHost() {
 }
 
 //#region client e svr objetos
-interface IDeployConfig {
-  front_end: boolean;
-  back_end: boolean;
-  domain: string; // para cookies share entre domain e sub domains
-  app_url: string; // com protocol e porta
-  api_url: string;
-  controlled_access: boolean;
-  mode_auth: string;
+class DeployConfig {
+  front_end?: boolean;
+  back_end?: boolean;
+  domain?: string; // para cookies share entre domain e sub domains
+  app_url?: string; // com protocol e porta
+  api_url?: string;
+  controlled_access?: boolean;
+  mode_auth?: string;
+  static new() { return new DeployConfig(); }
+  static fill(values: DeployConfig) { return CutUndef(FillClassProps(DeployConfig.new(), values)); }
 }
 export function EnvDeployConfig() {
-  if (isAmbNone()) return {} as IDeployConfig;
+  if (isAmbNone()) return DeployConfig.new();
   const envName = 'NEXT_PUBLIC_DEPLOY_CONFIG';
-  const value: IDeployConfig = nullOrObj(process.env.NEXT_PUBLIC_DEPLOY_CONFIG);
-  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
-  const errorProp = CheckProps(value, [
+  const valueAux = nullOrObj(process.env.NEXT_PUBLIC_DEPLOY_CONFIG);
+  if (valueAux == null) throw new Error(`Env ${envName} não configurada ou inválida`);
+  const errorProp = CheckProps(valueAux, [
     { name: 'front_end', type: PrimitivesType.boolean },
     { name: 'back_end', type: PrimitivesType.boolean },
     { name: 'domain', type: PrimitivesType.string },
@@ -221,16 +221,19 @@ export function EnvDeployConfig() {
     { name: 'controlled_access', type: PrimitivesType.boolean, optional: true },
     { name: 'mode_auth', type: PrimitivesType.string, optional: true },
   ]);
-  if (errorProp != null)
-    throw new Error(`Env ${envName} - ${errorProp}`);
-  value.domain = value.domain.trim();
-  value.app_url = value.app_url.trim();
-  value.api_url = value.api_url.trim();
-  value.controlled_access = value.controlled_access || false;
+  if (errorProp != null) throw new Error(`Env ${envName} - ${errorProp}`);
 
+  const value = DeployConfig.fill({
+    front_end: valueAux.front_end,
+    back_end: valueAux.back_end,
+    domain: valueAux.domain.trim(),
+    app_url: valueAux.app_url.trim(),
+    api_url: valueAux.api_url.trim(),
+    controlled_access: valueAux.controlled_access || false,
+    mode_auth: valueAux.mode_auth,
+  });
   if (value.domain == '')
     value.domain = undefined;
-
   if (value.front_end == true) {
     if (value.app_url == '')
       throw new Error(`Env(${envName}) - app_url em branco`);
@@ -260,136 +263,121 @@ export function EnvDeployConfig() {
   return value;
 }
 
-interface IMSalConfig {
-  client_id: string;
-  authority: string;
+class MSalConfig {
+  client_id?: string;
+  authority?: string;
+  static new() { return new MSalConfig(); }
+  static fill(values: MSalConfig) { return CutUndef(FillClassProps(MSalConfig.new(), values)); }
 }
 export function EnvMSalConfig() {
-  if (isAmbNone()) return {} as IMSalConfig;
+  if (isAmbNone()) return MSalConfig.new();
   const envName = 'NEXT_PUBLIC_MSAL_CONFIG';
-  const value: IMSalConfig = nullOrObj(process.env.NEXT_PUBLIC_MSAL_CONFIG);
-  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
-  const errorProp = CheckProps(value, [
+  const valueAux = nullOrObj(process.env.NEXT_PUBLIC_MSAL_CONFIG);
+  if (valueAux == null) throw new Error(`Env ${envName} não configurada ou inválida`);
+  const errorProp = CheckProps(valueAux, [
     { name: 'client_id', type: PrimitivesType.string },
     { name: 'authority', type: PrimitivesType.string },
   ]);
-  if (errorProp != null)
-    throw new Error(`Env ${envName} - ${errorProp}`);
-  value.client_id = value.client_id.trim();
-  value.authority = value.authority.trim();
+  if (errorProp != null) throw new Error(`Env ${envName} - ${errorProp}`);
+  const value = MSalConfig.fill({
+    client_id: valueAux.client_id.trim(),
+    authority: valueAux.authority.trim(),
+  });
   return value;
 }
 
-// interface INivelLog {
-//   api: number;
-//   db: number;
-//   email: number;
-//   test: number;
-//   commom: number;
-// }
-// export function EnvNivelLog() {
-//   const envName = 'NEXT_PUBLIC_NIVEL_LOG';
-//   const value: INivelLog = nullOrObj(process.env.NEXT_PUBLIC_NIVEL_LOG);
-//   //if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
-//   if (value == null) return { api: 0, db: 0, email: 0, test: 0, commom: 0 } as INivelLog;
-//   const errorProp = CheckProps(value, [
-//     { name: 'api', type: PrimitivesType.number, optional: true },
-//     { name: 'db', type: PrimitivesType.number, optional: true },
-//     { name: 'email', type: PrimitivesType.number, optional: true },
-//     { name: 'test', type: PrimitivesType.number, optional: true },
-//     { name: 'commom', type: PrimitivesType.number, optional: true },
-//   ]);
-//   if (errorProp != null)
-//     throw new Error(`Env ${envName} - ${errorProp}`);
-//   return value;
-// }
-
-interface IApiTimeout {
-  exec: number;
-  alertCallFromCli: number;
-  waitCallFromCli: number;
-  waitCallFromSvr: number;
+class ApiTimeout {
+  exec?: number;
+  alertCallFromCli?: number;
+  waitCallFromCli?: number;
+  waitCallFromSvr?: number;
+  static new() { return new ApiTimeout(); }
+  static fill(values: ApiTimeout) { return CutUndef(FillClassProps(ApiTimeout.new(), values)); }
 }
 export function EnvApiTimeout() {
   const envName = 'NEXT_PUBLIC_API_TIMEOUT';
-  const value: IApiTimeout = nullOrObj(process.env.NEXT_PUBLIC_API_TIMEOUT);
-  if (value == null) {
+  const valueAux: ApiTimeout = nullOrObj(process.env.NEXT_PUBLIC_API_TIMEOUT);
+  if (valueAux == null) {
     if (Env('plataform') === Plataform.localhost)
-      return { exec: 50000, alertCallFromCli: 55000, waitCallFromCli: 60000, waitCallFromSvr: 50000 } as IApiTimeout;
+      return ApiTimeout.fill({ exec: 50000, alertCallFromCli: 55000, waitCallFromCli: 60000, waitCallFromSvr: 50000 });
     else if (Env('plataform') === Plataform.vercel)
-      return { exec: 10000, alertCallFromCli: 15000, waitCallFromCli: 20000, waitCallFromSvr: 10000 } as IApiTimeout;
+      return ApiTimeout.fill({ exec: 10000, alertCallFromCli: 15000, waitCallFromCli: 20000, waitCallFromSvr: 10000 });
     else if (Env('plataform') === Plataform.vercelPro)
-      return { exec: 50000, alertCallFromCli: 55000, waitCallFromCli: 60000, waitCallFromSvr: 50000 } as IApiTimeout;
+      return ApiTimeout.fill({ exec: 50000, alertCallFromCli: 55000, waitCallFromCli: 60000, waitCallFromSvr: 50000 });
     else if (Env('plataform') === Plataform.azure)
-      return { exec: 50000, alertCallFromCli: 55000, waitCallFromCli: 60000, waitCallFromSvr: 50000 } as IApiTimeout;
+      return ApiTimeout.fill({ exec: 50000, alertCallFromCli: 55000, waitCallFromCli: 60000, waitCallFromSvr: 50000 });
     else
-      return { exec: 10000, alertCallFromCli: 15000, waitCallFromCli: 20000, waitCallFromSvr: 10000 } as IApiTimeout;
+      return ApiTimeout.fill({ exec: 10000, alertCallFromCli: 15000, waitCallFromCli: 20000, waitCallFromSvr: 10000 });
   }
-  const errorProp = CheckProps(value, [
+  const errorProp = CheckProps(valueAux, [
     { name: 'exec', type: PrimitivesType.number, optional: false },
     { name: 'alertCallFromCli', type: PrimitivesType.number, optional: false },
     { name: 'waitCallFromCli', type: PrimitivesType.number, optional: false },
     { name: 'waitCallFromSvr', type: PrimitivesType.number, optional: false },
   ]);
-  if (errorProp != null)
-    throw new Error(`Env ${envName} - ${errorProp}`);
-  return value;
+  if (errorProp != null) throw new Error(`Env ${envName} - ${errorProp}`);
+  return ApiTimeout.fill(valueAux);
 }
 
-interface ICloudinary {
-  cloudName: string;
-  folder: string;
-  subFolder: string;
+class Cloudinary {
+  cloudName?: string;
+  folder?: string;
+  subFolder?: string;
+  static new() { return new Cloudinary(); }
+  static fill(values: Cloudinary) { return CutUndef(FillClassProps(Cloudinary.new(), values)); }
 }
 export function EnvCloudinary() {
-  if (isAmbNone()) return {} as ICloudinary;
+  if (isAmbNone()) return Cloudinary.new();
   const envName = 'NEXT_PUBLIC_CLOUDINARY';
-  const value = nullOrObj(process.env.NEXT_PUBLIC_CLOUDINARY) as ICloudinary;
-  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
-  const errorProp = CheckProps(value, [
+  const valueAux = nullOrObj(process.env.NEXT_PUBLIC_CLOUDINARY);
+  if (valueAux == null) throw new Error(`Env ${envName} não configurada ou inválida`);
+  const errorProp = CheckProps(valueAux, [
     { name: 'cloudName', type: PrimitivesType.string },
     { name: 'folder', type: PrimitivesType.string },
     { name: 'subFolder', type: PrimitivesType.string },
   ]);
-  if (errorProp != null)
-    throw new Error(`Env ${envName} - ${errorProp}`);
-  return value;
+  if (errorProp != null) throw new Error(`Env ${envName} - ${errorProp}`);
+  return Cloudinary.fill(valueAux);
 }
 //#endregion
 
 
 //#region apenas svr
-interface IIpinfo {
-  token: string;
-  timeout: number;
+class Ipinfo {
+  token?: string;
+  timeout?: number;
+  static new() { return new Ipinfo(); }
+  static fill(values: Ipinfo) { return CutUndef(FillClassProps(Ipinfo.new(), values)); }
 }
 export function EnvSvrIpinfo() {
   const envName = 'SITE_IPINFO';
   if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
-  const value: IIpinfo = nullOrObj(process.env.SITE_IPINFO);
-  if (value == null) return {} as IIpinfo;
-  const errorProp = CheckProps(value, [
+  const valueAux = nullOrObj(process.env.SITE_IPINFO);
+  //if (valueAux == null) Ipinfo.new();
+  if (valueAux == null) return Ipinfo.fill({ token: '49bbb470525ee2', timeout: 5000 }); //#!!!!!!!!
+  const errorProp = CheckProps(valueAux, [
     { name: 'token', type: PrimitivesType.string },
     { name: 'timeout', type: PrimitivesType.number },
   ]);
-  if (errorProp != null)
-    throw new Error(`Env ${envName} - ${errorProp}`);
-  return value;
+  if (errorProp != null) throw new Error(`Env ${envName} - ${errorProp}`);
+  return Ipinfo.fill(valueAux);
 }
 
-export interface IEmailConfig {
-  host: string;
-  port: number;
-  secure: boolean;
-  auth: { user: string; pass: string; name: string; };
+export class EmailConfig {
+  host?: string;
+  port?: number;
+  secure?: boolean;
+  auth?: { user: string; pass: string; name: string; };
+  static new() { return new EmailConfig(); }
+  static fill(values: EmailConfig) { return CutUndef(FillClassProps(EmailConfig.new(), values)); }
 }
 export function EnvSvrEmailConfig() {
-  if (isAmbNone()) return {} as IEmailConfig;
+  if (isAmbNone()) return EmailConfig.new();
   const envName = 'SITE_EMAIL_CONFIG';
   if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
-  const value: IEmailConfig = nullOrObj(process.env.SITE_EMAIL_CONFIG);
-  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
-  const errorProp = CheckProps(value, [
+  const valueAux = nullOrObj(process.env.SITE_EMAIL_CONFIG);
+  if (valueAux == null) throw new Error(`Env ${envName} não configurada ou inválida`);
+  const errorProp = CheckProps(valueAux, [
     { name: 'host', type: PrimitivesType.string },
     { name: 'port', type: PrimitivesType.number },
     { name: 'secure', type: PrimitivesType.boolean },
@@ -413,64 +401,66 @@ export function EnvSvrEmailConfig() {
     //   ]
     // },
   ]);
-  if (errorProp != null)
-    throw new Error(`Env ${envName} - ${errorProp}`);
-  return value;
+  if (errorProp != null) throw new Error(`Env ${envName} - ${errorProp}`);
+  return EmailConfig.fill(valueAux);
 }
 
-interface ICloudinaryAccount {
-  key: string;
-  secret: string;
+class CloudinaryAccount {
+  key?: string;
+  secret?: string;
+  static new() { return new CloudinaryAccount(); }
+  static fill(values: CloudinaryAccount) { return CutUndef(FillClassProps(CloudinaryAccount.new(), values)); }
 }
 export function EnvSvrCloudinaryAccount() {
-  if (isAmbNone()) return {} as ICloudinaryAccount;
+  if (isAmbNone()) return CloudinaryAccount.new();
   const envName = 'SITE_CLOUDINARY_APIACCOUNT';
   if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
-  const value: ICloudinaryAccount = nullOrObj(process.env.SITE_CLOUDINARY_APIACCOUNT);
-  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
-  const errorProp = CheckProps(value, [
+  const valueAux = nullOrObj(process.env.SITE_CLOUDINARY_APIACCOUNT);
+  if (valueAux == null) throw new Error(`Env ${envName} não configurada ou inválida`);
+  const errorProp = CheckProps(valueAux, [
     { name: 'key', type: PrimitivesType.string },
     { name: 'secret', type: PrimitivesType.string },
   ]);
-  if (errorProp != null)
-    throw new Error(`Env ${envName} - ${errorProp}`);
-  return value;
+  if (errorProp != null) throw new Error(`Env ${envName} - ${errorProp}`);
+  return CloudinaryAccount.fill(valueAux);
 }
 
-interface IMobizon {
-  domain: string;
-  api_key: string;
+class Mobizon {
+  domain?: string;
+  api_key?: string;
+  static new() { return new Mobizon(); }
+  static fill(values: Mobizon) { return CutUndef(FillClassProps(Mobizon.new(), values)); }
 }
 export function EnvSvrMobizon() {
-  if (isAmbNone()) return {} as IMobizon;
+  if (isAmbNone()) return Mobizon.new();
   const envName = 'SITE_MOBIZON';
   if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
-  const value: IMobizon = nullOrObj(process.env.SITE_MOBIZON);
-  if (value == null) throw new Error(`Env ${envName} não configurada ou inválida`);
-  const errorProp = CheckProps(value, [
+  const valueAux = nullOrObj(process.env.SITE_MOBIZON);
+  if (valueAux == null) throw new Error(`Env ${envName} não configurada ou inválida`);
+  const errorProp = CheckProps(valueAux, [
     { name: 'domain', type: PrimitivesType.string },
     { name: 'api_key', type: PrimitivesType.string },
   ]);
-  if (errorProp != null)
-    throw new Error(`Env ${envName} - ${errorProp}`);
-  return value;
+  if (errorProp != null) throw new Error(`Env ${envName} - ${errorProp}`);
+  return Mobizon.fill(valueAux);
 }
 
-interface ISessionUser {
-  psw: string;
-  ttl_minutes: number;
+class SessionUser {
+  psw?: string;
+  ttl_minutes?: number;
+  static new() { return new SessionUser(); }
+  static fill(values: SessionUser) { return CutUndef(FillClassProps(SessionUser.new(), values)); }
 }
 export function EnvSvrSessionUser() {
   const envName = 'SITE_SESSION_USER';
   if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
-  const value: ISessionUser = nullOrObj(process.env.SITE_SESSION_USER);
-  if (value == null) return {} as ISessionUser;
-  const errorProp = CheckProps(value, [
+  const valueAux = nullOrObj(process.env.SITE_SESSION_USER);
+  if (valueAux == null) return SessionUser.new();
+  const errorProp = CheckProps(valueAux, [
     { name: 'psw', type: PrimitivesType.string },
     { name: 'ttl_minutes', type: PrimitivesType.number, optional: true },
   ]);
-  if (errorProp != null)
-    throw new Error(`Env ${envName} - ${errorProp}`);
-  return value;
+  if (errorProp != null) throw new Error(`Env ${envName} - ${errorProp}`);
+  return SessionUser.fill(valueAux);
 }
 //#endregion

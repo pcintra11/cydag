@@ -5,6 +5,7 @@ export const rolesDev = {
   dev: 'dev',  // funções do desenvolvedor
   controlledAccess: 'controlledAccess', // controle de acesso por dispositivo / IP
   prototype: 'prototype', // simulação de themas, etc
+  userSimulate: 'userSimulate',
   //dbgShow: 'dbgShow',  // mostra os debugs
   //tst: 'tst', // paginas de testes temporários
 };
@@ -40,29 +41,36 @@ export const CheckRoleAllowed = (rolesNeeded: string[], rolesUser?: string[]) =>
     throw new ErrorPlus('Não autorizado.', { httpStatusCode: HttpStatusCode.unAuthorized });
 };
 
+export enum AppContainerType {
+  noThemeNoLayout,
+  themeButNoLayout,
+}
 interface IPageDefOptions {
+  pageTitle?: string;
+  txtDynamicMenu?: string;
   onlyAuthenticated?: boolean;
   roles?: string[];
   variant?: string; // é um objeto!
+  appContainerType?: AppContainerType;
+  hideMenu?: boolean;
 }
 export class PageDef {
   pagePath: string;
-  pageTitle?: string;
-  txtDynamicMenu?: string; // se vazio usa o page title
   options?: IPageDefOptions;
-  constructor(pagePath: string, pageTitle: string = null, txtDynamicMenu: string = null, options?: IPageDefOptions) {
+  constructor(pagePath: string, options?: IPageDefOptions) {
     if (!pagePath.startsWith('/'))
       throw new Error(`pagePath deve ser com base na raiz (${pagePath})`);
     if (options?.roles != null &&
       options?.onlyAuthenticated !== true)
       throw new Error('PageDef: role apenas para onlyAuthenticated');
     this.pagePath = pagePath;
-    this.pageTitle = pageTitle;
-    this.txtDynamicMenu = txtDynamicMenu || pageTitle;
     this.options = options; // || {};
   }
   static IsUserAuthorized(pageDef: PageDef, rolesUser?: string[]) {
     return IsAuthorized(pageDef.options?.roles, rolesUser);
+  }
+  static MenuText(pageDef: PageDef) {
+    return (pageDef.options?.txtDynamicMenu || pageDef.options?.pageTitle || pageDef.pagePath);
   }
 }
 

@@ -30,9 +30,8 @@ export class DataEdit {
   mediaPernoites?: string;
   obs?: string;
   valor?: string;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new DataEdit(); }
-  static fill(values: DataEdit, init = false) { return CutUndef(FillClassProps(DataEdit.new(init), values)); }
+  static new() { return new DataEdit(); }
+  static fill(values: DataEdit) { return CutUndef(FillClassProps(DataEdit.new(), values)); }
 }
 export interface IChangedLine {
   //key: { tipoPlanejViagem: TipoPlanejViagem; localidadeDestino?: string; funcId?: string; _id?: string };

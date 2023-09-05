@@ -1,52 +1,43 @@
-import format_dtfns from 'date-fns/format';
+import { globals } from '../libClient/clientGlobals';
 
 import { isAmbDev, isVercelHost } from '../app_base/envs';
-
-import { globals } from '../libClient/clientGlobals';
 
 import { colorsDbg, colorErr, colorWarn, colorInfo, colorX } from './consoleColor';
 import { OnClient, OnServer } from './sideProc';
 import { CtrlContext } from './ctrlContext';
+import { HoraForLog } from './util';
 
 const colorAllowed = () => OnClient() || !isVercelHost();
-
-export function HoraCsl() {
-  return format_dtfns(new Date(), 'HH:mm:ss:SSS');
-}
 
 export function console_log(...params) {
   // eslint-disable-next-line no-console
   console.log(...params);
 }
 
-export function dbgNotifyAdm(...params) {
-  if (dbgShow())
-    console_log(colorErr(HoraCsl() + ' notifyAdm'), ...params);
-}
-
+// https://www.addictivetips.com/android/get-web-console-log-chrome-for-android/  
 export function csd(...params) {
   if (dbgShow()) {
     // if (params.length === 1 && typeof params[0] === 'object')
     //   console_log(JSON.stringify(params[0], null, 2), `csdX ${HoraDebug()}`); // @!!!!!!
     // else
-    console_log(...params, `csd ${HoraCsl()}`);
+    console_log(...params, `csd ${HoraForLog()}`);
   }
 }
 export function csl(...params) {
-  console_log(...params, `csl ${HoraCsl()}`);
+  console_log(...params, `csl ${HoraForLog()}`);
 }
 
 export function dbgError(point: string, msg1: string, ...params) {
   if (dbgShow())
-    console_log(colorErr(`${HoraCsl()} error-${point}`), msg1, ...params);
+    console_log(colorErr(`${HoraForLog()} error-${point}`), msg1, ...params);
 }
 export function dbgWarn(point: string, msg1: string, ...params) {
   if (dbgShow())
-    console_log(colorWarn(`${HoraCsl()} warn-${point}`), msg1, ...params);
+    console_log(colorWarn(`${HoraForLog()} warn-${point}`), msg1, ...params);
 }
 export function dbgInfo(point: string, msg1: string, ...params) {
   if (dbgShow())
-    console_log(colorInfo(`${HoraCsl()} info-${point}`), msg1, ...params);
+    console_log(colorInfo(`${HoraForLog()} info-${point}`), msg1, ...params);
 }
 export interface IConfigDbg {
   level: number;
@@ -79,19 +70,11 @@ const dispContextLen = 40;
 
 //const ctrlRecursion = new CtrlRecursion('dbg', 3); // dá pau !!
 
-/**
- * Ativa o modo de prototipação (escolha de temas, fontes, etc)
- * @returns apenas se definido or ambiente ou para o device ou para o usuario
- */
-export function devUserOrAmb() { // @!!!!!!!!! retirar globals
-  return isAmbDev() || globals?.loggedUserIsDev === true;
-}
-
-export function dbgShowCli() {
-  return isAmbDev() || globals?.loggedUserIsDev === true || globals?.cookieDbgShow === true;
+export function devContextCli() {
+  return isAmbDev() || globals?.cookieDevContext === true || globals?.isDevUser === true;
 }
 function dbgShow() {
-  return OnServer() || dbgShowCli();
+  return OnServer() || devContextCli();
 }
 
 function dbgProc(config: IConfigDbg, ...params): void {
@@ -137,9 +120,9 @@ function dbgProc(config: IConfigDbg, ...params): void {
       const colorMsgUse = colorMsg % colorsDbg.length;
       //console_log(colorsDestaq[colorUse](HoraCsl()), `${prefixDbg}${contextDisp}`, ...params);
       if (OnClient())
-        console_log(colorX(colorsDbg[colorMsgUse], `${HoraCsl()} ${prefixDbg}${contextDisp}`), ...params);
+        console_log(colorX(colorsDbg[colorMsgUse], `${HoraForLog()} ${prefixDbg}${contextDisp}`), ...params);
       else
-        console_log(colorX(colorsDbg[colorContextUse], HoraCsl()), colorX(colorsDbg[colorMsgUse], `${prefixDbg}${contextDisp}`), ...params);
+        console_log(colorX(colorsDbg[colorContextUse], HoraForLog()), colorX(colorsDbg[colorMsgUse], `${prefixDbg}${contextDisp}`), ...params);
     }
   } catch (error) {
     console_log('dbgProc', error.message);

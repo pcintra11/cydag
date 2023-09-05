@@ -1,24 +1,25 @@
 import React from 'react';
-import { Box, MenuItem, Select, Stack, SxProps } from '@mui/material';
+import { Stack } from '@mui/material';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import { blue } from '@mui/material/colors';
 
-import { configApp } from '../app_hub/appConfig';
-
-import { devUserOrAmb } from '../libCommon/dbg';
 import { StrLeft } from '../libCommon/util';
 import { IGenericObject } from '../libCommon/types';
+import { csd, devContextCli } from '../libCommon/dbg';
 
 import { globals } from '../libClient/clientGlobals';
-import { IThemeSchemes, IThemeVariants } from '../styles/themeTools';
 import { useMediaQueryMy } from '../hooks/useMediaQueryMy';
+import { IThemeSchemes, IThemeVariants } from '../styles/themeTools';
+
+import { configApp } from '../app_hub/appConfig';
+import { LoggedUserBase } from '../app_base/loggedUserBase';
 
 import { AbortProcComponent, LogErrorUnmanaged } from './abortProc';
 import { FrmInput } from './fldMyForm';
-import { FakeLink } from './ui';
-
-// @!!!!!!!!! só mostra a barra depois de clicar em algum item do menu (ex: home)
+import { FakeLink, SelOption, SelectMy, Tx } from './ui';
 
 interface IDevConfigBarProps {
-  _appMainStates: IGenericObject; // @!!!!! aqui apenas os demais, como niveis log, etc
+  _appMainStates: IGenericObject; // @!!!!! aqui apenas os demais, como níveis log, etc
   themeVariants: IThemeVariants;
   themeSchemes: IThemeSchemes;
   changeMenuType: () => void;
@@ -29,23 +30,16 @@ interface IDevConfigBarProps {
 
 export const DevConfigBarContext = React.createContext<IDevConfigBarProps>(null);
 
-class SelectOption {
-  value: string;
-  text: string;
-  constructor(value: string, text?: string) {
-    this.value = value;
-    this.text = text != null ? text : value.toString();
-  }
-}
-
-export const DevConfigBar = () => {
+export const DevConfigBar = ({ loggedUser }: { loggedUser: LoggedUserBase }) => {
   const [showThemeVars, setShowThemeVars] = React.useState(false);
   const [showDbgLevels, setShowDbgLevels] = React.useState(false);
   const [showOthers, setShowOthers] = React.useState(false);
+  const [showDev, setShowDev] = React.useState(false);
   const { _appMainStates, themeVariants, themeSchemes, changeMenuType, changeThemeVariants, changeCtrlLog } = React.useContext(DevConfigBarContext);
+  const [ctrlLog, setCtrlLog] = React.useState(_appMainStates.ctrlLog);
   const useMediaQueryData = useMediaQueryMy();
 
-  const changeThemeLocal = (themeVariantsChg: IThemeVariants) => { // ThemeVariants { maxWidth: string, colorScheme: string; fontScheme: string };
+  const changeThemeLocal = (themeVariantsChg: IThemeVariants) => {
     changeThemeVariants({ ...themeVariants, ...themeVariantsChg });
   };
 
@@ -59,92 +53,125 @@ export const DevConfigBar = () => {
     //   { maxWidth: 375, category: 'mob1' },
     // ];
 
-    const optionsThemeMaxWidth = themeSchemes.maxWidth != null ? themeSchemes.maxWidth.map((x) => new SelectOption(x.key, x.key)) : [];
-    const optionsThemeColorScheme = themeSchemes.color != null ? themeSchemes.color.map((x) => new SelectOption(x.key, x.key)) : [];
-    const optionsThemeFontScheme = themeSchemes.font != null ? themeSchemes.font.map((x) => new SelectOption(x.key, x.key)) : [];
-    const optionsThemeSpacingScheme = themeSchemes.spacing != null ? themeSchemes.spacing.map((x) => new SelectOption(x.key, x.key)) : [];
+    const optionsThemeMaxWidth = themeSchemes.maxWidth != null ? themeSchemes.maxWidth.map((x) => new SelOption(x.key, x.key)) : [];
+    const optionsThemeMaxWidthDetail = themeSchemes.maxWidthDetail != null ? themeSchemes.maxWidthDetail.map((x) => new SelOption(x.key, x.key)) : [];
+    const optionsThemeColorScheme = themeSchemes.color != null ? themeSchemes.color.map((x) => new SelOption(x.key, x.key)) : [];
+    const optionsThemeFontScheme = themeSchemes.font != null ? themeSchemes.font.map((x) => new SelOption(x.key, x.key)) : [];
+    const optionsThemeSpacingScheme = themeSchemes.spacing != null ? themeSchemes.spacing.map((x) => new SelOption(x.key, x.key)) : [];
 
     // const mediaPattern = (screenSizeMax, category, index) => `@media only screen and (max-width: ${screenSizeMax}px) {
     //   .infoSize::after { content: " (<= ${screenSizeMax} ${category})"; color: black; background-color: ${index % 2 == 0 ? 'red' : 'white'}; }  
     // } `;
     // let xx = maxWidthCategories.map((x, i) => mediaPattern(x.maxWidth, x.category, i)).join(' ');
 
-    const isDevContext = devUserOrAmb();
+    const isDevContext = devContextCli() || LoggedUserBase.isDev(loggedUser);
 
-    const sxFont: SxProps = { fontFamily: 'arial', fontSize: '16px' };
-
+    const fontSize = '16px';
     const bgcolor1 = 'yellow';
+
+    const themeFix = createTheme({
+      typography: {
+        fontFamily: 'arial',
+        fontSize: 14,
+        allVariants: {
+          color: blue[900],
+        },
+      }
+    });
+
     return (
       <>
-        {/* <div style={{
-          display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'start',
-          gap: '1rem',
-        }}>   em box usar o flaxdirection revertido @!!!!! */}
-        <Stack direction='row' alignItems='center' gap='16px' sx={sxFont}>
-          {isDevContext &&
-            <FakeLink onClick={() => setShowOthers(!showOthers)} bgcolor={showOthers ? bgcolor1 : null}>Others</FakeLink>
-          }
-          {showOthers &&
-            <Box bgcolor={bgcolor1}>{`id: ${StrLeft(globals.browserId, 3)} / ${globals.windowId}`}</Box>
-          }
+        <ThemeProvider theme={createTheme(themeFix)}>
+          <Stack direction='row' alignItems='center' spacing={1} px={1} flexWrap='wrap' bgcolor='AntiqueWhite' borderRadius={2}>
+            {showDev &&
+              <>
+                {isDevContext &&
+                  <>
+                    <FakeLink onClick={() => setShowDbgLevels(!showDbgLevels)}>CtrlDbg</FakeLink>
+                    {showDbgLevels &&
+                      <FrmInput value={ctrlLog} width='5rem' onChange={(ev) => setCtrlLog(ev.target.value)} onBlur={(ev) => changeCtrlLog(ev.target.value)} />
+                    }
+                  </>
+                }
 
-          {(isDevContext || globals?.loggedUserCanChangeTheme === true) &&
-            <FakeLink onClick={() => setShowThemeVars(!showThemeVars)}>Tema</FakeLink>
-          }
-          {showThemeVars &&
-            <>
-              {optionsThemeMaxWidth.length > 1 &&
-                <Select variant='standard' value={themeVariants.maxWidthScheme || ''} onChange={(ev) => changeThemeLocal({ maxWidthScheme: ev.target.value })} sx={sxFont}>
-                  {optionsThemeMaxWidth.map((option, index) => <MenuItem key={index} value={option.value} sx={sxFont}>{option.text}</MenuItem>)}
-                </Select>
-              }
-              {optionsThemeColorScheme.length > 1 &&
-                <Select variant='standard' value={themeVariants.colorScheme || ''} onChange={(ev) => changeThemeLocal({ colorScheme: ev.target.value })} sx={sxFont}>
-                  {optionsThemeColorScheme.map((option, index) => <MenuItem key={index} value={option.value} sx={sxFont}>{option.text}</MenuItem>)}
-                </Select>
-              }
-              {optionsThemeFontScheme.length > 1 &&
-                <Select variant='standard' value={themeVariants.fontScheme || ''} onChange={(ev) => changeThemeLocal({ fontScheme: ev.target.value })} sx={sxFont}>
-                  {optionsThemeFontScheme.map((option, index) => <MenuItem key={index} value={option.value} sx={sxFont}>{option.text}</MenuItem>)}
-                </Select>
-              }
-              {optionsThemeSpacingScheme.length > 1 &&
-                <Select variant='standard' value={themeVariants.spacingScheme || ''} onChange={(ev) => changeThemeLocal({ spacingScheme: ev.target.value })} sx={sxFont}>
-                  {optionsThemeSpacingScheme.map((option, index) => <MenuItem key={index} value={option.value} sx={sxFont}>{option.text}</MenuItem>)}
-                </Select>
-              }
-            </>
-          }
+                {isDevContext &&
+                  <>
+                    <FakeLink onClick={() => setShowOthers(!showOthers)} bgcolor={showOthers ? bgcolor1 : null}>Others</FakeLink>
+                    {showOthers &&
+                      <Tx bgcolor={bgcolor1}>{`id: ${StrLeft(globals.browserId, 3)} / ${globals.windowId}`}</Tx>
+                    }
+                  </>
+                }
 
-          {isDevContext &&
-            <Stack direction='row' alignItems='center' gap={1}>
-              <FakeLink onClick={() => setShowDbgLevels(!showDbgLevels)}>CtrlLog</FakeLink>
-              {showDbgLevels &&
-                <FrmInput value={_appMainStates.ctrlLog} width='5rem' onChange={(ev) => changeCtrlLog(ev.target.value)} />
-              }
-            </Stack>
-          }
+                {(isDevContext || LoggedUserBase.canChangeTheme(loggedUser)) &&
+                  <>
+                    <FakeLink onClick={changeMenuType}>{`menuType:${_appMainStates.menuType}`}</FakeLink>
+                    <FakeLink onClick={() => setShowThemeVars(!showThemeVars)}>Tema</FakeLink>
+                    {showThemeVars &&
+                      <>
+                        {optionsThemeColorScheme.length > 1 &&
+                          <SelectMy width='65px'
+                            value={themeVariants.colorScheme}
+                            onChange={(ev) => changeThemeLocal({ colorScheme: ev.target.value })}
+                            options={[new SelOption(null, 'Color', true), ...optionsThemeColorScheme]}
+                            fontSize={fontSize}
+                          />
+                        }
+                        {optionsThemeFontScheme.length > 1 &&
+                          <SelectMy width='65px'
+                            value={themeVariants.fontScheme}
+                            onChange={(ev) => changeThemeLocal({ fontScheme: ev.target.value })}
+                            options={[new SelOption(null, 'Font', true), ...optionsThemeFontScheme]}
+                            fontSize={fontSize}
+                          />
+                        }
+                        {optionsThemeSpacingScheme.length > 1 &&
+                          <SelectMy width='65px'
+                            value={themeVariants.spacingScheme}
+                            onChange={(ev) => changeThemeLocal({ spacingScheme: ev.target.value })}
+                            options={[new SelOption(null, 'Spacing', true), ...optionsThemeSpacingScheme]}
+                            fontSize={fontSize}
+                          />
+                        }
+                        {optionsThemeMaxWidth.length > 1 &&
+                          <SelectMy width='65px'
+                            value={themeVariants.maxWidthScheme}
+                            onChange={(ev) => changeThemeLocal({ maxWidthScheme: ev.target.value })}
+                            options={[new SelOption(null, 'WBody', true), ...optionsThemeMaxWidth]}
+                            fontSize={fontSize}
+                          />
+                        }
+                        {optionsThemeMaxWidthDetail.length > 1 &&
+                          <SelectMy width='65px'
+                            value={themeVariants.maxWidthDetailScheme}
+                            onChange={(ev) => changeThemeLocal({ maxWidthDetailScheme: ev.target.value })}
+                            options={[new SelOption(null, 'WDetail', true), ...optionsThemeMaxWidthDetail]}
+                            fontSize={fontSize}
+                          />
+                        }
+                      </>
+                    }
+                  </>
+                }
+              </>
+            }
 
-          {isDevContext &&
-            <FakeLink onClick={changeMenuType}>menuType:{_appMainStates.menuType}</FakeLink>
-          }
+            {/* <span className='infoSize' /> */}
+            <Tx>{useMediaQueryData.widthCategory}</Tx>
+            <FakeLink onClick={() => setShowDev(!showDev)}>{configApp.appVersion}</FakeLink>
 
-          <span className='infoSize' />
+            {/* <style jsx>{`
+              .infoSize::after { content: " (${useMediaQueryData.widthCategory})"; } 
+              // @media only screen and (max-width: {widthCategoriesShow[0].maxWidth}px) { .infoSize::after { content: " (<= {widthCategoriesShow[0].maxWidth} {widthCategoriesShow[0].category})"; } .infoSize { background-color: white         } }
+              // @media only screen and (max-width: {widthCategoriesShow[1].maxWidth}px) { .infoSize::after { content: " (<= {widthCategoriesShow[1].maxWidth} {widthCategoriesShow[1].category})"; } .infoSize { background-color: lemonchiffon; } }
+            `}</style> */}
 
-          <Box>{`${configApp.appVersion}`}</Box>
-        </Stack>
+          </Stack>
 
-        <style jsx>{`
-          .infoSize::after { content: " (<= ${useMediaQueryData.widthCategory})"; } 
-          // @media only screen and (max-width: {widthCategoriesShow[0].maxWidth}px) { .infoSize::after { content: " (<= {widthCategoriesShow[0].maxWidth} {widthCategoriesShow[0].category})"; } .infoSize { background-color: white         } }
-          // @media only screen and (max-width: {widthCategoriesShow[1].maxWidth}px) { .infoSize::after { content: " (<= {widthCategoriesShow[1].maxWidth} {widthCategoriesShow[1].category})"; } .infoSize { background-color: lemonchiffon; } }
-        `}</style>
-
+        </ThemeProvider>
       </>
     );
+
 
   } catch (error) {
     LogErrorUnmanaged(error, 'DevConfigBar-render');

@@ -2,13 +2,13 @@ import React from 'react';
 import { useRouter } from 'next/router';
 
 import { AbortProc, BtnLine, LogErrorUnmanaged } from '../../components';
-import { Btn } from '../../components/ui';
+import { Btn, Tx } from '../../components/ui';
 
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 import { pagesApp } from '../../appCydag/endPoints';
 import { useMsal } from '@azure/msal-react';
-import { Box,  Stack } from '@mui/material';
-import { UserSignOut } from '../../appCydag/userResourcesCli'; 
+import { Stack } from '@mui/material';
+import { UserSignOut } from '../../appCydag/userResourcesCli';
 
 const pageSelf = pagesApp.signOut;
 export default function PageSignOutAzure() {
@@ -34,16 +34,16 @@ export default function PageSignOutAzure() {
 
   try {
     return (
-      <Stack gap={1} height='100%' overflow='auto'>
-        <Stack gap={1}>
+      <Stack spacing={1} height='100%' overflow='auto'>
+        <Stack spacing={1}>
           {accounts.length === 0
             ? <>
-              <Box>Desconectado</Box>
+              <Tx>Desconectado</Tx>
               <BtnLine>
                 <Btn onClick={() => router.push(pagesApp.signIn.pagePath)}>Entrar novamente</Btn>
               </BtnLine>
             </>
-            : <Box>Desconectando ...</Box>
+            : <Tx>Desconectando ...</Tx>
           }
         </Stack>
       </Stack>

@@ -1,24 +1,13 @@
 import { ObjectId } from 'mongodb';
 
 import { csd, dbgError } from '../libCommon/dbg';
-import { CutUndef, ErrorPlus, FillClassProps } from '../libCommon/util';
+import { CutUndef, EnumMd, ErrorPlus, FillClassProps } from '../libCommon/util';
 import { IGenericObject } from '../libCommon/types';
 import { FldCsvDef, FldsCsvAll } from '../libCommon/uploadCsv';
 
-import { amountParse, mesesFld, sumRound } from './util';
+import { amountParseApp, mesesFld, sumRound } from './util';
 import { configCydag } from './configCydag';
 import { ignoreMongoProps } from './modelTypes';
-
-class EnumMd<T> {
-  cod: T;
-  descr: string;
-  plus: any;
-  constructor(cod?: T, descr?: string, plus?: any) {
-    this.cod = cod;
-    this.descr = descr;
-    this.plus = plus;
-  }
-}
 
 //#region enum
 //#region RevisaoValor
@@ -106,7 +95,7 @@ export class ProcessoOrcamentarioStatusMd {
 //#region OrigemClasseCusto
 export enum OrigemClasseCusto {
   calculada = 'c',
-  inputada = 'i', // classeCusto OU subClasseCusto (código < '30')
+  inputada = 'i', // classeCusto OU subClasseCusto (código < '30')   //#!!!!!!!!!! imputada
   //detalhada = 'd', // apenas em subClasseCusto dinâmicas (código >= '30') ???
   totalImputada = 't', // apenas em classeCusto (gera subClasses dinâmicas código >= '30')
   totalCalculada = 'k', // apenas em classeCusto (gera subClasses dinâmicas código < '30')
@@ -479,9 +468,9 @@ export class ValoresPlanejadosDetalhes {
         new FldCsvDef('valMeses', {
           suppressColumn: true,
           def: (data: IGenericObject) => [
-            amountParse(data.m01, configCydag.decimalsValsCalc), amountParse(data.m02, configCydag.decimalsValsCalc), amountParse(data.m03, configCydag.decimalsValsCalc), amountParse(data.m04, configCydag.decimalsValsCalc),
-            amountParse(data.m05, configCydag.decimalsValsCalc), amountParse(data.m06, configCydag.decimalsValsCalc), amountParse(data.m07, configCydag.decimalsValsCalc), amountParse(data.m08, configCydag.decimalsValsCalc),
-            amountParse(data.m09, configCydag.decimalsValsCalc), amountParse(data.m10, configCydag.decimalsValsCalc), amountParse(data.m11, configCydag.decimalsValsCalc), amountParse(data.m12, configCydag.decimalsValsCalc),
+            amountParseApp(data.m01, configCydag.decimalsValsCalc), amountParseApp(data.m02, configCydag.decimalsValsCalc), amountParseApp(data.m03, configCydag.decimalsValsCalc), amountParseApp(data.m04, configCydag.decimalsValsCalc),
+            amountParseApp(data.m05, configCydag.decimalsValsCalc), amountParseApp(data.m06, configCydag.decimalsValsCalc), amountParseApp(data.m07, configCydag.decimalsValsCalc), amountParseApp(data.m08, configCydag.decimalsValsCalc),
+            amountParseApp(data.m09, configCydag.decimalsValsCalc), amountParseApp(data.m10, configCydag.decimalsValsCalc), amountParseApp(data.m11, configCydag.decimalsValsCalc), amountParseApp(data.m12, configCydag.decimalsValsCalc),
           ]
         }),
       ]);

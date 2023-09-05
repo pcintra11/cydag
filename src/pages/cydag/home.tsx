@@ -6,7 +6,7 @@ import { Box, Stack } from '@mui/material';
 import { dbg } from '../../libCommon/dbg';
 import { AnchorHrefMailTo } from '../../libCommon/util';
 
-import { AbortProc, LogErrorUnmanaged } from '../../components';
+import { AbortProc, LogErrorUnmanaged, Tx } from '../../components';
 
 import { pagesApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
@@ -35,53 +35,51 @@ export default function PageHome() {
 
   try {
     return (
-      <Stack gap={1} height='100%' overflow='auto'>
+      <Stack spacing={1} height='100%' overflow='auto'>
+
+        <Tx bold paragraph>
+          Seja bem-vindo ao {nomeSistema} {loggedUser?.name}!
+        </Tx>
 
         <Box>
-          <p>
-            <b>Seja bem-vindo ao {nomeSistema} {loggedUser?.name}!</b>
-          </p>
-        </Box>
-
-        <Box>
-          <p>
+          <Tx paragraph>
             O {nomeSistema} é o nosso sistema de orçamento e acompanhamento das despesas gerais e administrativas da Cyrela.
-          </p>
-          <p>
+          </Tx>
+          <Tx paragraph>
             Até o 5º dia útil de cada mês, o sistema será atualizado com as despesas incorridas até o final do mês anterior.
-          </p>
-          <p>
+          </Tx>
+          <Tx paragraph>
             É importante que todos os gestores da empresa acompanhem mensalmente a evolução de suas despesas para garantir o cumprimento de um importante pilar da Cultura Cyrela: SOLIDEZ FINANCEIRA.
-          </p>
-          <p>
+          </Tx>
+          <Tx paragraph>
             Caso você encontre qualquer lançamento que julga estar errado ou tenha qualquer dúvida quanto à utilização do sistema, favor entrar em contato com a controladoria
             corporativa através do e-mail
             &nbsp;<a href={`${AnchorHrefMailTo(emailSuporte, 'Contato pelo sistema')}`}>{emailSuporte}</a>&nbsp;
             .
-          </p>
+          </Tx>
 
           <Box mt={2}>
-            <p>
+            <Tx paragraph>
               Favor consultar os manuais abaixo caso tenha alguma dúvida:
-            </p>
+            </Tx>
 
             <a href={`${folderManuais}/${files.manualOrcam}`} target='_blank' rel='noreferrer'>
-              <Box>Manual de Orçamento 2023</Box>
+              <Tx>Manual de Orçamento 2023</Tx>
             </a>
 
             <a href={`${folderManuais}/${files.classesMateriais}`} target='_blank' rel='noreferrer'>
-              <Box>Lista de Classes x Materiais - {nomeSistema}</Box>
+              <Tx>Lista de Classes x Materiais - {nomeSistema}</Tx>
             </a>
 
             <a href={`${folderManuais}/${files.manualConsulta}`} target='_blank' rel='noreferrer'>
-              <Box>Manual de Consulta</Box>
+              <Tx>Manual de Consulta</Tx>
             </a>
           </Box>
 
-          <Stack direction='row' gap={1} justifyContent='end' mt={1}>
-            <Box>Versão {configApp.appVersion}</Box>
+          <Stack direction='row' spacing={1} justifyContent='end' mt={1}>
+            <Tx>Versão {configApp.appVersion}</Tx>
             {!isAmbPrd() &&
-              <Box>(ambiente {Env('amb')})</Box>
+              <Tx>(ambiente {Env('amb')})</Tx>
             }
           </Stack>
         </Box>

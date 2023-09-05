@@ -1,6 +1,9 @@
 import { PageIndexHub } from '../app_hub/clientResources';
+import { pagesSuporte } from '../app_suporte/endPoints';
 
 //interface IPageIndexProps { app: string }
+
+const pageSelf = pagesSuporte.index;
 export default function PageIndexDynam() {
   // export default function PageIndexDynam({ app }: IPageIndexProps) {
   // const router = useRouter();

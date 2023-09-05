@@ -3,12 +3,12 @@ import { useRouter } from 'next/router';
 import { useMsal } from '@azure/msal-react';
 import _ from 'underscore';
 
-import { Box, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 
 import { pagesApp } from '../../appCydag/endPoints';
-import { csd } from '../../libCommon/dbg'; 
-import { AbortProc, BtnLine, LogErrorUnmanaged, SnackBarError } from '../../components';
-import { Btn } from '../../components/ui';
+import { csd } from '../../libCommon/dbg';
+import { AbortProc, BtnLine, LogErrorUnmanaged, PopupMsg } from '../../components';
+import { Btn, Tx } from '../../components/ui';
 
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 import { pswSignInAzure } from '../api/appCydag/user/types';
@@ -18,6 +18,8 @@ import {
   AuthenticationResult,
   //PublicClientApplication,
 } from '@azure/msal-browser';
+
+//let mount = false;
 
 // https://www.daryllukas.me/azure-ad-authentication-using-msal-and-nextjs-react/
 const pageSelf = pagesApp.signIn;
@@ -55,19 +57,20 @@ export default function PageSignInAzure() {
         prompt: 'select_account',
       });
 
+      //csd('Azure details> ', accountAzureApp);
       setLoggingCydag(true);
-      // console.log('Azure details> ', accountAzureApp);
 
       const loggedUserNow = await UserSignInASync(accountAzureApp.account.username.toLowerCase(), pswSignInAzure);
       setUser(loggedUserNow, pageSelf.pagePath);
-      setLoggingCydag(false);
+      //if (mount) setLoggingCydag(false);
     }
     catch (error) {
       //setAutoLoginStage(2);
       setUser(null, null);
       if (error.errorCode === 'user_cancelled')
         return;
-      SnackBarError(error, `${pageSelf.pagePath}-loginPop`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-loginPop`);
+      PopupMsg.error(error);
     }
   };
   // const logoutPop = async () => {
@@ -82,13 +85,14 @@ export default function PageSignInAzure() {
 
   // apenas para estabilizar o processo do msal, ao entrar na página
   React.useEffect(() => {
+    //mount = true;
     //csd('signInAzure effect 1');
     if (!msalInitiating) return;
     if (inProgress !== 'none') return;
     if (loggedUser != null) return;
-    //csd('signInAzure effect 1 - anulando initiating');
     setMsalInitiating(false);
     loginPop();
+    //return () => { mount = false; };
   }, [inProgress]); // accounts.length, 
 
   // após a inicialização do msal checa se o usuário já está logado e vai para home
@@ -108,15 +112,15 @@ export default function PageSignInAzure() {
     }
   }, [router.isReady, msalInitiating, inProgress, loggedUser?.email]);
 
-  if (loggingCydag) return (<Box>Entrando no sistema...</Box>);
+  if (loggingCydag) return (<Tx>Entrando no sistema...</Tx>);
 
   try {
 
     return (
-      <Stack gap={1} height='100%' overflow='auto'>
-        <Stack gap={1}>
+      <Stack spacing={1} height='100%' overflow='auto'>
+        <Stack spacing={1}>
           {msalInitiating
-            ? <Box>Azure inicializando...</Box>
+            ? <Tx>Azure inicializando...</Tx>
             : <>
               {/* <Box>Verificando a autenticação (stage)...</Box> */}
               <BtnLine>

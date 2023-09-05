@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import * as Papa from 'papaparse';
 import { FileRejection, useDropzone } from 'react-dropzone';
 
-import { Box, Stack, useTheme } from '@mui/material';
+import { Stack, useTheme } from '@mui/material';
 
 import { IsErrorManaged, ObjUpdAllProps, ErrorPlus, ForceWait, mimeTypes } from '../../libCommon/util';
 import { CalcExecTime } from '../../libCommon/calcExectime';
@@ -18,7 +18,7 @@ import { SaveAsXlsx } from '../../libClient/saveAsClient';
 import { propsByMessageLevel } from '../../libClient/util';
 import { FrmDefaultValues, useFrm, useWatchMy } from '../../hooks/useMyForm';
 
-import { FakeLink, SelOption, SnackBarError, PopupMsg, SwitchMy } from '../../components';
+import { FakeLink, SelOption, PopupMsg, SwitchMy, Tx } from '../../components';
 import { WaitingObs } from '../../components';
 import { AbortProc, LogErrorUnmanaged } from '../../components';
 import { DropAreaUpload } from '../../components/dropArea';
@@ -101,7 +101,7 @@ export default function PageCargaFuncionario() {
           try {
             const papaCsv = Papa.parse(csvString, { delimiter: configApp.csvDelimiter });
             if (papaCsv.errors.length != 0) {
-              SnackBarError('Erro ao interpretar o arquivo csv', `${pageSelf.pagePath}-Papa.parse`);
+              PopupMsg.error('Erro ao interpretar o arquivo csv');
               setMainStatesCache({ uploadStatus: UploadStatus.none });
               return;
             }
@@ -114,7 +114,7 @@ export default function PageCargaFuncionario() {
               setMainStatesCache({ error });
               return;
             }
-            SnackBarError(error, `${pageSelf.pagePath}-onDrop`);
+            PopupMsg.error(error);
             setMainStatesCache({ uploadStatus: UploadStatus.error });
           }
         });
@@ -125,7 +125,10 @@ export default function PageCargaFuncionario() {
     maxFiles: 1,
     maxSize: 5000000,
     multiple: true,
-    onError: (error) => SnackBarError(error, 'useDropzone'),
+    onError: (error) => {
+      LogErrorUnmanaged(error, 'useDropzone');
+      PopupMsg.error(error);
+    },
     onDrop,
   });
   //#endregion
@@ -160,7 +163,8 @@ export default function PageCargaFuncionario() {
         setMainStatesCache({ phase: Phase.ready, processoOrcamentarioArray });
       })
       .catch((error) => {
-        SnackBarError(error, `${pageSelf.pagePath}-initialization`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-initialization`);
+        PopupMsg.error(error);
       });
     return () => { mount = false; };
   }, [router.isReady, isLoadingUser, loggedUser?.email]);
@@ -170,8 +174,8 @@ export default function PageCargaFuncionario() {
   try {
 
     return (
-      <Stack gap={1} height='100%' overflow='auto'>
-        <Stack gap={1}>
+      <Stack spacing={1} height='100%' overflow='auto'>
+        <Stack spacing={1}>
           {/* <SelectMy width='80px'
             value={ano || ''}
             onChange={(ev) => { frmFilter.setValue(ProcessoOrcamentario.F.ano, ev.target.value); }}
@@ -194,15 +198,15 @@ export default function PageCargaFuncionario() {
           </FakeLink>
           {mainStates.uploadStatus == UploadStatus.loading && <WaitingObs text='Carregando' />}
           {mainStates.uploadStatus == UploadStatus.done &&
-            <Stack gap={0.2}>
+            <Stack spacing={0.2}>
               {(mainStates.uploadResult.linesOk + mainStates.uploadResult.linesError) !== 0 &&
-                <Box>
+                <Tx>
                   Linhas processadas: com sucesso {mainStates.uploadResult.linesOk} ;
                   com erro {mainStates.uploadResult.linesError}
-                </Box>
+                </Tx>
               }
               {mainStates.uploadResult.messages.map((x, index) =>
-                <Box key={index} sx={propsByMessageLevel(themePlus, x.level)}>{x.message}</Box>
+                <Tx key={index} sx={propsByMessageLevel(themePlus, x.level)}>{x.message}</Tx>
               )}
             </Stack>
           }

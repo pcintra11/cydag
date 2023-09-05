@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import * as Papa from 'papaparse';
 import { FileRejection, useDropzone } from 'react-dropzone';
 
-import { Box, Divider, Modal, Stack, useTheme } from '@mui/material';
+import { Box, DialogContent, DialogContentText, Divider, Modal, Stack, useTheme } from '@mui/material';
 
 import { CtrlCollect, ErrorPlus, HoraDebug, IdByTime, mimeTypes, ObjUpdAllProps } from '../../libCommon/util';
 import { PageDef } from '../../libCommon/endPoints';
@@ -17,7 +17,7 @@ import { CallApiCliASync } from '../../fetcher/fetcherCli';
 import { propsByMessageLevel } from '../../libClient/util';
 import { SaveAsXlsx } from '../../libClient/saveAsClient';
 
-import { Btn, BtnLine, DialogMy, FakeLink, FrmCheckbox, PopupMsg, SnackBarError, VisualBlock, WaitingObs } from '../../components';
+import { Btn, DialogMy, FakeLink, FrmCheckbox, PopupMsg, Tx, VisualBlock, WaitingObs } from '../../components';
 import { AbortProc, LogErrorUnmanaged } from '../../components';
 import { DropAreaUpload } from '../../components/dropArea';
 
@@ -72,23 +72,26 @@ const collectionsOthersConfig = {
 let msgsAcum: string[] = [];
 
 class MainStates {
-  preparing?: 'initiating';
+  effectContext?: string;
+  preparing?: 'initiating' | 'ready';
   error?: Error | ErrorPlus;
   collectionCtrl?: { open: boolean, collectionConfig?: ICollectionConfig<any> };
   downloadAmostra?: boolean;
-  uploadEach?: boolean; //#!!!!!!!!
+  uploadEach?: boolean;
   downloading?: boolean;
   uploadStatus?: UploadStatus;
   file?: File;
   uploadResult?: { linesProc: number, linesOk: number, linesError: number, linesErrorNotIdenf: number, messages: IUploadMessage[] };
   blocos?: { div?: boolean, cols?: boolean, dataTest?: boolean };
-  constructor() {
+  constructor(effectContext?: string) {
+    this.effectContext = effectContext;
     this.preparing = 'initiating';
     this.downloadAmostra = false;
     this.uploadEach = false;
     this.blocos = {};
   }
 }
+const mainStatesReset = new MainStates();
 let mount = false; let mainStatesCache: MainStates = null;
 
 const apis = {
@@ -114,7 +117,7 @@ const apis = {
 };
 const pageSelf = pagesApp.funcsAdm;
 export default function PageFuncsAdm() {
-  const [mainStates, setMainStates] = React.useState(new MainStates());
+  const [mainStates, setMainStates] = React.useState(mainStatesReset);
   mainStatesCache = { ...mainStates }; const setMainStatesCache = (newValues: MainStates) => { if (!mount) return; ObjUpdAllProps(mainStatesCache, newValues); setMainStates({ ...mainStatesCache }); };
 
   const router = useRouter();
@@ -136,7 +139,7 @@ export default function PageFuncsAdm() {
     msgsAcum = [...msgsAcum, ...msgs.map((x) => `${hourAndId}${x}`)];
     //csl({ msgs });
     //setResult(<div><p>1:{msgs.length}</p><p>2:{msgs.length}</p></div>);
-    setResultAcum(<Box>{msgsAcum.map((x, i) => <p key={i}>{x}</p>)}</Box>);
+    setResultAcum(<Box>{msgsAcum.map((x, i) => <Tx key={i}>{x}</Tx>)}</Box>);
   };
 
   const resetResults = () => {
@@ -164,7 +167,7 @@ export default function PageFuncsAdm() {
           try {
             const papaCsv = Papa.parse(csvString, { delimiter: configApp.csvDelimiter });
             if (papaCsv.errors.length != 0) {
-              SnackBarError('Erro ao interpretar o arquivo csv', `${pageSelf.pagePath}-Papa.parse`);
+              PopupMsg.error('Erro ao interpretar o arquivo csv');
               setMainStatesCache({ uploadStatus: UploadStatus.none });
               return;
             }
@@ -174,7 +177,8 @@ export default function PageFuncsAdm() {
             const uploadResult = { linesProc, linesOk, linesError, linesErrorNotIdenf, messages };
             setMainStatesCache({ uploadStatus: UploadStatus.done, uploadResult });
           } catch (error) {
-            SnackBarError(error, `${pageSelf.pagePath}-onDrop`);
+            LogErrorUnmanaged(error, `${pageSelf.pagePath}-onDrop`);
+            PopupMsg.error(error);
             setMainStatesCache({ uploadStatus: UploadStatus.error });
           }
         });
@@ -186,7 +190,10 @@ export default function PageFuncsAdm() {
     maxSize: 5000000,
     multiple: true,
     //validator: (file) => UploadFileNameValidator(file, { suffix: uploadFilenameSuffix }),
-    onError: (error) => SnackBarError(error, 'useDropzone'),
+    onError: (error) => {
+      LogErrorUnmanaged(error, 'useDropzone');
+      PopupMsg.error(error);
+    },
     onDrop,
   });
   //#endregion
@@ -200,7 +207,9 @@ export default function PageFuncsAdm() {
         SaveAsXlsx(`download_${collectionConfig.name}`, [{ sheetName: 'dados', data: documents }]);
       })
       .catch((error) => {
-        SnackBarError(new Error(`erro no downloadCollection para ${collectionConfig.name}: ${error.message}`), `${pageSelf.pagePath}-downloadCollection`);
+        const errorUse = new Error(`erro no downloadCollection para ${collectionConfig.name}: ${error.message}`);
+        LogErrorUnmanaged(errorUse, `${pageSelf.pagePath}-downloadCollection`);
+        PopupMsg.error(errorUse);
       })
       .finally(() => {
         setMainStatesCache({ downloading: false });
@@ -208,7 +217,7 @@ export default function PageFuncsAdm() {
   }, []);
   const resetCollection = React.useCallback((collectionConfig: ICollectionConfig<any>) => {
     const efetiva = () => {
-      setMainStatesCache({ uploadStatus: UploadStatus.reseting });
+      setMainStatesCache({ uploadStatus: UploadStatus.resetting });
       apis.admReset(collectionConfig.name)
         .then(() => {
           PopupMsg.success(`Coleção ${collectionConfig.name} resetada.`);
@@ -223,12 +232,16 @@ export default function PageFuncsAdm() {
     };
     const resposta = collectionConfig.name.toUpperCase();
     DialogMy({
-      body: `A coleção ${collectionConfig.name} será excluída com todos os dados`,
+      body:
+        <DialogContent>
+          <DialogContentText>
+            A coleção {collectionConfig.name} será excluída com todos os dados
+          </DialogContentText>
+        </DialogContent>,
       dialogInputs: [
         { label: `Digite ${resposta} para confirmar o reset` },
       ],
       buttons: [
-        { text: 'Cancela' },
         {
           text: 'Efetivar',
           fnCheck: (inputResponses: string[]) => inputResponses[0].trim().toUpperCase() !== resposta ? 'Resposta inválida' : null,
@@ -241,23 +254,21 @@ export default function PageFuncsAdm() {
 
   React.useEffect(() => {
     mount = true;
-    setMainStatesCache(new MainStates());
-    return () => { mount = false; };
-  }, [router?.asPath]);
-
-  React.useEffect(() => {
     if (!router.isReady || isLoadingUser) return;
     try {
-      if (mainStates.preparing === 'initiating') {
+      const effectContext = `${loggedUser?.email} ${router.asPath}`;
+      if (effectContext != mainStates.effectContext) setMainStatesCache(new MainStates(effectContext));
+      else if (mainStates.preparing === 'initiating') {
         if (!PageDef.IsUserAuthorized(pageSelf, loggedUser?.roles)) throw new ErrorPlus('Não autorizado.');
         msgsAcum = [];
-        setMainStatesCache({ preparing: null });
+        setMainStatesCache({ preparing: 'ready' });
       }
     }
     catch (error) {
       setMainStatesCache({ error });
     }
-  }, [mainStates.preparing]);
+    return () => { mount = false; };
+  }, [mainStates.effectContext, mainStates.preparing, isLoadingUser, router?.asPath, router.isReady]);
   if (mainStates.error != null) return <AbortProc error={mainStates.error} tela={pageSelf.pagePath} />;
 
   //#region funções
@@ -291,35 +302,32 @@ export default function PageFuncsAdm() {
 
   const BtnS = ({ children, onClick }: { children: React.ReactNode, onClick: () => void }) => <Btn small sx={{ textTransform: 'none' }} onClick={onClick}>{children}</Btn>;
 
-  const Fkl = ({ children, onClick }: { children: React.ReactNode, onClick: () => void }) =>
-    <React.Fragment>
-      <FakeLink onClick={onClick} mr={2}>{children}</FakeLink>
-      {' '}
-    </React.Fragment>;
+  const Fkl = ({ children, onClick }: { children: string, onClick: () => void }) =>
+    <>
+      <FakeLink onClick={onClick}>{`${children}`}</FakeLink>
+      {' ; '}
+    </>;
 
+  //@!!!!!!!!!!!!!! padronizar em ambos os sistemas
+  // testar upload each @!!!!!!!!!!!!! 10
   try {
     return (
-      <Stack gap={1} height='100%' overflow='auto'>
-        <Stack direction='row' alignItems='center' gap={3}>
-          <BtnLine left>
-            <BtnS onClick={clearResults}>Clear results</BtnS>
-          </BtnLine>
-          <Box>
-            <Fkl onClick={() => setMainStatesCache({ blocos: { ...mainStatesCache.blocos, div: !mainStatesCache.blocos.div } })}>Diversos</Fkl>
-            <Fkl onClick={() => setMainStatesCache({ blocos: { ...mainStatesCache.blocos, cols: !mainStatesCache.blocos.cols } })}>Coleções</Fkl>
-            <Fkl onClick={() => setMainStatesCache({ blocos: { ...mainStatesCache.blocos, dataTest: !mainStatesCache.blocos.dataTest } })}>Dados Teste</Fkl>
-          </Box>
-        </Stack>
+      <Stack spacing={1} height='100%' overflow='auto'>
+        <Box>
+          <BtnS onClick={clearResults}>Clear results</BtnS>
+          {' '}
+          <Fkl onClick={() => setMainStatesCache({ blocos: { ...mainStatesCache.blocos, div: !mainStatesCache.blocos.div } })}>Diversos</Fkl>
+          <Fkl onClick={() => setMainStatesCache({ blocos: { ...mainStatesCache.blocos, cols: !mainStatesCache.blocos.cols } })}>Coleções</Fkl>
+          <Fkl onClick={() => setMainStatesCache({ blocos: { ...mainStatesCache.blocos, dataTest: !mainStatesCache.blocos.dataTest } })}>Dados Teste</Fkl>
+        </Box>
 
         {mainStatesCache.blocos.div === true &&
-          <>
-            <Box>
-              <Fkl onClick={() => CmdNoParm(CmdApi_FuncAdm.ensureIndexes)}>ensureIndexes</Fkl>
-              <Fkl onClick={() => CmdNoParm(CmdApi_FuncAdm.checkIndexes)}>checkIndexes</Fkl>
-              <Fkl onClick={() => CmdNoParm(CmdApi_FuncAdm.clearLogsToDelete)}>Limpar Logs a Deletar</Fkl>
-              <Fkl onClick={() => CmdNoParm(CmdApi_FuncAdm.clearOldLogs)}>Limpar Logs Velhos</Fkl>
-            </Box>
-          </>
+          <Box>
+            <Fkl onClick={() => CmdNoParm(CmdApi_FuncAdm.ensureIndexes)}>ensureIndexes</Fkl>
+            <Fkl onClick={() => CmdNoParm(CmdApi_FuncAdm.checkIndexes)}>checkIndexes</Fkl>
+            <Fkl onClick={() => CmdNoParm(CmdApi_FuncAdm.clearLogsToDelete)}>Limpar Logs a Deletar</Fkl>
+            <Fkl onClick={() => CmdNoParm(CmdApi_FuncAdm.clearOldLogs)}>Limpar Logs Velhos</Fkl>
+          </Box>
         }
 
         {mainStates.collectionCtrl != null &&
@@ -330,7 +338,7 @@ export default function PageFuncsAdm() {
             // aria-labelledby="modal-modal-title"
             // aria-describedby="modal-modal-description"
             >
-              <Stack gap={1} overflow='hidden'
+              <Stack spacing={1} overflow='hidden'
                 sx={{
                   position: 'absolute' as 'absolute',
                   top: '50%',
@@ -344,9 +352,9 @@ export default function PageFuncsAdm() {
                   p: 4,
                 }}>
 
-                {mainStates.collectionCtrl.collectionConfig?.name}
+                <Tx>{mainStates.collectionCtrl.collectionConfig?.name}</Tx>
 
-                <Stack direction='row' alignItems='center' gap={1}>
+                <Stack direction='row' alignItems='center' spacing={1}>
                   <Box>
                     <BtnS onClick={() => downloadCollection(mainStates.collectionCtrl.collectionConfig)} >
                       Download
@@ -361,24 +369,24 @@ export default function PageFuncsAdm() {
                 {mainStates.downloading == true && <WaitingObs text='Preparando para baixar' />}
                 <DropAreaUpload dropZone={dropZone} bgcolor={themePlus.themePlusConfig?.colorBackDroparea} />
 
-                {mainStates.uploadStatus == UploadStatus.reseting && <WaitingObs text='Resetando' />}
+                {mainStates.uploadStatus == UploadStatus.resetting && <WaitingObs text='Resetando' />}
                 {mainStates.uploadStatus == UploadStatus.loading && <WaitingObs text={`Carregando ${mainStates.file.name}`} />}
                 {mainStates.uploadStatus == UploadStatus.done &&
-                  <Stack gap={0.2} overflow='auto'>
-                    <Box>Carga de {mainStates.file.name}</Box>
-                    <Box>Linhas com sucesso: {mainStates.uploadResult.linesOk}</Box>
+                  <Stack spacing={0.2} overflow='auto'>
+                    <Tx>Carga de {mainStates.file.name}</Tx>
+                    <Tx>Linhas com sucesso: {mainStates.uploadResult.linesOk}</Tx>
                     {mainStates.uploadResult.linesError > 0 &&
-                      <Box color='red'>Linhas com erro identificado: {mainStates.uploadResult.linesError}</Box>
+                      <Tx color='red'>Linhas com erro identificado: {mainStates.uploadResult.linesError}</Tx>
                     }
                     {mainStates.uploadResult.linesErrorNotIdenf > 0 &&
-                      <Box color='red'>Linhas com erro não identificado: {mainStates.uploadResult.linesErrorNotIdenf}</Box>
+                      <Tx color='red'>Linhas com erro não identificado: {mainStates.uploadResult.linesErrorNotIdenf}</Tx>
                     }
                     {/* Linhas processadas {mainStates.uploadResult.linesProc} ;
                       ok {mainStates.uploadResult.linesOk} ;
                       com erro identificado {mainStates.uploadResult.messagesError.length} ;
                       com erro não identificado {(mainStates.uploadResult.linesProc - (mainStates.uploadResult.linesOk + mainStates.uploadResult.messagesError.length))} ; */}
                     {mainStates.uploadResult.messages.map((x, index) =>
-                      <Box key={index} sx={propsByMessageLevel(themePlus, x.level)}>{x.message}</Box>
+                      <Tx key={index} sx={propsByMessageLevel(themePlus, x.level)}>{x.message}</Tx>
                     )}
                   </Stack>
                 }
@@ -390,7 +398,7 @@ export default function PageFuncsAdm() {
         {mainStatesCache.blocos.cols === true &&
           <>
             <VisualBlock>
-              <Box>Coleções Md</Box>
+              <Tx>Coleções Md</Tx>
               <Box>
                 {Object.keys(collectionsMdConfig).map((x, i) =>
                   <Fkl key={i} onClick={() => openCollectionModal(collectionsMdConfig[x])}>{collectionsMdConfig[x].name}</Fkl>
@@ -399,7 +407,7 @@ export default function PageFuncsAdm() {
             </VisualBlock>
 
             <VisualBlock>
-              <Box>Coleções Outros</Box>
+              <Tx>Coleções Outros</Tx>
               <Box>
                 {Object.keys(collectionsOthersConfig).map((x, i) =>
                   <Fkl key={i} onClick={() => openCollectionModal(collectionsOthersConfig[x])}>{collectionsOthersConfig[x].name}</Fkl>
@@ -407,7 +415,7 @@ export default function PageFuncsAdm() {
               </Box>
             </VisualBlock>
 
-            <Stack direction='row' alignItems='center' gap={1}>
+            <Stack direction='row' alignItems='center' spacing={1}>
               <FrmCheckbox value={mainStates.downloadAmostra} label='Download amostra' onChange={(ev) => setMainStatesCache({ downloadAmostra: ev.target.checked })} />
               <FrmCheckbox value={mainStates.uploadEach} label='Upload trata cada registro' onChange={(ev) => setMainStatesCache({ uploadEach: ev.target.checked })} />
             </Stack>
@@ -425,9 +433,9 @@ export default function PageFuncsAdm() {
         }
 
         <Divider />
-        <Box>
+        <Tx>
           {resultAcum}
-        </Box>
+        </Tx>
       </Stack>
     );
   } catch (error) {

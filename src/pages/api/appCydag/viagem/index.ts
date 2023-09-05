@@ -24,7 +24,7 @@ import { apisApp, rolesApp } from '../../../../appCydag/endPoints';
 import { FuncionarioModel, LocalidadeModel, UserModel, ValoresTransferModel } from '../../../../appCydag/models';
 import { ProcessoOrcamentarioCentroCustoModel, ProcessoOrcamentarioModel, ViagemModel } from '../../../../appCydag/models';
 import { ccsAuthArray, CheckProcCentroCustosAuth, IAuthCC, procsCentroCustosConfigAuthAllYears } from '../../../../appCydag/utilServer';
-import { amountParse } from '../../../../appCydag/util';
+import { amountParseApp } from '../../../../appCydag/util';
 
 import { CmdApi_Viagem as CmdApi, IChangedLine, LineState } from './types';
 import { configCydag } from '../../../../appCydag/configCydag';
@@ -34,8 +34,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
-  const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
+  const loggedUserReq = await LoggedUserReqASync(req, res);
+  const ctrlApiExec = GetCtrlApiExec(req, res, loggedUserReq, ['cmd'], ['_id']);
   const parm = ctrlApiExec.parm;
 
   const resumoApi = new ResumoApi(ctrlApiExec);
@@ -116,12 +116,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 ? {
                   localidadeDestino: viagemEdit.localidadeDestino,
                   funcId: viagemEdit.funcId,
-                  qtdViagens: amountParse(viagemEdit.qtdViagens, 0),
-                  mediaPernoites: amountParse(viagemEdit.mediaPernoites, 0),
+                  qtdViagens: amountParseApp(viagemEdit.qtdViagens, 0),
+                  mediaPernoites: amountParseApp(viagemEdit.mediaPernoites, 0),
                 }
                 : {
                   obs: viagemEdit.obs,
-                  valor: amountParse(viagemEdit.valor, configCydag.decimalsValsInput),
+                  valor: amountParseApp(viagemEdit.valor, configCydag.decimalsValsInput),
                 };
               viagemData.tipoPlanejViagem = viagemEdit.tipoPlanejViagem;
               viagemData.lastUpdated = agora;

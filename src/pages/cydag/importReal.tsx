@@ -1,7 +1,10 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 
-import { Box, Stack } from '@mui/material';
+import dynamic from 'next/dynamic';
+const ReactJson = dynamic(() => import('react-json-view'), { ssr: false });
+
+import { Stack } from '@mui/material';
 
 import { DateDisp, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../libCommon/util';
 import { CalcExecTime } from '../../libCommon/calcExectime';
@@ -9,8 +12,7 @@ import { csd } from '../../libCommon/dbg';
 import { PageDef } from '../../libCommon/endPoints';
 import { CallApiCliASync } from '../../fetcher/fetcherCli';
 
-import { AbortProc, WaitingObs, SnackBarError, Btn, BtnLine } from '../../components';
-import { JsonShow } from '../../components/jsonShow';
+import { AbortProc, WaitingObs, Btn, BtnLine, LogErrorUnmanaged, PopupMsg, Tx } from '../../components';
 
 import { configApp } from '../../app_hub/appConfig';
 
@@ -93,7 +95,8 @@ export default function PageImportReal() {
       })
       .catch((error) => {
         setMainStatesCache({ ctrlInterfaceMd: null });
-        SnackBarError(error, `${pageSelf.pagePath}-initialization`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-initialization`);
+        PopupMsg.error(error);
       });
     return () => { mount = false; };
   }, []);
@@ -111,12 +114,13 @@ export default function PageImportReal() {
       })
       .catch((error) => {
         setMainStatesCache({ ctrlInterfaceMd: null });
-        SnackBarError(error, `${pageSelf.pagePath}-interfaceSap`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-interfaceSap`);
+        PopupMsg.error(error);
       });
   };
 
   return (
-    <Stack gap={1} height='100%'>
+    <Stack spacing={1} height='100%'>
       <BtnLine left>
         {(mainStates.ctrlInterfaceMd != null && (mainStates.ctrlInterfaceMd.status === InterfaceSapStatus.queued || mainStates.ctrlInterfaceMd.status === InterfaceSapStatus.running))
           ? <Btn onClick={() => interfaceSap(CmdApi_ValoresContas.importRealizadoCheck)}>Checar status</Btn>
@@ -128,29 +132,29 @@ export default function PageImportReal() {
         <Btn onClick={() => interfaceImport(frmFilter.getValues(), false)}>Apenas limpa</Btn> */}
 
       {mainStates.importInProgress &&
-        <Box>processando</Box>
+        <Tx>processando</Tx>
       }
       {(mainStates.importInProgress == false && mainStates.ctrlInterfaceMd != null) &&
         <>
           {(mainStates.ctrlInterfaceMd.status === InterfaceSapStatus.queued || mainStates.ctrlInterfaceMd.status === InterfaceSapStatus.running)
-            ? <Box>Processo em andamento</Box>
-            : <Box>Último Processo de Extração</Box>
+            ? <Tx>Processo em andamento</Tx>
+            : <Tx>Último Processo de Extração</Tx>
           }
-          <Box>Id: {mainStates.ctrlInterfaceMd.dag_run_id}</Box>
-          <Stack direction='row' gap={2}>
-            <Box>Inicio: {DateDisp(mainStates.ctrlInterfaceMd.started, 'dmyhm')}</Box>
-            <Box>Status: {mainStates.ctrlInterfaceMd.status}</Box>
+          <Tx>Id: {mainStates.ctrlInterfaceMd.dag_run_id}</Tx>
+          <Stack direction='row' spacing={2}>
+            <Tx>Inicio: {DateDisp(mainStates.ctrlInterfaceMd.started, 'dmyhm')}</Tx>
+            <Tx>Status: {mainStates.ctrlInterfaceMd.status}</Tx>
             {(mainStates.ctrlInterfaceMd.status === InterfaceSapStatus.queued || mainStates.ctrlInterfaceMd.status === InterfaceSapStatus.running) &&
-              <Box>Última checagem: {DateDisp(mainStates.ctrlInterfaceMd.lastChecked, 'dmyhms')}</Box>
+              <Tx>Última checagem: {DateDisp(mainStates.ctrlInterfaceMd.lastChecked, 'dmyhms')}</Tx>
             }
           </Stack>
           {mainStates.ctrlInterfaceMd.info != null &&
             <>
               {/* <Box>Ano processado: {mainStates.ctrlInterfaceMd.info.ano}</Box>
              {(mainStates.ctrlInterfaceMd.info.msgs as string[]).map((x, index) => <Box key={index}>{x}</Box>)} */}
-              <Box>Veja abaixo os detalhes</Box>
-              <Stack gap={1} height='100%' overflow='auto'>
-                <JsonShow data={mainStates.ctrlInterfaceMd.info} />
+              <Tx>Veja abaixo os detalhes</Tx>
+              <Stack spacing={1} height='100%' overflow='auto'>
+                <ReactJson src={mainStates.ctrlInterfaceMd.info} name='interfaceStatus' collapsed={false} collapseStringsAfterLength={30} />
               </Stack>
             </>
           }

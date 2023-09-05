@@ -26,8 +26,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
-  const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
+  const loggedUserReq = await LoggedUserReqASync(req, res);
+  const ctrlApiExec = GetCtrlApiExec(req, res, loggedUserReq, ['cmd'], ['_id']);
   const parm = ctrlApiExec.parm;
 
   const resumoApi = new ResumoApi(ctrlApiExec);
@@ -47,7 +47,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       const subCmd = parm.email != null ? 'simulStart' : 'simulCancel';
       const userDbSigned = await UserModel.findOne({ email: loggedUserReq.emailSigned }).lean();
       CheckApiAuthorized(apiSelf, userDbSigned, loggedUserReq.emailSigned);
-
       let emailSession, userDbSession;
       if (subCmd === 'simulCancel') {
         emailSession = loggedUserReq.emailSigned;
@@ -56,6 +55,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       else {
         emailSession = parm.email;
         userDbSession = await UserModel.findOne({ email: parm.email }).lean();
+        if (userDbSession.ctrl.rolesControlled.length !== 0) throw new ErrorPlus('Esse usuário não pode ser simulado');
       }
       CheckUserAllowed(userDbSession, emailSession);
 
@@ -63,7 +63,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       const hasSomeCCPlanejador = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailPlanejador: userDbSession.email })) != null;
       const hasSomeCCConsulta = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailConsulta: userDbSession.email })) != null;
       const loggedUserNow = User.loggedUser(userDbSession, loggedUserReq.emailSigned, agora, agora, agora, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta); // , cookieUserConfig.TTLSeconds
-      await HttpCriptoCookieCmdASync(ctrlApiExec, `main-${parm.cmd}-${subCmd}`, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, loggedUserNow); // , `user-${parm.cmd}`
+      await HttpCriptoCookieCmdASync(req, res, `main-${parm.cmd}-${subCmd}`, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, loggedUserNow); // , `user-${parm.cmd}`
       resumoApi.jsonData({ value: loggedUserNow });
 
     } catch (error) {

@@ -1,6 +1,4 @@
-import { Box } from '@mui/material';
-
-import { AbortProc, LogErrorUnmanaged } from '../../components';
+import { AbortProc, LogErrorUnmanaged, Tx } from '../../components';
 
 import { pageDummy } from '../../appCydag/endPoints';
 
@@ -9,10 +7,10 @@ export default function PageDummy() {
   //const router = useRouter();
   try {
     return (
-      <Box>
+      <Tx>
         {/* Tentativa em abrir {`'${router.query?.title}'`} */}
         Página ainda não disponível
-      </Box>
+      </Tx>
     );
   } catch (error) {
     LogErrorUnmanaged(error, `${pageSelf.pagePath}-render`);

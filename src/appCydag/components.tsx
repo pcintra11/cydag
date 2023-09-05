@@ -24,13 +24,10 @@ import RestoreFromTrashIcon from '@mui/icons-material/RestoreFromTrash';
 //#endregion
 
 import { IGenericObject } from '../libCommon/types';
-import { AutocompleteMy, Btn, IconButtonMy, SelectMy, SelOption, ThemeColors } from '../components';
+import { AutocompleteMy, Btn, IconButtonMy, ITxProps, SelectMy, SelOption, ThemeColors, Tx } from '../components';
 import { csd, dbgError } from '../libCommon/dbg';
 
-import { globals } from '../libClient/clientGlobals';
 import { ForeColorByBack, IThemePlus } from '../styles/themeTools';
-
-import { isAmbDev } from '../app_base/envs';
 
 import { RevisaoValor, RevisaoValorMd } from './types';
 import { mesesHdr } from './util';
@@ -196,12 +193,14 @@ export const propsColorByCompRealPlan = (themePlus: IThemePlus, varAbs: number) 
   else return {};
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export const propsColorHeader = (themePlus: IThemePlus) => {
+export const propsColorHeader = () => {
   const bgColorsHier = cydagColors.colorsBackHier;
   if (bgColorsHier.length == 0) return propsByBgcolor('#ffffff');
   else return propsByBgcolor(bgColorsHier[0]);
 };
+
+export const TxGridHdr = ({ children, ...props }: ITxProps) => <Tx {...{ ...props, ...propsColorHeader() }}>{children}</Tx>;
+export const TxGridCel = ({ children, ...props }: ITxProps) => <Tx {...props}>{children}</Tx>;
 
 interface ISelRevisao {
   value: RevisaoValor,
@@ -295,9 +294,4 @@ export const SelEntity = ({ value, onChange, options, disableClearable, name, wi
       disableClearable={disableClearable}
     />
   );
-};
-
-export const devFeature = () => {
-  return isAmbDev() ||
-    globals?.loggedUserIsDev === true;
 };

@@ -6,7 +6,7 @@ import { IGenericObject } from './types';
 export enum UploadStatus {
   none,
   loading,
-  reseting,
+  resetting,
   done,
   error,
 }
@@ -149,15 +149,13 @@ export const FromCsvUpload = (data: IGenericObject, fldsCsvDef: FldCsvDef[], csv
           try {
             if (curr.up == null) documentCsvDb[curr.fld] = cellValue;
             else documentCsvDb[curr.fld] = curr.up(dataTrim);
-          }
-          catch (error) { allErrorsMessages.push(`coluna ${curr.fldDisp}: ${error.message}`); }
+          } catch (error) { allErrorsMessages.push(`coluna ${curr.fldDisp}: ${error.message}`); }
         }
       }
       else if (curr.def != null) {
         try {
           documentCsvDb[curr.fld] = curr.def(dataTrim);
-        }
-        catch (error) { allErrorsMessages.push(`coluna ${curr.fldDisp} (default): ${error.message}`); }
+        } catch (error) { allErrorsMessages.push(`coluna ${curr.fldDisp} (default): ${error.message}`); }
       }
       else if (curr.mandatoryValue)
         allErrorsMessages.push(`coluna ${curr.fldDisp}: informação obrigatória`);
@@ -165,7 +163,7 @@ export const FromCsvUpload = (data: IGenericObject, fldsCsvDef: FldCsvDef[], csv
     else {
       if (curr.def != null) { // dados derivados de outras colunas
         try { documentCsvDb[curr.fld] = curr.def(dataTrim); }
-        catch (error) { allErrorsMessages.push(`coluna autogerada ${curr.fldDisp}: ${error.message}`); }
+        catch (error) { allErrorsMessages.push(`coluna com definição especial '${curr.fldDisp}': ${error.message}`); }
       }
     }
   });

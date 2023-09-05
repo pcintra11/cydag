@@ -26,7 +26,7 @@ export default function PageIndex() {
   try {
     return (
       <Box height='100%' overflow='auto'>
-        <Stack gap={1}>
+        <Stack spacing={1}>
           {loggedUser == null
             ? <BtnLine left>
               <Btn onClick={() => router.push(pagesApp.signIn.pagePath)}>Entrar no Sistema</Btn>

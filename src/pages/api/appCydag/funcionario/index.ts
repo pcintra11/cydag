@@ -24,7 +24,7 @@ import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/log
 import { apisApp, rolesApp } from '../../../../appCydag/endPoints';
 import { DiretoriaModel, GerenciaModel, UnidadeNegocioModel, UserModel } from '../../../../appCydag/models';
 import { accessAllCCs, ccsAuthArray, CheckProcCentroCustosAuth, IAuthCC, procsCentroCustosConfigAuthAllYears } from '../../../../appCydag/utilServer';
-import { amountParse } from '../../../../appCydag/util';
+import { amountParseApp } from '../../../../appCydag/util';
 import { PremissaModel, ProcessoOrcamentarioCentroCustoModel, ProcessoOrcamentarioModel, FuncionarioModel } from '../../../../appCydag/models';
 
 import { CmdApi_Funcionario as CmdApi, IChangedLine, FuncionarioClient, LineState, DataEdit } from './types';
@@ -35,8 +35,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
-  const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
+  const loggedUserReq = await LoggedUserReqASync(req, res);
+  const ctrlApiExec = GetCtrlApiExec(req, res, loggedUserReq, ['cmd'], ['_id']);
   const parm = ctrlApiExec.parm;
 
   const resumoApi = new ResumoApi(ctrlApiExec);
@@ -179,15 +179,15 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 revisaoAtual: {
                   ativo: dataEdit.ativo,
                   tipoIni: dataEdit.tipoIni,
-                  mesIni: dataEdit.mesIni != null ? amountParse(dataEdit.mesIni, 0) : undefined,
+                  mesIni: dataEdit.mesIni != null ? amountParseApp(dataEdit.mesIni, 0) : undefined,
                   tipoFim: dataEdit.tipoFim,
-                  mesFim: dataEdit.mesFim != null ? amountParse(dataEdit.mesFim, 0) : undefined,
-                  salario_messy: Funcionario.scrambleSalario(amountParse(dataEdit.salario, configCydag.decimalsSalario), centroCusto, refer),
-                  dependentes: dataEdit.dependentes != null ? amountParse(dataEdit.dependentes, 0) : undefined,
-                  valeTransp: dataEdit.valeTransp != null ? amountParse(dataEdit.valeTransp, configCydag.decimalsSalario) : undefined,
-                  mesPromo: dataEdit.mesPromo != null ? amountParse(dataEdit.mesPromo, 0) : undefined,
+                  mesFim: dataEdit.mesFim != null ? amountParseApp(dataEdit.mesFim, 0) : undefined,
+                  salario_messy: Funcionario.scrambleSalario(amountParseApp(dataEdit.salario, configCydag.decimalsSalario), centroCusto, refer),
+                  dependentes: dataEdit.dependentes != null ? amountParseApp(dataEdit.dependentes, 0) : undefined,
+                  valeTransp: dataEdit.valeTransp != null ? amountParseApp(dataEdit.valeTransp, configCydag.decimalsSalario) : undefined,
+                  mesPromo: dataEdit.mesPromo != null ? amountParseApp(dataEdit.mesPromo, 0) : undefined,
                   tipoColaboradorPromo: dataEdit.tipoColaboradorPromo,
-                  salarioPromo_messy: dataEdit.salarioPromo != null ? Funcionario.scrambleSalario(amountParse(dataEdit.salarioPromo, configCydag.decimalsSalario), centroCusto, refer) : undefined,
+                  salarioPromo_messy: dataEdit.salarioPromo != null ? Funcionario.scrambleSalario(amountParseApp(dataEdit.salarioPromo, configCydag.decimalsSalario), centroCusto, refer) : undefined,
                   despsRecorr: dataEdit.despsRecorr,
                 },
                 lastUpdated: agora,

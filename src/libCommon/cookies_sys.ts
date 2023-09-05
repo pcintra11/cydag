@@ -2,6 +2,6 @@ export const cookiesSys = { // todas apps usam, podendo ser restrito o nome para
   themeVariants: 'themeVariants' as 'themeVariants',
   ctrlLog: 'ctrlLog' as 'ctrlLog',
   browserId: 'browserId' as 'browserId',
-  dbgShowCookieStr: 'dbgShowStr' as 'dbgShowStr',
-  canChangeThemeCookieStr: 'canChangeThemeStr' as 'canChangeThemeStr',
+  cookieDevContext: 'cookieDevContext' as 'cookieDevContext',
+  //canChangeThemeCookieStr: 'canChangeThemeStr' as 'canChangeThemeStr',
 };

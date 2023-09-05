@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb';
 
 import { AddIndex, MongooseSlot, ICollectionDef } from '../libServer/dbMongo';
 
-import { SentMessage, ApiSyncLog, ApiAsyncLog, SendMailLog, RefererLog, ControlledAccess, SystemLog, NotifyAdmCtrl, DbTest, MainCtrl, CacheApp, Junk } from './modelTypes';
+import { SentMessage, ApiSyncLog, ApiAsyncLog, SendMailLog, SiteEntryPoint, ControlledAccess, SystemLog, NotifyAdmCtrl, DbTest, MainCtrl, CacheApp, Junk } from './modelTypes';
 
 export const collectionsDef: ICollectionDef[] = [];
 
@@ -86,7 +86,7 @@ export const ApiSyncLogModel = (() => {
     sessionIdStr: { type: String, required: false },
     shouldDelete: { type: Boolean, required: false },
     additionalInfo: { type: String, required: false },
-    referer: { type: String, required: false }, //@@!!!!!
+    //referer: { type: String, required: false },
   });
   return mongoose.model<ApiSyncLogMd>(modelName, schema);
 })();
@@ -122,17 +122,23 @@ export const ApiAsyncLogModel = (() => {
   return mongoose.model<ApiAsyncLogMd>(modelName, schema);
 })();
 
-const modelNameRefererLogs = 'base_referer_logs';
-interface RefererLogMd extends mongoose.Document<ObjectId, any, RefererLog>, RefererLog { }
-export const RefererLogModel = (() => {
-  const modelName = modelNameRefererLogs;
+//const modelNameRefererLogs = 'base_referer_logs'; //@!!!!!!! remover
+const modelNameSiteEntryPoint = 'base_site_entry_points';
+interface SiteEntryPointMd extends mongoose.Document<ObjectId, any, SiteEntryPoint>, SiteEntryPoint { }
+export const SiteEntryPointModel = (() => {
+  const modelName = modelNameSiteEntryPoint;
   const mongoose = MongooseSlot().mongoose;
   const schema = new mongoose.Schema({
     date: { type: Date, required: true },
     url: { type: String, required: true },
     referer: { type: String, required: false },
+    ip: { type: String, required: true },
+    ipInfo: { type: Object, required: false },
+    browserId: { type: String, required: true },
+    userAgent: { type: String, required: true },
+    browserInfo: { type: Object, required: false },
   });
-  return mongoose.model<RefererLogMd>(modelName, schema);
+  return mongoose.model<SiteEntryPointMd>(modelName, schema);
 })();
 
 const modelNameControlledAccess = 'base_controlled_accesses';
@@ -159,7 +165,7 @@ export const ControlledAccessModel = (() => {
 })();
 
 
-const modelNameSysLogs = 'base_msg_logs';
+const modelNameSysLogs = 'base_system_logs'; // era base_msg_logs
 interface SystemLogMd extends mongoose.Document<ObjectId, any, SystemLog>, SystemLog { }
 export const SystemLogModel = (() => {
   const modelName = modelNameSysLogs;
@@ -172,6 +178,9 @@ export const SystemLogModel = (() => {
     scope: { type: String, required: true }, // 'Server, Client'
     categ: { type: String, required: false },
     point: { type: String, required: false },
+    ip: { type: String, required: false },
+    browserId: { type: String, required: false },
+    userId: { type: ObjectId, required: false },
     msg: { type: String, required: false },
     details: {},
   });

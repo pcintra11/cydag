@@ -1,18 +1,22 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+//import { NextRequest, NextResponse, userAgent } from 'next/server'; //@!!!!!!!!!
 import RequestIp from 'request-ip';
 import { ipVersion } from 'is-ip';
 import URLParse from 'url-parse';
 import * as yup from 'yup';
 import jwtThen from 'jwt-then';
 import { v1 as uuidv1 } from 'uuid';
+import _ from 'underscore';
 
-import { EnvDeployConfig, EnvSvrCtrlLog } from '../app_base/envs';
 import { AddToDate, CompareDates, CutUndef, DateFromStrISO, DateToStrISO, ErrorPlus, FillClassProps, FilterRelevantWordsForSearch, LanguageSearch, SleepMs, StrLeft } from '../libCommon/util';
 import { colorsMsg, csd, dbg, dbgError, dbgWarn, ScopeDbg } from '../libCommon/dbg';
 import { HttpStatusCode, IdByTime, DispAbrev } from '../libCommon/util';
 import { IGenericObject } from '../libCommon/types';
 import { CalcExecTime } from '../libCommon/calcExectime';
 import { CtrlContext } from '../libCommon/ctrlContext';
+
+import { EnvDeployConfig, EnvSvrCtrlLog } from '../app_base/envs';
+import { LoggedUserBase } from '../app_base/loggedUserBase';
 
 export type LogSentMessagesFn = (resultOk: string, resultError: string) => Promise<void>;
 
@@ -29,6 +33,7 @@ export class CtrlApiExec {
   res: NextApiResponse;
   url: string;
   referer: string;
+  userAgent?: string;
   //originHost: string;
   horaStartHttp?: Date;
   //apiHost: string; // com a porta
@@ -45,6 +50,7 @@ export class CtrlApiExec {
   sideCall?: string;  // de onde foi chamado: client ou server
   callSeq?: string;  // seq no chamador da API
   browserId?: string;  // para diferenciar vários navegadores no mesmo dispositivo
+  timeZone?: string;
   ctrlLogCaller?: string;
   execId?: string;  // identificação única para a chamada (gerada sequencialmente em cada chamada, pelo chamado)
   paramsTypeVariant?: string; // principais parâmetros para identificar a chamada, como o 'cmd', type, etc, tudo que identifica o tipo de processamento
@@ -65,7 +71,7 @@ export class CtrlApiExec {
 
 let seqApi = 0;
 
-const ReqParm = (req: NextApiRequest) => {
+export const ReqParm = (req: NextApiRequest) => {
   return (req.method === 'GET') ? req.query : req.body;
 };
 export const ReqNoParm = (req: NextApiRequest) => {
@@ -75,7 +81,7 @@ export const ReqNoParm = (req: NextApiRequest) => {
 };
 
 //let ctrlApiExecGlobal: CtrlApiExec = null;
-export function GetCtrlApiExec(req: NextApiRequest, res: NextApiResponse, paramsTypeVariantSel: string[] = ['cmd'], paramsTypeKeySel: string[] = []) {
+export function GetCtrlApiExec(req: NextApiRequest, res: NextApiResponse, loggedUserReq: LoggedUserBase, paramsTypeVariantSel: string[] = ['cmd'], paramsTypeKeySel: string[] = []) {
   if (EnvDeployConfig().back_end == false)
     throw new Error('Não está habilitado o back-end');
   try {
@@ -91,6 +97,7 @@ export function GetCtrlApiExec(req: NextApiRequest, res: NextApiResponse, params
     ctrlApiExec.url = req.url;
 
     ctrlApiExec.referer = req.headers.referer; // new Referer(req.headers.referer, req.url); // @!!!!!
+    ctrlApiExec.userAgent = req.headers['user-agent'];
     // if (ctrlApiExec.apiPath != apisApp.adm.apiPath &&
     //   ctrlApiExec.apiPath != apisApp.notLoggedApis.apiPath)
     //   delete ctrlApiExec.referer.referers;
@@ -171,11 +178,14 @@ export function GetCtrlApiExec(req: NextApiRequest, res: NextApiResponse, params
       ctrlApiExec.sideCall = ctrlApiExec.parm._parmPlus.sideCall;
       ctrlApiExec.callSeq = ctrlApiExec.parm._parmPlus.callSeq;
       ctrlApiExec.browserId = ctrlApiExec.parm._parmPlus.browserId;
+      ctrlApiExec.timeZone = ctrlApiExec.parm._parmPlus.timeZone;
       ctrlApiExec.ctrlLogCaller = ctrlApiExec.parm._parmPlus.ctrlLog;
       parmPlus = ctrlApiExec.parm._parmPlus;
       //csd({ parmPlus });
       delete ctrlApiExec.parm._parmPlus;
     }
+
+    //const timeZoneSvr = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
     // // @@@!!!
     //SetNivelLog(1, ScopeDbg.db);
@@ -213,7 +223,14 @@ export function GetCtrlApiExec(req: NextApiRequest, res: NextApiResponse, params
       levelMinShow = Math.max(levelMinShow, ctrlLogLevel);
       scopesShow = CtrlContext.CtrlLogJoinScopes(scopesShow, ctrlLogScopes);
     }
-    ctrlApiExec.ctrlContext = new CtrlContext(context, { ctrlLog: `${levelMinShow} ${scopesShow}`, colorContext: colorDestaqSeq++, callSeq: ctrlApiExec.callSeq });
+    ctrlApiExec.ctrlContext = new CtrlContext(context, {
+      colorContext: colorDestaqSeq++,
+      callSeq: ctrlApiExec.callSeq,
+      ctrlLog: `${levelMinShow} ${scopesShow}`,
+      loggedUserReq,
+      ip: ctrlApiExec.ip,
+      browserId: ctrlApiExec.browserId,
+    });
 
     const dbgA = (level: number, point: string, ...params) => dbg({ level, scopeMsg: ScopeDbg.a, ctrlContext: ctrlApiExec.ctrlContext, point }, ...params);
 
@@ -226,8 +243,7 @@ export function GetCtrlApiExec(req: NextApiRequest, res: NextApiResponse, params
     // // else // no vercel tb reaproveita a compilação e a variável fica com o valor da ultima execução
     // //   dbgWarn(`vars varsHttpGlobal já estava setada! (esse: ${VarsHttp.apiCmdCallIdStatic(varsHttp)}) (setada: ${VarsHttp.apiCmdCallIdStatic(varsHttpGlobal)})`);
     return ctrlApiExec;
-  }
-  catch (error) {
+  } catch (error) {
     csd('error em GetCtrlApiExec', error.message);
     return null;
   }
@@ -271,9 +287,8 @@ export const SearchTermsForFindPtBr = (textSearch?: string, codesSearch?: string
 export class ApiResultProc {
   statusCode: HttpStatusCode;
   data: IGenericObject;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new ApiResultProc(); }
-  static fill(values: ApiResultProc, init = false) { return CutUndef(FillClassProps(ApiResultProc.new(init), values)); }
+  static new() { return new ApiResultProc(); }
+  static fill(values: ApiResultProc) { return CutUndef(FillClassProps(ApiResultProc.new(), values)); }
 }
 
 export class ResumoApi { // @@@@!!!! nome!
@@ -342,10 +357,12 @@ export class ResumoApi { // @@@@!!!! nome!
   }
 }
 
-interface IFldError {
-  fldName: string;
+class FldError {
+  fldName?: string;
   msg?: string;
   msgs?: string[];
+  static new() { return new FldError(); }
+  static fill(values: FldError) { return CutUndef(FillClassProps(FldError.new(), values)); }
 }
 // export function ValidateObjectAll(data: IGenericObject, schema: yup.ObjectSchema<any>) { // todos os erros
 //   try {
@@ -373,10 +390,10 @@ export function ValidateObjectFirstError(data: IGenericObject, schema: yup.Objec
     return null;
   } catch (error) {
     //csl(error);
-    return {
+    return FldError.fill({
       fldName: error.path,
       msg: error.message,
-    } as IFldError;
+    });
   }
 }
 
@@ -455,6 +472,7 @@ export async function TokenEncodeASync(tokenType: string, data: IGenericObject, 
   try {
     const agora = new Date();
     const expireIn = AddToDate(agora, { minutes: expirationMinutes });
+    //csd(expireIn, DateToStrISO(expireIn));
     const payLoadCtrl = { data, ctrl: { generateIn: DateToStrISO(agora), expireIn: DateToStrISO(expireIn), type: tokenType, key: RandomKeyToken(8) } };
     //csd({ payLoadCtrl });
     const token = await jwtThen.sign(payLoadCtrl, tokenLinksKey) as string;
@@ -474,7 +492,7 @@ export async function TokenDecodeASync(tokenType: string, token: string) {
   //   throw new Error('Expirado');
   const expired = payLoad.ctrl.expireIn != null && CompareDates(agora, DateFromStrISO(payLoad.ctrl.expireIn)) > 0 ? true : false;
   //if (expired) // @!!!!!
-  //csl('token gerado em:', payLoad.ctrl.generateIn, '; expira em:', payLoad.ctrl.expireIn, expired ? ' **** EXPIRADO ****' : '');
+  //csd('token gerado em:', payLoad.ctrl.generateIn, '; expira em:', payLoad.ctrl.expireIn, expired ? ' **** EXPIRADO ****' : '');
   return { payLoad: payLoad.data, expired, expireIn: DateFromStrISO(payLoad.ctrl.expireIn) };
   // } catch (error) {
   //   throw error;

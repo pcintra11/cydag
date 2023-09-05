@@ -1,17 +1,17 @@
 import { ObjectId } from 'mongodb';
 import _ from 'underscore';
 
-import { configApp } from '../app_hub/appConfig';
-
-import { ApiSyncLog, LoggedUserBase } from '../app_base/modelTypes';
-import { ApiSyncLogModel } from '../app_base/model';
-import { CloseDbASync, ConnectDbASync, UriDb } from './dbMongo';
-
-import { EnvApiTimeout, EnvInfoHost } from '../app_base/envs';
 import { HttpStatusCodeNormais } from '../libCommon/util';
 import { dbgError } from '../libCommon/dbg';
 import { CtrlContext } from '../libCommon/ctrlContext';
 
+import { configApp } from '../app_hub/appConfig';
+import { LoggedUserBase } from '../app_base/loggedUserBase';
+import { ApiSyncLog } from '../app_base/modelTypes';
+import { ApiSyncLogModel } from '../app_base/model';
+import { EnvApiTimeout, EnvInfoHost } from '../app_base/envs';
+
+import { CloseDbASync, ConnectDbASync, UriDb } from './dbMongo';
 import { ApiResultProc, CtrlApiExec } from './util';
 
 interface IApiLogProc {
@@ -57,9 +57,9 @@ export async function ApiLogStart(ctrlApiExec: CtrlApiExec, loggedUserReq?: Logg
         userInfo: userInfo,
         started: agora,
         parm: ctrlApiExec.parm,
-        sessionIdStr: loggedUserReq?.sessionIdStr,
-        referer: ctrlApiExec.referer, // @!!!!!
-      }, true)
+        //sessionIdStr: loggedUserReq?.sessionIdStr,
+        //referer: ctrlApiExec.referer,
+      })
     ) as any)._doc as ApiSyncLog;
     apiLogDb_id = apiLogDb._id;
     ctrlApiExec.ctrlContext.checkElapsed('ApiLogStart create');

@@ -1,3 +1,5 @@
+import { LoggedUserBase } from '../app_base/loggedUserBase';
+
 import { CalcExecTime } from './calcExectime';
 import { colorsMsg, csd, dbg } from './dbg';
 import { StrToNumber } from './util';
@@ -6,16 +8,27 @@ export class CtrlContext {
   context?: string;
   calcExecTime: CalcExecTime;
   lastElapsed: number;
-  ctrlLog?: string;  // para teste nos locais de dbg()
   colorContext?: number;
   callSeq?: string;
-  constructor(context: string, { ctrlLog, colorContext, callSeq }: { ctrlLog?: string, colorContext?: number, callSeq?: string } = {}) {
+
+  // para teste nos locais de dbg() ou logs
+  ctrlLog?: string;
+  loggedUserReq?: LoggedUserBase;
+  ip?: string;
+  browserId?: string;
+
+  constructor(context: string, { colorContext, callSeq, ctrlLog, loggedUserReq, ip, browserId }:
+    { colorContext?: number; callSeq?: string; ctrlLog?: string; loggedUserReq?: LoggedUserBase; ip?: string; browserId?: string } = {}) {
     this.context = context;
     this.calcExecTime = new CalcExecTime();
     this.lastElapsed = 0;
-    this.ctrlLog = ctrlLog;
     this.colorContext = colorContext;
     this.callSeq = callSeq;
+
+    this.ctrlLog = ctrlLog;
+    this.loggedUserReq = loggedUserReq;
+    this.ip = ip;
+    this.browserId = browserId;
   }
   // suffix(suffix: string) {
   //   return new CtrlContext(`${this.context}-${suffix}`);
@@ -35,8 +48,7 @@ export class CtrlContext {
     if (comps.length > 0) {
       try {
         ctrlLogLevel = StrToNumber(comps[0]);
-      }
-      catch (error) { }
+      } catch (error) { }
       ctrlLogScopes = comps.filter((x, index) => index > 0 && x.trim() != '').join(' ');
     }
     return { ctrlLogLevel, ctrlLogScopes };

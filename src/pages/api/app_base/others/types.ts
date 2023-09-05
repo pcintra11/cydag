@@ -1,5 +1,5 @@
 enum CmdApi {
-  logReferer = 'logReferer', 
+  logSiteEntryPoint = 'logSiteEntryPoint', 
   checkBlock = 'checkBlock',
 }
 

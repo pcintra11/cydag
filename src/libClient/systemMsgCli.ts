@@ -1,10 +1,10 @@
-import { apisBase } from '../app_base/endPoints';
-
 import { AssertIsClient } from '../libCommon/sideProc';
 import { colorAlert, colorErr, colorWarn } from '../libCommon/consoleColor';
 import { CategMsgSystem } from '../libCommon/logSystemMsg_cliSvr';
-import { csd, dbgError, dbgShowCli } from '../libCommon/dbg';
+import { csd, dbgError, devContextCli } from '../libCommon/dbg';
 import { CtrlRecursion } from '../libCommon/ctrlRecursion';
+
+import { apisBase } from '../app_base/endPoints';
 
 import { CallApiCliASync } from '../fetcher/fetcherCli';
 
@@ -21,7 +21,7 @@ export async function SystemMsgCli(categMsgSystem: CategMsgSystem, point: string
   let thisCallCtrl = null;
   if ((thisCallCtrl = ctrlRecursion.in(msg)) == null) return;
 
-  const showInClientUse = dbgShowCli();
+  const showInClientUse = devContextCli();
   AssertIsClient('SystemMsgCli', { categMsgSystem, point, msg, details });
   if (typeof msg != 'string')
     csd(colorErr(`**************** typeof msg ${typeof msg}`));

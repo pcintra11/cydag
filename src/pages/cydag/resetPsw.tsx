@@ -3,9 +3,10 @@ import { useRouter } from 'next/router';
 
 import { Box, Stack } from '@mui/material';
 
-import { chgUserAndRouteContext } from '../_appResources';
+//import { chgUserAndRouteContext } from '../_appResources';
 
 import { ErrorPlus, IsErrorManaged, ObjUpdAllProps } from '../../libCommon/util';
+import { csd } from '../../libCommon/dbg';
 
 import { FakeLink, PopupMsg } from '../../components';
 import { Btn, BtnLine, WaitingObs } from '../../components';
@@ -15,7 +16,7 @@ import { FrmError, FrmInput, FrmSetError } from '../../components';
 import { FrmDefaultValues, NormalizePropsString, useFrm } from '../../hooks/useMyForm';
 
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
-import { UserEmailLinkASync, UserResetPswASync, UserSignOut } from '../../appCydag/userResourcesCli';
+import { UserEmailLinkASync, UserResetPswASync } from '../../appCydag/userResourcesCli';
 import { pagesApp } from '../../appCydag/endPoints';
 import { resetPswValidations, UserLinkType } from '../api/appCydag/user/types';
 
@@ -45,7 +46,7 @@ export default function PageResetPsw() {
   const [mainStates, setMainStates] = React.useState<MainStates>({ phase: Phase.initiating });
   mainStatesCache = { ...mainStates }; const setMainStatesCache = (newValues: MainStates) => { if (!mount) return; ObjUpdAllProps(mainStatesCache, newValues); setMainStates({ ...mainStatesCache }); };
 
-  const { chgUserAndRouteStart } = React.useContext(chgUserAndRouteContext);
+  //const { chgUserAndRouteStart } = React.useContext(chgUserAndRouteContext);
   const router = useRouter();
   const { loggedUser, isLoadingUser, setUser } = useLoggedUser({ id: pageSelf.pagePath });
   const agora = new Date();
@@ -67,10 +68,11 @@ export default function PageResetPsw() {
     // }
 
     try {
-      if (loggedUser != null) {
-        UserSignOut(pageSelf.pagePath);
-        setUser(null, pageSelf.pagePath + '(logout)');
-      }
+      // if (loggedUser != null) {
+      //   csd('signout');
+      //   UserSignOut(pageSelf.pagePath);
+      //   setUser(null, pageSelf.pagePath + '(logout)');
+      // }
       setMainStatesCache({ phase: Phase.ready });
     } catch (error) {
       LogErrorUnmanaged(error, `${pageSelf.pagePath}-init`);
@@ -91,13 +93,14 @@ export default function PageResetPsw() {
         //return FrmSetError('Senhas não conferem', null, frm);
         return FrmSetError(frmResetPsw, FrmResetPsw.f.pswConfirm, 'Senha não confere');
       const loggedUserNow = await UserResetPswASync(router.query.token as string, data.email, data.psw, data.pswConfirm);
+      //csd({ loggedUserNow });
       // //csl({ loggedUserNow });
       // //dbg(3, 'resetPsw ok', { loggedUserNow });
       // //SnackBar.success('Senha alterada com sucesso!');
       // setNextPageChangedUser(pagesApp.welcome.pagePath);
-      // setUser(loggedUserNow, pageSelf.pagePath);
-      chgUserAndRouteStart({ loggedUser: loggedUserNow, pagePath: pagesApp.home.pagePath });
-      //setTimeout(() => router.push(pagesApp.logRedir.pagePath), 0);
+      //chgUserAndRouteStart({ loggedUser: loggedUserNow, pagePath: pagesApp.home.pagePath });
+      setUser(loggedUserNow, pageSelf.pagePath);
+      router.push({ pathname: pagesApp.home.pagePath });
     } catch (error) {
       LogErrorUnmanaged(error, `${pageSelf.pagePath}-onSubmit`);
       if (!IsErrorManaged(error)) {
@@ -129,11 +132,11 @@ export default function PageResetPsw() {
     const disabledIfInitiating = isInitiating ? { disabled: true } : {};
 
     return (
-      <Stack gap={1} height='100%' overflow='auto'>
+      <Stack spacing={1} height='100%' overflow='auto'>
         {isInitiating && <WaitingObs />}
 
         <form onSubmit={frmResetPsw.handleSubmit(onSubmit)}>
-          <Stack gap={1}>
+          <Stack spacing={1}>
             {isInitiating
               ? <FrmInput label='Email' value='' />
               : <FrmInput label='Email' frm={frmResetPsw} name={FrmResetPsw.f.email} autoFocus {...disabledIfInitiating} />
@@ -144,7 +147,7 @@ export default function PageResetPsw() {
               <Btn submit {...disabledIfInitiating}>Confirma</Btn>
             </BtnLine>
             {mainStates.showHelp &&
-              <Stack gap={1}>
+              <Stack spacing={1}>
                 <Box>
                   <FakeLink onClick={frmResetPsw.handleSubmit(sendResetPswLink)}>Enviar novo link de reset</FakeLink>
                 </Box>

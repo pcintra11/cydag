@@ -13,17 +13,17 @@ import { CallApiCliASync } from '../../../fetcher/fetcherCli';
 
 import { cssTextNoWrapEllipsis } from '../../../libClient/util';
 
-import { AbortProc, SelOption, PopupMsg, SwitchMy, WaitingObs, SnackBarError, fontSizeGrid, fontSizeIconsInGrid } from '../../../components';
+import { AbortProc, SelOption, PopupMsg, SwitchMy, WaitingObs, fontSizeGrid, fontSizeIconsInGrid, LogErrorUnmanaged, Tx } from '../../../components';
 import { HierNode } from '../../../components/hier';
 import { GridCell } from '../../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 
 import { configApp } from '../../../app_hub/appConfig';
 
-import { IconApp, IconButtonAppSearch, propsColorHeader, propsColorByTotLevel, SelAno, propsColorByCompRealPlan } from '../../../appCydag/components';
+import { IconApp, IconButtonAppSearch, propsColorHeader, propsColorByTotLevel, SelAno, propsColorByCompRealPlan, TxGridHdr, TxGridCel } from '../../../appCydag/components';
 import { apisApp, pagesApp } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
-import { amountToStr, anoAdd, percToStr } from '../../../appCydag/util';
+import { amountToStrApp, anoAdd, percToStrApp } from '../../../appCydag/util';
 import { ClasseCusto, Diretoria, FatorCusto, ProcessoOrcamentario, UnidadeNegocio } from '../../../appCydag/modelTypes';
 import { ValoresComparativoAnual, ColValsComparativoAnual, CategRegional, CategRegionalMd } from '../../../appCydag/types';
 import { CmdApi_ValoresContas as CmdApi } from '../../api/appCydag/valoresContas/types';
@@ -55,15 +55,15 @@ class NodeContent {
   descrComp(nodeClasseCusto: boolean) {
     if (nodeClasseCusto)
       return (
-        <Stack direction='row' alignItems='center' gap={0.5}>
-          <Box className='showConta'>{this.cod}</Box>
-          <Box className='showConta'>-</Box>
-          <Box style={cssTextNoWrapEllipsis}>{this.descr}</Box>
+        <Stack direction='row' alignItems='center' spacing={0.5}>
+          <Tx className='showConta'>{this.cod}</Tx>
+          <Tx className='showConta'>-</Tx>
+          <Tx style={cssTextNoWrapEllipsis}>{this.descr}</Tx>
         </Stack>
       );
     else
       return (
-        <Box style={cssTextNoWrapEllipsis}>{this.descr}</Box>
+        <Tx style={cssTextNoWrapEllipsis}>{this.descr}</Tx>
       );
   }
 }
@@ -144,7 +144,8 @@ export default function PageComparativoAnualControladoria() {
         }
       });
     } catch (error) {
-      SnackBarError(error, `${pageSelf.pagePath}-getItens`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-getItens`);
+      PopupMsg.error(error);
     }
   };
   //#endregion
@@ -267,7 +268,8 @@ export default function PageComparativoAnualControladoria() {
         setMainStatesCache({ phase: Phase.ready, processoOrcamentarioArray, unidadeNegocioArray, diretoriaArray, fatorCustoArray, classeCustoArray });
       })
       .catch((error) => {
-        SnackBarError(error, `${pageSelf.pagePath}-initialization`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-initialization`);
+        PopupMsg.error(error);
       });
     return () => { mount = false; };
   }, [router?.asPath]);
@@ -294,7 +296,7 @@ export default function PageComparativoAnualControladoria() {
     const processoOrcamentarioArray = mainStates.processoOrcamentarioArray != null ? mainStates.processoOrcamentarioArray : [];
     return (
       <form onSubmit={frmFilter.handleSubmit(getItensSubmit)}>
-        <Stack direction='row' alignItems='center' gap={1}>
+        <Stack direction='row' alignItems='center' spacing={1}>
           <SelAno value={ano} onChange={(newValue) => frmFilter.setValue(ValoresComparativoAnual.F.ano, newValue || '')}
             options={processoOrcamentarioArray.map((x) => new SelOption(x.ano, x.ano))}
           />
@@ -318,11 +320,11 @@ export default function PageComparativoAnualControladoria() {
       const comps: string[] = [];
       if (dataStructure.headerInfo != null)
         comps.push(dataStructure.headerInfo);
-      if (comps.length > 0) return (<Box style={cssTextNoWrapEllipsis}>{comps.join(' ')}</Box>);
+      if (comps.length > 0) return (<Tx style={cssTextNoWrapEllipsis}>{comps.join(' ')}</Tx>);
       else return (<></>);
     };
 
-    const propsColorsHdr = propsColorHeader(themePlus);
+    const propsColorsHdr = propsColorHeader();
     const HeaderComp = () => {
       const [showConta, setShowConta] = React.useState(statesCompsSubord.showConta);
       const anoAbrev = dataStructure.processoOrcamentario.ano.substring(2, 4);
@@ -330,17 +332,17 @@ export default function PageComparativoAnualControladoria() {
       return (
         <>
           <GridCell sticky {...propsColorsHdr}>
-            <Stack direction='row' alignItems='center' gap={3}>
-              <Box>Conta</Box>
-              <SwitchMy size='small' label={<Box sx={{ color: propsColorsHdr.color, fontSize: 'small' }}>código</Box>} checked={showConta}
+            <Stack direction='row' alignItems='center' spacing={3}>
+              <TxGridHdr>Conta</TxGridHdr>
+              <SwitchMy size='small' label={<TxGridHdr sx={{ color: propsColorsHdr.color, fontSize: 'small' }}>código</TxGridHdr>} checked={showConta}
                 onChange={(ev) => { setShowConta(ev.target.checked); statesCompsSubord.setShowConta(ev.target.checked); }} />
             </Stack>
           </GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Orçado {anoAntAbrev}</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Real {anoAntAbrev}</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Orçado {anoAbrev}</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Dif. (OxR)</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Dif. (OxR) %</Box></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Orçado {anoAntAbrev}</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Real {anoAntAbrev}</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Orçado {anoAbrev}</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Dif. (OxR)</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Dif. (OxR) %</TxGridHdr></GridCell>
         </>
       );
     };
@@ -362,7 +364,7 @@ export default function PageComparativoAnualControladoria() {
         const descrUse =
           <>
             {node.group
-              ? <Stack direction='row' alignItems='center' gap={1} sx={{ cursor: 'pointer' }} onClick={() => setStateOpen(!stateOpen)}>
+              ? <Stack direction='row' alignItems='center' spacing={1} sx={{ cursor: 'pointer' }} onClick={() => setStateOpen(!stateOpen)}>
                 <IconApp icon={stateOpen ? 'colapse' : 'expand'} fontSize={fontSizeIconsInGrid} />
                 {node.nodeContent.descrComp(node.nodeType === NodeType.classeCusto)}
               </Stack>
@@ -381,11 +383,11 @@ export default function PageComparativoAnualControladoria() {
         return (<>
           <GridCell {...propsColorLevel}><Box pl={paddingLeft}>{descrUse}</Box></GridCell>
 
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planAnt, configCydag.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.realAnt, configCydag.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planAtu, configCydag.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right' {...propsColorVar}>{amountToStr(varAbs, configCydag.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right'>{percToStr(varPerc)}</GridCell>
+          <GridCell textAlign='right'><TxGridCel>{amountToStrApp(node.nodeContent.vals.planAnt, configCydag.decimalsValsCons)}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{amountToStrApp(node.nodeContent.vals.realAnt, configCydag.decimalsValsCons)}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{amountToStrApp(node.nodeContent.vals.planAtu, configCydag.decimalsValsCons)}</TxGridCel></GridCell>
+          <GridCell textAlign='right' {...propsColorVar}><TxGridCel>{amountToStrApp(varAbs, configCydag.decimalsValsCons)}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{percToStrApp(varPerc)}</TxGridCel></GridCell>
         </>);
       };
 
@@ -413,7 +415,7 @@ export default function PageComparativoAnualControladoria() {
     const nrCols = 6;
     const CompShowHier = ({ nodes, title }: { nodes: HierNode<NodeContent>[], title: string }) =>
       <>
-        <GridCell columnSpan={nrCols} {...propsColorsHdr} textAlign='center'>{title}</GridCell>
+        <GridCell columnSpan={nrCols} {...propsColorsHdr} textAlign='center'><TxGridHdr>{title}</TxGridHdr></GridCell>
         {nodes.filter((node) => node.idPai == null).map((node, index) =>
           <ValoresNodeComp key={index} nodes={nodes} node={node} level={0} />
         )}
@@ -457,7 +459,7 @@ export default function PageComparativoAnualControladoria() {
 
   return (
     <>
-      <Stack gap={1} height='100%'>
+      <Stack spacing={1} height='100%'>
         <FilterComp />
         <DataComp />
       </Stack>

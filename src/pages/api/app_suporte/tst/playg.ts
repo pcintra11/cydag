@@ -1,20 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { v1 as uuidv1 } from 'uuid';
 
-import { SentMessageLogASync } from '../../../../app_base/SentMessageLog';
-import { DbTest, Junk } from '../../../../app_base/modelTypes';
-import { DbTestModelX, JunkModel } from '../../../../app_base/model';
-import { AsyncProcForceHttpStatus, GravaDbTestAsyncApi } from '../../../../app_suporte/asyncApiCustomCall';
-import { ConnectDbASync, CloseDbASync, UriDb, SwitchForceCloseDb } from '../../../../libServer/dbMongo';
-import { NotifyAdmASync } from '../../../../libServer/notifyAdm';
-
-import { EnvDeployConfig, EnvInfoHost } from '../../../../app_base/envs';
 import { DateDisp, ErrorPlus, HoraDebug, HttpStatusCode, NumberOrDef, RandomNumber, SleepMsDev, WaitMs } from '../../../../libCommon/util';
 import { IGenericObject } from '../../../../libCommon/types';
 import { csd, dbg, ScopeDbg } from '../../../../libCommon/dbg';
 import { CategMsgSystem } from '../../../../libCommon/logSystemMsg_cliSvr';
 import { CalcExecTime } from '../../../../libCommon/calcExectime';
 
+import { ConnectDbASync, CloseDbASync, UriDb, SwitchForceCloseDb } from '../../../../libServer/dbMongo';
+import { NotifyAdmASync } from '../../../../libServer/notifyAdm';
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { ResumoApi, GetCtrlApiExec } from '../../../../libServer/util';
 import { ApiStatusDataByErrorASync } from '../../../../libServer/apiStatusDataByError';
@@ -26,6 +20,12 @@ import { NewPromiseExecUntilCloseDb, NewPromiseExecUntilResponse, IPromiseCtrl }
 import { SendEmailAsyncApi } from '../../../../libServer/asyncProcsCalls';
 import { SystemMsgSvrASync } from '../../../../libServer/systemMsgSvr';
 
+import { EnvDeployConfig, EnvInfoHost } from '../../../../app_base/envs';
+import { SentMessageLogASync } from '../../../../app_base/SentMessageLog';
+import { DbTest, Junk } from '../../../../app_base/modelTypes';
+import { DbTestModelX, JunkModel } from '../../../../app_base/model';
+import { AsyncProcForceHttpStatus, GravaDbTestAsyncApi } from '../../../../app_suporte/asyncApiCustomCall';
+
 import { apisTst } from '../../../../app_suporte/endPoints';
 
 import { CmdApi_Playg } from './playg_types';
@@ -36,7 +36,7 @@ const databaseTst = 'tst';
 const apiSelf = apisTst.playg;
 export default async function (req: NextApiRequest, res: NextApiResponse) {
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
-  const ctrlApiExec = GetCtrlApiExec(req, res);
+  const ctrlApiExec = GetCtrlApiExec(req, res, null);
   //let apiCmdCallId = varsHttp.apiPathCallIdMainParams();
   const parm = ctrlApiExec.parm;
   const resumoApi = new ResumoApi(ctrlApiExec);
@@ -322,11 +322,11 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
       });
       const result: IGenericObject = {};
       if (parm.cmdCookie == 'set')
-        await HttpCriptoCookieCmdASync(ctrlApiExec, parm.cmdCookie, httpCryptoCookieConfig, 'set', { domain: EnvDeployConfig().domain }, parm.value);
+        await HttpCriptoCookieCmdASync(req, res, parm.cmdCookie, httpCryptoCookieConfig, 'set', { domain: EnvDeployConfig().domain }, parm.value);
       else if (parm.cmdCookie == 'remove')
-        await HttpCriptoCookieCmdASync(ctrlApiExec, parm.cmdCookie, httpCryptoCookieConfig, 'set', { domain: EnvDeployConfig().domain }, null);
+        await HttpCriptoCookieCmdASync(req, res, parm.cmdCookie, httpCryptoCookieConfig, 'set', { domain: EnvDeployConfig().domain }, null);
       else if (parm.cmdCookie == 'get')
-        result.value = await HttpCriptoCookieCmdASync(ctrlApiExec, parm.cmdCookie, httpCryptoCookieConfig, 'get', { domain: EnvDeployConfig().domain });
+        result.value = await HttpCriptoCookieCmdASync(req, res, parm.cmdCookie, httpCryptoCookieConfig, 'get', { domain: EnvDeployConfig().domain });
       resumoApi.jsonData({ horaFim: HoraDebug(), parm, value: result });
     }
     else if (parm.cmd == CmdApi_Playg.envs) {
@@ -407,8 +407,7 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
 
     else
       throw new Error(`cmd '${parm.cmd}' não previsto`);
-  }
-  catch (error) {
+  } catch (error) {
     const { httpStatusCode, jsonErrorData } = await ApiStatusDataByErrorASync(error, 'throw', parm, ctrlApiExec);
     resumoApi.status(httpStatusCode).jsonData(jsonErrorData);
   }

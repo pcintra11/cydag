@@ -36,8 +36,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
-  const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
+  const loggedUserReq = await LoggedUserReqASync(req, res);
+  const ctrlApiExec = GetCtrlApiExec(req, res, loggedUserReq, ['cmd'], ['_id']);
   const parm = ctrlApiExec.parm;
   const parmPsw = parm.psw;
   const parmPswConfirm = parm.pswConfirm;
@@ -101,7 +101,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         const loggedUserNow = User.loggedUser(userDb, parm.email, agora, agora, agora, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta); // , cookieUserConfig.TTLSeconds
         await CheckBlockAsync(loggedUserNow);
 
-        await HttpCriptoCookieCmdASync(ctrlApiExec, `user:${parm.cmd}`, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, loggedUserNow);
+        await HttpCriptoCookieCmdASync(req, res, `user:${parm.cmd}`, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, loggedUserNow);
         resumoApi.jsonData({ value: loggedUserNow });
       }
 

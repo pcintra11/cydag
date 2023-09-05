@@ -10,7 +10,7 @@ import { PageDef } from '../../../libCommon/endPoints';
 
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
 
-import { AlertMy, PopupMsg, SnackBarError } from '../../../components';
+import { AlertMy, PopupMsg, Tx } from '../../../components';
 import { Btn, BtnLine, WaitingObs } from '../../../components';
 import { AbortProc, LogErrorUnmanaged } from '../../../components';
 import { FrmError, FrmInput } from '../../../components';
@@ -70,7 +70,8 @@ export default function PageEmpresaCrud() {
       await ForceWait(calcExecTimeSearch.elapsedMs(), configApp.forceWaitMinimumMs);
       setMainStatesCache({ listing: { searching: false, dataRows: documents, partialResults: apiReturn.value.partialResults } });
     } catch (error) {
-      SnackBarError(error, `${pageSelf.pagePath}-onSubmit`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-onSubmit`);
+      PopupMsg.error(error);
     }
   };
   const onSubmitInsert = async (dataForm) => {
@@ -139,24 +140,24 @@ export default function PageEmpresaCrud() {
     if (mainStates.phase == Phase.list) {
       const colsGridConfig = [
         new ColGridConfig(
-          <Stack direction='row' alignItems='center' gap={1} justifyContent='center'>
+          <Stack direction='row' alignItems='center' spacing={1} justifyContent='center'>
             <IconButtonAppCrud icon='create' onClick={() => setPhase(Phase.insert)} />
           </Stack>,
           ({ index }: { index: number }) => (
-            <Stack direction='row' alignItems='center' gap={1}>
+            <Stack direction='row' alignItems='center' spacing={1}>
               <IconButtonAppCrud icon='edit' onClick={() => setPhase(Phase.update, index)} />
               <IconButtonAppCrud icon='delete' onClick={() => setPhase(Phase.delete, index)} />
             </Stack>
           )
         ),
-        new ColGridConfig('Código', ({ data }: { data: Entity_Crud }) => data.cod),
-        new ColGridConfig('Descrição', ({ data }: { data: Entity_Crud }) => data.descr, { width: '1fr' }),
+        new ColGridConfig(<Tx>Código</Tx>, ({ data }: { data: Entity_Crud }) => <Tx>{data.cod}</Tx>),
+        new ColGridConfig(<Tx>Descrição</Tx>, ({ data }: { data: Entity_Crud }) => <Tx>{data.descr}</Tx>, { width: '1fr' }),
       ];
 
       return (
-        <Stack gap={1} height='100%'>
+        <Stack spacing={1} height='100%'>
           <form onSubmit={frmFilter.handleSubmit(onSubmitList)}>
-            <Stack direction='row' alignItems='center' gap={1}>
+            <Stack direction='row' alignItems='center' spacing={1}>
               <Box flex={1}>
                 <FrmInput placeholder='termos de busca' frm={frmFilter} name={Entity_Crud.F.searchTerms} width='100%' autoFocus />
               </Box>
@@ -166,10 +167,10 @@ export default function PageEmpresaCrud() {
           <Box flex={1} overflow='hidden'>
             {mainStates.listing.searching
               ? <WaitingObs text='buscando' />
-              : <Stack gap={1} height='100%'>
+              : <Stack spacing={1} height='100%'>
                 {(mainStates.listing.partialResults) && <AlertMy>Resultados parciais</AlertMy>}
-                {(mainStates.filterApplyed && mainStates.listing.dataRows.length == 0) && <Box>Nada encontrado</Box>}
-                <TableGrid
+                {(mainStates.filterApplyed && mainStates.listing.dataRows.length == 0) && <Tx>Nada encontrado</Tx>}
+                <TableGrid fullHeightScroll
                   colsGridConfig={colsGridConfig}
                   dataRows={mainStates.listing.dataRows}
                 />
@@ -193,9 +194,9 @@ export default function PageEmpresaCrud() {
     const isDelete = mainStates.phase == Phase.delete;
 
     return (
-      <Stack gap={1} height='100%' overflow='auto'>
+      <Stack spacing={1} height='100%' overflow='auto'>
         <form onSubmit={frmData.handleSubmit(phaseCrud.onSubmit)}>
-          <Stack gap={1}>
+          <Stack spacing={1}>
             <FrmInput label='Código' frm={frmData} name={Entity_Crud.F.cod} autoFocus={isInsert} disabled={!isInsert} />
             <FrmInput label='Descrição' frm={frmData} name={Entity_Crud.F.descr} autoFocus={!isInsert} disabled={isDelete} />
             <BtnLine>

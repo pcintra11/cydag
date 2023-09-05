@@ -23,7 +23,7 @@ import { apisApp, rolesApp } from '../../../../appCydag/endPoints';
 import { FuncaoTerceiroModel, UserModel } from '../../../../appCydag/models';
 import { ProcessoOrcamentarioCentroCustoModel, ProcessoOrcamentarioModel, TerceiroModel } from '../../../../appCydag/models';
 import { ccsAuthArray, CheckProcCentroCustosAuth, IAuthCC, procsCentroCustosConfigAuthAllYears } from '../../../../appCydag/utilServer';
-import { amountParse } from '../../../../appCydag/util';
+import { amountParseApp } from '../../../../appCydag/util';
 
 import { CmdApi_Terceiro as CmdApi, IChangedLine, LineState } from './types';
 import { configCydag } from '../../../../appCydag/configCydag';
@@ -33,8 +33,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
-  const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
+  const loggedUserReq = await LoggedUserReqASync(req, res);
+  const ctrlApiExec = GetCtrlApiExec(req, res, loggedUserReq, ['cmd'], ['_id']);
   const parm = ctrlApiExec.parm;
 
   const resumoApi = new ResumoApi(ctrlApiExec);
@@ -149,7 +149,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 nome: terceirosEdit.nome,
                 fornecedor: terceirosEdit.fornecedor,
                 funcaoTerceiros: terceirosEdit.funcaoTerceiros,
-                valMeses: terceirosEdit.valMeses.map((x) => amountParse(x, configCydag.decimalsValsInput)),
+                valMeses: terceirosEdit.valMeses.map((x) => amountParseApp(x, configCydag.decimalsValsInput)),
                 lastUpdated: agora,
               });
             }

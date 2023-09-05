@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import * as Papa from 'papaparse';
 import { FileRejection, useDropzone } from 'react-dropzone';
 
-import { Box, Stack, useTheme } from '@mui/material';
+import { Box, DialogContent, DialogContentText, Stack, useTheme } from '@mui/material';
 
 import { ObjUpdAllProps, ErrorPlus, ForceWait, mimeTypes } from '../../libCommon/util';
 import { IGenericObject } from '../../libCommon/types';
@@ -18,7 +18,7 @@ import { CallApiCliASync } from '../../fetcher/fetcherCli';
 import { SaveAsXlsx } from '../../libClient/saveAsClient';
 import { propsByMessageLevel } from '../../libClient/util';
 
-import { DialogMy, FakeLink, PopupMsg, SnackBarError } from '../../components';
+import { DialogMy, FakeLink, PopupMsg, Tx } from '../../components';
 import { Btn, BtnLine, WaitingObs } from '../../components';
 import { AbortProc, LogErrorUnmanaged } from '../../components';
 import { FrmInput } from '../../components';
@@ -72,12 +72,16 @@ export default function PageProcessoOrcamentario() {
     if (status == ProcessoOrcamentarioStatus.encerrado) {
       const resposta = 'ENCERRA';
       DialogMy({
-        body: 'Esse ano será totalmente encerrado e não poderá ser reaberto para ajustes. Os dados serão mantido para consulta.',
+        body:
+          <DialogContent>
+            <DialogContentText>
+              Esse ano será totalmente encerrado e não poderá ser reaberto para ajustes. Os dados serão mantido para consulta.
+            </DialogContentText>
+          </DialogContent>,
         dialogInputs: [
           { label: `Digite ${resposta} para confirmar o procedimento` },
         ],
         buttons: [
-          { text: 'Cancela' },
           {
             text: 'Efetivar',
             fnCheck: (inputResponses: string[]) => inputResponses[0].trim().toUpperCase() !== resposta ? 'Resposta inválida' : null,
@@ -115,7 +119,8 @@ export default function PageProcessoOrcamentario() {
         throw new Error(`cmd ${cmdApi} inválido`);
       setMainStatesCache({ phase: Phase.list, listing: { ...mainStates.listing, dataRows: dataRowsRefresh }, data: null, index: null });
     } catch (error) {
-      SnackBarError(error, `${pageSelf.pagePath}-efetiva-${cmdApi}`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-efetiva-${cmdApi}`);
+      PopupMsg.error(error);
     }
   };
   const downloadConfigCCsAndRefs = () => {
@@ -237,7 +242,7 @@ export default function PageProcessoOrcamentario() {
           try {
             const papaCsv = Papa.parse(csvString, { delimiter: configApp.csvDelimiter });
             if (papaCsv.errors.length != 0) {
-              SnackBarError('Erro ao interpretar o arquivo csv', `${pageSelf.pagePath}-Papa.parse`);
+              PopupMsg.error('Erro ao interpretar o arquivo csv');
               setMainStatesCache({ uploadStatus: UploadStatus.none });
               return;
             }
@@ -251,7 +256,8 @@ export default function PageProcessoOrcamentario() {
             await ForceWait(calcExecTimeSearch.elapsedMs(), configApp.forceWaitMinimumMs * 3);
             setMainStatesCache({ uploadStatus: UploadStatus.done, uploadResult });
           } catch (error) {
-            SnackBarError(error, `${pageSelf.pagePath}-onDrop`);
+            LogErrorUnmanaged(error, `${pageSelf.pagePath}-onDrop`);
+            PopupMsg.error(error);
             setMainStatesCache({ uploadStatus: UploadStatus.error });
           }
         });
@@ -263,7 +269,10 @@ export default function PageProcessoOrcamentario() {
     maxSize: 5000000,
     multiple: true,
     //validator: (file) => UploadFileNameValidator(file, { suffix: uploadFilenameSuffix }),
-    onError: (error) => SnackBarError(error, 'useDropzone'),
+    onError: (error) => {
+      LogErrorUnmanaged(error, 'useDropzone');
+      PopupMsg.error(error);
+    },
     onDrop,
   });
   //#endregion
@@ -325,7 +334,7 @@ export default function PageProcessoOrcamentario() {
       const colsGridConfig = [
         new ColGridConfig(
           allowInsert
-            ? <Stack direction='row' alignItems='center' gap={1} justifyContent='center'>
+            ? <Stack direction='row' alignItems='center' spacing={1} justifyContent='center'>
               <IconButtonAppCrud icon='create' onClick={() => insert()} />
             </Stack>
             : '',
@@ -349,7 +358,7 @@ export default function PageProcessoOrcamentario() {
             // else if (data.status === ProcessoOrcamentarioStatus.encerrado)
             //   statusRetroage = { text: 'Reabre', status: ProcessoOrcamentarioStatus.bloqueado };
             return (
-              <Stack direction='row' alignItems='center' gap={2}>
+              <Stack direction='row' alignItems='center' spacing={2}>
                 {statusRetroage != null &&
                   <Cmd onClick={() => setProcessoOrcamentarioStatus(index, statusRetroage.status)}>
                     {'<='} {statusRetroage.text}
@@ -375,17 +384,17 @@ export default function PageProcessoOrcamentario() {
             );
           }
         ),
-        new ColGridConfig('Ano', ({ data }: { data: Entity }) => data.ano),
-        new ColGridConfig('Status', ({ data }: { data: Entity }) => ProcessoOrcamentarioStatusMd.descr(data.status)),
-        new ColGridConfig('Obs', ({ data }: { data: Entity }) => data.obsArray().map((x, index) => <Box key={index}>{x}</Box>), { width: '1fr' }),
+        new ColGridConfig(<Tx>Ano</Tx>, ({ data }: { data: Entity }) => <Tx>{data.ano}</Tx>),
+        new ColGridConfig(<Tx>Status</Tx>, ({ data }: { data: Entity }) => <Tx>{ProcessoOrcamentarioStatusMd.descr(data.status)}</Tx>),
+        new ColGridConfig(<Tx>Obs</Tx>, ({ data }: { data: Entity }) => data.obsArray().map((x, index) => <Tx key={index}>{x}</Tx>), { width: '1fr' }),
         //new ColGridConfig('Perc. Limite Alerta', ({ data }: { data: Entity }) => data.percLimiteFarois, { width: '1fr' }),
       ];
 
       return (
-        <Stack gap={1} height='100%'>
+        <Stack spacing={1} height='100%'>
           <Box flex={1} overflow='hidden'>
-            <Stack gap={1} height='100%'>
-              <TableGrid
+            <Stack spacing={1} height='100%'>
+              <TableGrid fullHeightScroll
                 colsGridConfig={colsGridConfig}
                 dataRows={mainStates.listing.dataRows}
               />
@@ -398,8 +407,8 @@ export default function PageProcessoOrcamentario() {
     else if (mainStates.phase == Phase.configCCs) {
 
       return (
-        <Stack gap={1} height='100%' overflow='auto'>
-          <Stack gap={1}>
+        <Stack spacing={1} height='100%' overflow='auto'>
+          <Stack spacing={1}>
             <FrmInput label='Ano' value={mainStates.data.ano} disabled />
             <FakeLink onClick={() => downloadConfigCCsAndRefs()}>
               Baixe aqui os arquivos de suporte para essa atualização
@@ -410,15 +419,15 @@ export default function PageProcessoOrcamentario() {
 
             {mainStates.uploadStatus == UploadStatus.loading && <WaitingObs text='Carregando' />}
             {mainStates.uploadStatus == UploadStatus.done &&
-              <Stack gap={0.2}>
+              <Stack spacing={0.2}>
                 {(mainStates.uploadResult.linesOk + mainStates.uploadResult.linesError) !== 0 &&
-                  <Box>
+                  <Tx>
                     Linhas processadas: com sucesso {mainStates.uploadResult.linesOk} ;
                     com erro {mainStates.uploadResult.linesError}
-                  </Box>
+                  </Tx>
                 }
                 {mainStates.uploadResult.messages.map((x, index) =>
-                  <Box key={index} sx={propsByMessageLevel(themePlus, x.level)}>{x.message}</Box>
+                  <Tx key={index} sx={propsByMessageLevel(themePlus, x.level)}>{x.message}</Tx>
                 )}
               </Stack>
             }

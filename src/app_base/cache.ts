@@ -5,9 +5,8 @@ import { CacheModel } from './model';
 export class CacheKeys {
   key1?: string;
   key2?: string;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new CacheKeys(); }
-  static fill(values: CacheKeys, init = false) { return CutUndef(FillClassProps(CacheKeys.new(init), values)); }
+  static new() { return new CacheKeys(); }
+  static fill(values: CacheKeys) { return CutUndef(FillClassProps(CacheKeys.new(), values)); }
 }
 
 export const CacheSet = async (keys: CacheKeys, data: string) => {

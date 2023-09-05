@@ -2,7 +2,7 @@ import React from 'react';
 import { useRouter } from 'next/router';
 
 import Box from '@mui/material/Box';
-import { Stack, useTheme } from '@mui/material';
+import { Stack } from '@mui/material';
 
 import { BinSearchProp, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../../libCommon/util';
 import { csd } from '../../../libCommon/dbg';
@@ -12,17 +12,17 @@ import { PageDef } from '../../../libCommon/endPoints';
 import { CalcExecTime } from '../../../libCommon/calcExectime';
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
 
-import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, SnackBarError, fontSizeGrid, fontSizeIconsInGrid } from '../../../components';
+import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, fontSizeGrid, fontSizeIconsInGrid, LogErrorUnmanaged, Tx } from '../../../components';
 import { GridCell, GridCellEdit, IFldChange, GridEditFldCtrl, GridEditMainCtrl, ValueType } from '../../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 
 import { isAmbDev } from '../../../app_base/envs';
 import { configApp } from '../../../app_hub/appConfig';
 
-import { IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, SelAno, SelEntity, SelRevisao } from '../../../appCydag/components';
+import { IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, SelAno, SelEntity, SelRevisao, TxGridCel, TxGridHdr } from '../../../appCydag/components';
 import { apisApp, pagesApp } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
-import { amountToStr } from '../../../appCydag/util';
+import { amountToStrApp } from '../../../appCydag/util';
 import { CentroCusto, Funcionario, Premissa, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto } from '../../../appCydag/modelTypes';
 import { CentroCustoConfigOption, IAnoCentroCustos, OrigemFunc, OrigemFuncMd, ProcCentrosCustoConfig, RevisaoValor, TipoColaboradorMd, TipoParticipPerOrcamMd, ProcessoOrcamentarioStatusMd, OperInProcessoOrcamentario } from '../../../appCydag/types';
 
@@ -109,8 +109,6 @@ export default function PageFuncionarioCrud() {
   const router = useRouter();
   const { loggedUser, isLoadingUser } = useLoggedUser({ id: pageSelf.pagePath });
 
-  const themePlus = useTheme();
-
   //#region db access
   const initialization = async () => {
     const apiReturn = await apis.crud({ cmd: CmdApi.crudInitialization });
@@ -153,7 +151,8 @@ export default function PageFuncionarioCrud() {
         }
       });
     } catch (error) {
-      SnackBarError(error, `${pageSelf.pagePath}-getItens`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-getItens`);
+      PopupMsg.error(error);
     }
   };
   const setItens = async (filter: FrmFilter, changedLines: IChangedLine[]) => {
@@ -162,7 +161,8 @@ export default function PageFuncionarioCrud() {
       PopupMsg.success(`Dados gravados para ${filter.ano} / ${filter.centroCusto}.`);
       getItens(filter);
     } catch (error) {
-      SnackBarError(error, `${pageSelf.pagePath}-setItens`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-setItens`);
+      PopupMsg.error(error);
     }
   };
   //#endregion
@@ -185,7 +185,8 @@ export default function PageFuncionarioCrud() {
         setMainStatesCache({ phase: Phase.ready, anoCentroCustosArray });
       })
       .catch((error) => {
-        SnackBarError(error, `${pageSelf.pagePath}-initialization`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-initialization`);
+        PopupMsg.error(error);
       });
     return () => { mount = false; };
   }, []);
@@ -241,7 +242,7 @@ export default function PageFuncionarioCrud() {
     const centroCustoOptions = mainStatesFilter.centroCustoOptions == null ? null : mainStatesFilter.centroCustoOptions.map((x) => new SelOption(x.cod, x.descr));
     return (
       <form onSubmit={frmFilter.handleSubmit(getItensSubmit)}>
-        <Stack direction='row' alignItems='center' gap={1}>
+        <Stack direction='row' alignItems='center' spacing={1}>
           {/* <SelectMy width='80px'
             value={ano || ''}
             onChange={
@@ -308,67 +309,67 @@ export default function PageFuncionarioCrud() {
       const comps = [];
       if (dataStructure.headerInfo != null)
         comps.push(`${dataStructure.headerInfo}`);
-      if (comps.length > 0) return (<Box>{comps.join(' ')}</Box>);
+      if (comps.length > 0) return (<Tx>{comps.join(' ')}</Tx>);
       else return (<></>);
     };
 
-    const showPromo = isAmbDev();
+    const showPromo = isAmbDev(); //#!!!!!!!!!!! devContextCli
     const colsPromo = showPromo ? 3 : 0;
 
-    const propsColorsHdr = propsColorHeader(themePlus);
+    const propsColorsHdr = propsColorHeader();
     const HeaderComp = () => {
       const permiteNovos = dataStructure.processoOrcamentarioCentroCusto.permiteNovosClb && dataStructure.canEdit;
       return (
         <>
-          <GridCell textAlign='center' columnSpan={8} rowSpan={2} {...propsColorsHdr}><Box>Informações Gerais</Box></GridCell>
+          <GridCell textAlign='center' columnSpan={8} rowSpan={2} {...propsColorsHdr}><TxGridHdr>Informações Gerais</TxGridHdr></GridCell>
 
-          <GridCell textAlign='center' columnSpan={8 + colsPromo + premissaDespRecorrArray.length} {...propsColorsHdr}><Box>Participação no Orçamento</Box></GridCell>
+          <GridCell textAlign='center' columnSpan={8 + colsPromo + premissaDespRecorrArray.length} {...propsColorsHdr}><TxGridHdr>Participação no Orçamento</TxGridHdr></GridCell>
 
-          <GridCell textAlign='center' columnSpan={1} {...propsColorsHdr}><Box></Box></GridCell>
-          <GridCell textAlign='center' columnSpan={2} {...propsColorsHdr}><Box>Início</Box></GridCell>
-          <GridCell textAlign='center' columnSpan={2} {...propsColorsHdr}><Box>Fim</Box></GridCell>
-          <GridCell textAlign='center' columnSpan={3} {...propsColorsHdr}><Box>Valores</Box></GridCell>
+          <GridCell textAlign='center' columnSpan={1} {...propsColorsHdr}><TxGridHdr></TxGridHdr></GridCell>
+          <GridCell textAlign='center' columnSpan={2} {...propsColorsHdr}><TxGridHdr>Início</TxGridHdr></GridCell>
+          <GridCell textAlign='center' columnSpan={2} {...propsColorsHdr}><TxGridHdr>Fim</TxGridHdr></GridCell>
+          <GridCell textAlign='center' columnSpan={3} {...propsColorsHdr}><TxGridHdr>Valores</TxGridHdr></GridCell>
           {showPromo &&
-            <GridCell textAlign='center' columnSpan={colsPromo} {...propsColorsHdr}><Box>Promoção</Box></GridCell>
+            <GridCell textAlign='center' columnSpan={colsPromo} {...propsColorsHdr}><TxGridHdr>Promoção</TxGridHdr></GridCell>
           }
-          <GridCell textAlign='center' columnSpan={premissaDespRecorrArray.length} {...propsColorsHdr} ><Box>Outros</Box></GridCell>
+          <GridCell textAlign='center' columnSpan={premissaDespRecorrArray.length} {...propsColorsHdr} ><TxGridHdr>Outros</TxGridHdr></GridCell>
 
           <GridCell sticky textAlign='center' {...propsColorsHdr}>
             {permiteNovos
-              ? <Stack direction='row' alignItems='center' gap={1} justifyContent='center'>
+              ? <Stack direction='row' alignItems='center' spacing={1} justifyContent='center'>
                 <IconButtonAppCrud icon='create' colorSx={propsColorsHdr.color} onClick={() => newLine()} />
               </Stack>
               : <></>
             }
           </GridCell>
-          <GridCell sticky textAlign='left' {...propsColorsHdr}><Box>Origem</Box></GridCell>
-          <GridCell sticky textAlign='left' {...propsColorsHdr}><Box>Refer</Box></GridCell>
-          <GridCell sticky textAlign='left' {...propsColorsHdr}><Box>Nome</Box></GridCell>
-          <GridCell sticky textAlign='left' {...propsColorsHdr}><Box>Id Vaga</Box></GridCell>
-          <GridCell sticky textAlign='left' {...propsColorsHdr}><Box>Tipo Clb.</Box></GridCell>
-          <GridCell sticky textAlign='left' {...propsColorsHdr}><Box>Função</Box></GridCell>
-          <GridCell sticky textAlign='left' {...propsColorsHdr}><Box>Salário (legado)</Box></GridCell>
+          <GridCell sticky textAlign='left' {...propsColorsHdr}><TxGridHdr>Origem</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='left' {...propsColorsHdr}><TxGridHdr>Refer</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='left' {...propsColorsHdr}><TxGridHdr>Nome</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='left' {...propsColorsHdr}><TxGridHdr>Id Vaga</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='left' {...propsColorsHdr}><TxGridHdr>Tipo Clb.</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='left' {...propsColorsHdr}><TxGridHdr>Função</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='left' {...propsColorsHdr}><TxGridHdr>Salário (legado)</TxGridHdr></GridCell>
 
-          <GridCell sticky textAlign='center' {...propsColorsHdr}><Box>Ativo</Box></GridCell>
-          <GridCell sticky textAlign='center' {...propsColorsHdr}><Box>Tipo</Box></GridCell>
-          <GridCell sticky textAlign='center' {...propsColorsHdr}><Box>Mês</Box></GridCell>
-          <GridCell sticky textAlign='center' {...propsColorsHdr}><Box>Tipo</Box></GridCell>
-          <GridCell sticky textAlign='center' {...propsColorsHdr}><Box>Mês</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Salário</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Deps</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Vale Transp.</Box></GridCell>
+          <GridCell sticky textAlign='center' {...propsColorsHdr}><TxGridHdr>Ativo</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='center' {...propsColorsHdr}><TxGridHdr>Tipo</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='center' {...propsColorsHdr}><TxGridHdr>Mês</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='center' {...propsColorsHdr}><TxGridHdr>Tipo</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='center' {...propsColorsHdr}><TxGridHdr>Mês</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Salário</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Deps</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Vale Transp.</TxGridHdr></GridCell>
           {
             showPromo &&
             <>
-              <GridCell sticky textAlign='center' {...propsColorsHdr}><Box>Mês</Box></GridCell>
-              <GridCell sticky textAlign='center' {...propsColorsHdr}><Box>Tipo Clb.</Box></GridCell>
-              <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Salário</Box></GridCell>
+              <GridCell sticky textAlign='center' {...propsColorsHdr}><TxGridHdr>Mês</TxGridHdr></GridCell>
+              <GridCell sticky textAlign='center' {...propsColorsHdr}><TxGridHdr>Tipo Clb.</TxGridHdr></GridCell>
+              <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Salário</TxGridHdr></GridCell>
             </>
           }
 
           {
             premissaDespRecorrArray.map((x, index) =>
-              <GridCell key={index} sticky textAlign='center' {...propsColorsHdr}><Box>{x.descrDespRecorrFunc}</Box></GridCell>
+              <GridCell key={index} sticky textAlign='center' {...propsColorsHdr}><TxGridHdr>{x.descrDespRecorrFunc}</TxGridHdr></GridCell>
             )
           }
         </>
@@ -441,23 +442,23 @@ export default function PageFuncionarioCrud() {
       let iconsCmd: React.ReactNode = null;
       if (canEdit) {
         if (lineState == LineState.original) {
-          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
+          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' spacing={1}>
             <IconButtonAppCrud icon='edit' onClick={() => changeLineState(LineState.updated)} fontSize={fontSizeIconsInGrid} />
             <IconButtonAppCrud icon='delete' onClick={() => changeLineState(LineState.deleted)} fontSize={fontSizeIconsInGrid} />
           </Stack>;
         }
         else if (lineState == LineState.deleted)
-          iconsCmd = <Box>excl.</Box>;
+          iconsCmd = <Tx>excl.</Tx>;
         // else if (lineState == LineState.insertedAndDeleted)
         //   iconsCmd = <IconButtonCrud icon='restoreDelete' onClick={() => changeLineState(LineState.inserted, funcId)} fontSize={fontSizeIconsInGrid} />;
         else if (lineState == LineState.aborted)
-          iconsCmd = <Box>cancel.</Box>;
+          iconsCmd = <Tx>cancel.</Tx>;
         else if (lineState == LineState.updated)
-          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
+          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' spacing={1}>
             <IconButtonAppCrud icon='delete' onClick={() => changeLineState(LineState.deleted)} fontSize={fontSizeIconsInGrid} />
           </Stack>;
         else if (lineState == LineState.inserted)
-          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
+          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' spacing={1}>
             <IconButtonAppCrud icon='delete' onClick={() => changeLineState(LineState.aborted)} fontSize={fontSizeIconsInGrid} />
           </Stack>;
       }
@@ -470,13 +471,13 @@ export default function PageFuncionarioCrud() {
           <>
             <GridCell alignSelf='end'>{iconsCmd}</GridCell>
 
-            <GridCell alignSelf='end'><Box>{OrigemFuncMd.descr(dataOriginal.origem)}</Box></GridCell>
-            <GridCell alignSelf='end'><Box>{dataOriginal.refer}</Box></GridCell>
+            <GridCell alignSelf='end'><TxGridCel>{OrigemFuncMd.descr(dataOriginal.origem)}</TxGridCel></GridCell>
+            <GridCell alignSelf='end'><TxGridCel>{dataOriginal.refer}</TxGridCel></GridCell>
             <GridCell alignSelf='end'><GridCellEdit mainCtrl={mainCtrl} fldCtrl={fldsCtrl.nome} /></GridCell>
             <GridCell alignSelf='end'><GridCellEdit mainCtrl={mainCtrl} fldCtrl={fldsCtrl.idVaga} /></GridCell>
             <GridCell alignSelf='end'><GridCellEdit mainCtrl={mainCtrl} fldCtrl={fldsCtrl.tipoColaborador} /></GridCell>
             <GridCell alignSelf='end'><GridCellEdit mainCtrl={mainCtrl} fldCtrl={fldsCtrl.funcao} /></GridCell>
-            <GridCell alignSelf='end'><Box>{amountToStr(dataOriginal.salarioLegado, configCydag.decimalsSalario)}</Box></GridCell>
+            <GridCell alignSelf='end'><TxGridCel>{amountToStrApp(dataOriginal.salarioLegado, configCydag.decimalsSalario)}</TxGridCel></GridCell>
 
             <GridCell alignSelf='end' textAlign='center'>
               <GridCellEdit mainCtrl={mainCtrl} fldCtrl={fldsCtrl.ativo} />
@@ -497,7 +498,7 @@ export default function PageFuncionarioCrud() {
               </>
             }
 
-            {premissaDespRecorrArray.map((_, index) => <GridCell alignSelf='end' key={index}>s</GridCell>)}
+            {premissaDespRecorrArray.map((_, index) => <GridCell alignSelf='end' key={index}><TxGridCel>s</TxGridCel></GridCell>)}
           </>
         );
       }
@@ -505,30 +506,30 @@ export default function PageFuncionarioCrud() {
         return (<>
           <GridCell textAlign='center'>{iconsCmd}</GridCell>
 
-          <GridCell textAlign='left'><Box>{OrigemFuncMd.descr(dataOriginal.origem)}</Box></GridCell>
-          <GridCell textAlign='left'><Box>{dataOriginal.refer}</Box></GridCell>
-          <GridCell textAlign='left'><Box>{dataOriginal.nome}</Box></GridCell>
-          <GridCell textAlign='left'><Box>{dataOriginal.idVaga}</Box></GridCell>
-          <GridCell textAlign='left'><Box>{TipoColaboradorMd.descr(dataOriginal.tipoColaborador)}</Box></GridCell>
-          <GridCell textAlign='left'><Box>{dataOriginal.funcao}</Box></GridCell>
-          <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.salarioLegado, configCydag.decimalsSalario)}</Box></GridCell>
+          <GridCell textAlign='left'><TxGridCel>{OrigemFuncMd.descr(dataOriginal.origem)}</TxGridCel></GridCell>
+          <GridCell textAlign='left'><TxGridCel>{dataOriginal.refer}</TxGridCel></GridCell>
+          <GridCell textAlign='left'><TxGridCel>{dataOriginal.nome}</TxGridCel></GridCell>
+          <GridCell textAlign='left'><TxGridCel>{dataOriginal.idVaga}</TxGridCel></GridCell>
+          <GridCell textAlign='left'><TxGridCel>{TipoColaboradorMd.descr(dataOriginal.tipoColaborador)}</TxGridCel></GridCell>
+          <GridCell textAlign='left'><TxGridCel>{dataOriginal.funcao}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{amountToStrApp(dataOriginal.salarioLegado, configCydag.decimalsSalario)}</TxGridCel></GridCell>
 
-          <GridCell textAlign='center'><Box>{BooleanToSN(dataOriginal.ativo)}</Box></GridCell>
-          <GridCell textAlign='center'><Box>{TipoParticipPerOrcamMd.descr(dataOriginal.tipoIni)}</Box></GridCell>
-          <GridCell textAlign='right'><Box>{dataOriginal.mesIni}</Box></GridCell>
-          <GridCell textAlign='center'><Box>{TipoParticipPerOrcamMd.descr(dataOriginal.tipoFim)}</Box></GridCell>
-          <GridCell textAlign='right'><Box>{dataOriginal.mesFim}</Box></GridCell>
-          <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.salario, configCydag.decimalsSalario)}</Box></GridCell>
-          <GridCell textAlign='right'><Box>{dataOriginal.dependentes}</Box></GridCell>
-          <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.valeTransp, configCydag.decimalsValsInput)}</Box></GridCell>
+          <GridCell textAlign='center'><TxGridCel>{BooleanToSN(dataOriginal.ativo)}</TxGridCel></GridCell>
+          <GridCell textAlign='center'><TxGridCel>{TipoParticipPerOrcamMd.descr(dataOriginal.tipoIni)}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{dataOriginal.mesIni}</TxGridCel></GridCell>
+          <GridCell textAlign='center'><TxGridCel>{TipoParticipPerOrcamMd.descr(dataOriginal.tipoFim)}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{dataOriginal.mesFim}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{amountToStrApp(dataOriginal.salario, configCydag.decimalsSalario)}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{dataOriginal.dependentes}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{amountToStrApp(dataOriginal.valeTransp, configCydag.decimalsValsInput)}</TxGridCel></GridCell>
           {showPromo &&
             <>
-              <GridCell textAlign='center'><Box>{dataOriginal.mesPromo}</Box></GridCell>
-              <GridCell textAlign='center'><Box>{TipoColaboradorMd.descr(dataOriginal.tipoColaboradorPromo)}</Box></GridCell>
-              <GridCell textAlign='right'><Box>{amountToStr(dataOriginal.salarioPromo, configCydag.decimalsSalario)}</Box></GridCell>
+              <GridCell textAlign='center'><TxGridCel>{dataOriginal.mesPromo}</TxGridCel></GridCell>
+              <GridCell textAlign='center'><TxGridCel>{TipoColaboradorMd.descr(dataOriginal.tipoColaboradorPromo)}</TxGridCel></GridCell>
+              <GridCell textAlign='right'><TxGridCel>{amountToStrApp(dataOriginal.salarioPromo, configCydag.decimalsSalario)}</TxGridCel></GridCell>
             </>
           }
-          {premissaDespRecorrArray.map((_, index) => <GridCell key={index} textAlign='center'>s</GridCell>)}
+          {premissaDespRecorrArray.map((_, index) => <GridCell key={index} textAlign='center'><TxGridCel>s</TxGridCel></GridCell>)}
         </>);
     };
 
@@ -599,7 +600,7 @@ export default function PageFuncionarioCrud() {
 
   return (
     <GlobalCtrlContext.Provider value={new GlobalEditCtrl()}>
-      <Stack gap={1} height='100%'>
+      <Stack spacing={1} height='100%'>
         <FilterComp />
         <DataComp />
       </Stack>

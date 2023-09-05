@@ -51,15 +51,14 @@ export class FuncionarioClient {
     this.ativo = true;
     this.despsRecorr = [];
   }
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new FuncionarioClient(); }
-  static fill(values: FuncionarioClient, init = false) { return CutUndef(FillClassProps(FuncionarioClient.new(init), values)); }
+  static new() { return new FuncionarioClient(); }
+  static fill(values: FuncionarioClient) { return CutUndef(FillClassProps(FuncionarioClient.new(), values)); }
   static deserialize(values: IGenericObject) {
     try {
       return FillClassProps(FuncionarioClient.new(), values);
     } catch (error) {
       dbgError('FuncionarioClient.deserialize', error.message, values);
-      return FuncionarioClient.new(true);
+      return FuncionarioClient.new();
     }
   }
 }

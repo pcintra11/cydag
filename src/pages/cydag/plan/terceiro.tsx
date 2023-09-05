@@ -2,7 +2,7 @@ import React from 'react';
 import { useRouter } from 'next/router';
 
 import Box from '@mui/material/Box';
-import { Stack, useTheme } from '@mui/material';
+import { Stack } from '@mui/material';
 
 import { BinSearchProp, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../../libCommon/util';
 import { csd } from '../../../libCommon/dbg';
@@ -11,17 +11,17 @@ import { PageDef } from '../../../libCommon/endPoints';
 import { CalcExecTime } from '../../../libCommon/calcExectime';
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
 
-import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, SnackBarError, fontSizeGrid, fontSizeIconsInGrid } from '../../../components';
+import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, fontSizeGrid, fontSizeIconsInGrid, LogErrorUnmanaged, Tx } from '../../../components';
 import { GridCellEdit, GridCell, IFldChange, GridEditFldCtrl, GridEditMainCtrl, ValueType } from '../../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 //import { GlobalState, useGlobalState } from '../../hooks/useGlobalState';
 
 import { configApp } from '../../../app_hub/appConfig';
 
-import { IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, SelAno, SelEntity, SelRevisao } from '../../../appCydag/components';
+import { IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, SelAno, SelEntity, SelRevisao, TxGridCel, TxGridHdr } from '../../../appCydag/components';
 import { apisApp, pagesApp } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
-import { amountToStr, mesesFld, mesesHdr } from '../../../appCydag/util';
+import { amountToStrApp, mesesFld, mesesHdr } from '../../../appCydag/util';
 import { CentroCusto, FuncaoTerceiro, Funcionario, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto, Terceiro } from '../../../appCydag/modelTypes';
 import { CentroCustoConfigOption, IAnoCentroCustos, ProcCentrosCustoConfig, RevisaoValor, ProcessoOrcamentarioStatusMd, OperInProcessoOrcamentario } from '../../../appCydag/types';
 import { CmdApi_Terceiro as CmdApi, IChangedLine, DataEdit, LineState } from '../../api/appCydag/terceiro/types';
@@ -102,8 +102,6 @@ export default function PageTerceiroCrud() {
   const router = useRouter();
   const { loggedUser, isLoadingUser } = useLoggedUser({ id: pageSelf.pagePath });
 
-  const themePlus = useTheme();
-
   //#region db access
   const initialization = async () => {
     const apiReturn = await apis.crud({ cmd: CmdApi.crudInitialization });
@@ -145,7 +143,8 @@ export default function PageTerceiroCrud() {
         }
       });
     } catch (error) {
-      SnackBarError(error, `${pageSelf.pagePath}-getItens`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-getItens`);
+      PopupMsg.error(error);
     }
   };
   const setItens = async (filter: FrmFilter, changedLines: IChangedLine[]) => {
@@ -154,7 +153,8 @@ export default function PageTerceiroCrud() {
       PopupMsg.success(`Dados gravados para ${filter.ano} / ${filter.centroCusto}.`);
       getItens(filter);
     } catch (error) {
-      SnackBarError(error, `${pageSelf.pagePath}-setItens`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-setItens`);
+      PopupMsg.error(error);
     }
   };
   //#endregion
@@ -177,7 +177,8 @@ export default function PageTerceiroCrud() {
         setMainStatesCache({ phase: Phase.ready, anoCentroCustosArray, funcaoTerceirosArray });
       })
       .catch((error) => {
-        SnackBarError(error, `${pageSelf.pagePath}-initialization`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-initialization`);
+        PopupMsg.error(error);
       });
     return () => { mount = false; };
   }, []);
@@ -233,7 +234,7 @@ export default function PageTerceiroCrud() {
     const centroCustoOptions = mainStatesFilter.centroCustoOptions == null ? null : mainStatesFilter.centroCustoOptions.map((x) => new SelOption(x.cod, x.descr));
     return (
       <form onSubmit={frmFilter.handleSubmit(getItensSubmit)}>
-        <Stack direction='row' alignItems='center' gap={1}>
+        <Stack direction='row' alignItems='center' spacing={1}>
           {/* <SelectMy width='80px'
             value={ano || ''}
             onChange={
@@ -296,27 +297,27 @@ export default function PageTerceiroCrud() {
       const comps = [];
       if (dataStructure.headerInfo != null)
         comps.push(`${dataStructure.headerInfo}`);
-      if (comps.length > 0) return (<Box>{comps.join(' ')}</Box>);
+      if (comps.length > 0) return (<Tx>{comps.join(' ')}</Tx>);
       else return (<></>);
     };
 
-    const propsColorsHdr = propsColorHeader(themePlus);
+    const propsColorsHdr = propsColorHeader();
     const HeaderComp = () => {
       return (
         <>
           <GridCell sticky textAlign='center' {...propsColorsHdr}>
-            <Stack direction='row' alignItems='center' gap={1} justifyContent='center'>
+            <Stack direction='row' alignItems='center' spacing={1} justifyContent='center'>
               <IconButtonAppCrud icon='create' colorSx={propsColorsHdr.color} onClick={() => newLine()} />
             </Stack>
           </GridCell>
-          <GridCell sticky textAlign='left' {...propsColorsHdr}><Box>Refer</Box></GridCell>
-          <GridCell sticky textAlign='left' {...propsColorsHdr}><Box>Nome</Box></GridCell>
-          <GridCell sticky textAlign='left' {...propsColorsHdr}><Box>Fornecedor</Box></GridCell>
-          <GridCell sticky textAlign='left' {...propsColorsHdr}><Box>Função</Box></GridCell>
+          <GridCell sticky textAlign='left' {...propsColorsHdr}><TxGridHdr>Refer</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='left' {...propsColorsHdr}><TxGridHdr>Nome</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='left' {...propsColorsHdr}><TxGridHdr>Fornecedor</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='left' {...propsColorsHdr}><TxGridHdr>Função</TxGridHdr></GridCell>
 
           {mesesHdr.map((mes, index) =>
             <GridCell key={index} sticky textAlign='right' {...propsColorsHdr}>
-              <Box>{mes}</Box>
+              <TxGridHdr>{mes}</TxGridHdr>
             </GridCell>
           )}
         </>
@@ -403,23 +404,23 @@ export default function PageTerceiroCrud() {
       let iconsCmd: React.ReactNode = null;
       if (canEdit) {
         if (lineState == LineState.original) {
-          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
+          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' spacing={1}>
             <IconButtonAppCrud icon='edit' onClick={() => changeLineState(LineState.updated)} fontSize={fontSizeIconsInGrid} />
             <IconButtonAppCrud icon='delete' onClick={() => changeLineState(LineState.deleted)} fontSize={fontSizeIconsInGrid} />
           </Stack>;
         }
         else if (lineState == LineState.deleted)
-          iconsCmd = <Box>excl.</Box>;
+          iconsCmd = <Tx>excl.</Tx>;
         else if (lineState == LineState.aborted)
-          iconsCmd = <Box>cancel.</Box>;
+          iconsCmd = <Tx>cancel.</Tx>;
         else if (lineState == LineState.updated)
-          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
+          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' spacing={1}>
             <IconButtonAppCrud icon='delete' onClick={() => changeLineState(LineState.deleted)} fontSize={fontSizeIconsInGrid} />
             <IconButtonAppCrud icon='clear' onClick={() => chgValMeses('clear')} fontSize={fontSizeIconsInGrid} />
             <IconButtonAppCrud icon='redo' onClick={() => chgValMeses('repeat')} fontSize={fontSizeIconsInGrid} />
           </Stack>;
         else if (lineState == LineState.inserted)
-          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
+          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' spacing={1}>
             <IconButtonAppCrud icon='delete' onClick={() => changeLineState(LineState.aborted)} fontSize={fontSizeIconsInGrid} />
             <IconButtonAppCrud icon='clear' onClick={() => chgValMeses('clear')} fontSize={fontSizeIconsInGrid} />
             <IconButtonAppCrud icon='redo' title='Replicar valores' onClick={() => chgValMeses('repeat')} fontSize={fontSizeIconsInGrid} />
@@ -433,7 +434,7 @@ export default function PageTerceiroCrud() {
           <>
             <GridCell alignSelf='end'>{iconsCmd}</GridCell>
 
-            <GridCell alignSelf='end'><Box>{dataOriginal.refer}</Box></GridCell>
+            <GridCell alignSelf='end'><Tx>{dataOriginal.refer}</Tx></GridCell>
             <GridCell alignSelf='end'><GridCellEdit mainCtrl={mainCtrl} fldCtrl={fldsCtrl.nome} /></GridCell>
             <GridCell alignSelf='end'><GridCellEdit mainCtrl={mainCtrl} fldCtrl={fldsCtrl.fornecedor} /></GridCell>
             <GridCell alignSelf='end'><GridCellEdit mainCtrl={mainCtrl} fldCtrl={fldsCtrl.funcaoTerceiros} /></GridCell>
@@ -448,13 +449,13 @@ export default function PageTerceiroCrud() {
         return (<>
           <GridCell textAlign='center'>{iconsCmd}</GridCell>
 
-          <GridCell textAlign='left'><Box>{dataOriginal.refer}</Box></GridCell>
-          <GridCell textAlign='left'><Box>{dataOriginal.nome}</Box></GridCell>
-          <GridCell textAlign='left'><Box>{dataOriginal.fornecedor}</Box></GridCell>
-          <GridCell textAlign='left'><Box>{BinSearchProp(mainStates.funcaoTerceirosArray, dataOriginal.funcaoTerceiros, 'descr', 'cod')}</Box></GridCell>
+          <GridCell textAlign='left'><TxGridCel>{dataOriginal.refer}</TxGridCel></GridCell>
+          <GridCell textAlign='left'><TxGridCel>{dataOriginal.nome}</TxGridCel></GridCell>
+          <GridCell textAlign='left'><TxGridCel>{dataOriginal.fornecedor}</TxGridCel></GridCell>
+          <GridCell textAlign='left'><TxGridCel>{BinSearchProp(mainStates.funcaoTerceirosArray, dataOriginal.funcaoTerceiros, 'descr', 'cod')}</TxGridCel></GridCell>
 
           {mesesFld.map((_, index) => <GridCell key={index} textAlign='right'>
-            {amountToStr(dataOriginal.valMeses[index], configCydag.decimalsValsInput)}
+            <TxGridCel>{amountToStrApp(dataOriginal.valMeses[index], configCydag.decimalsValsInput)}</TxGridCel>
           </GridCell>)
           }
         </>);
@@ -526,7 +527,7 @@ export default function PageTerceiroCrud() {
 
   return (
     <GlobalCtrlContext.Provider value={new GlobalEditCtrl()}>
-      <Stack gap={1} height='100%'>
+      <Stack spacing={1} height='100%'>
         <FilterComp />
         <DataComp />
       </Stack>

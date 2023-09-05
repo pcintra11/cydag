@@ -30,8 +30,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
-  const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
+  const loggedUserReq = await LoggedUserReqASync(req, res);
+  const ctrlApiExec = GetCtrlApiExec(req, res, loggedUserReq, ['cmd'], ['_id']);
   const parm = ctrlApiExec.parm;
 
   const resumoApi = new ResumoApi(ctrlApiExec);
@@ -98,7 +98,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       }
       else if (parm.cmd == CmdApi.update) {
         const data = parm.data;
-        let documentDb = await UserModel.findOne({ _id: new ObjectId(parm._id) }).lean();
+        let documentDb = await UserModel.findOne({ _id: new ObjectId(parm._idStr) }).lean();
         if (documentDb == null)
           throw new ErrorPlus('Não foi encontrado o Usuário.');
         const fldError = ValidateObjectFirstError({ ...data }, crudValidations);
@@ -113,17 +113,17 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           lastUpdated: agora,
         };
         documentUpdate.searchTerms = User.SearchTermsGen(documentUpdate, documentDb);
-        documentDb = await UserModel.findOneAndUpdate({ _id: new ObjectId(parm._id) }, documentUpdate, { new: true });
+        documentDb = await UserModel.findOneAndUpdate({ _id: new ObjectId(parm._idStr) }, documentUpdate, { new: true });
         resumoApi.jsonData({ value: documentDb });
       }
       else if (parm.cmd == CmdApi.delete) {
-        const documentDb = await UserModel.findOne({ _id: new ObjectId(parm._id) }).lean();
-        if (parm._id == loggedUserReq.userIdStr)
+        const documentDb = await UserModel.findOne({ _id: new ObjectId(parm._idStr) }).lean();
+        if (parm._idStr == loggedUserReq.userIdStr)
           throw new ErrorPlus('Você não pode excluir a sí mesmo.');
         if (!loggedUserReq.roles.includes(rolesApp.gestorContr) &&
           documentDb.roles.reduce((acum, curr) => rolesAppOnlyGestorContr.includes(curr) ? true : acum, false))
           throw new ErrorPlus('Operação permitida apenas para Gestor de Controladoria.');
-        await UserModel.deleteOne({ _id: parm._id });
+        await UserModel.deleteOne({ _id: parm._idStr });
         resumoApi.jsonData({});
       }
       else

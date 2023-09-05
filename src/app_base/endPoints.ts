@@ -2,7 +2,7 @@ import { ApiDef, PageDef, rolesDev } from '../libCommon/endPoints';
 
 const pathPage = '/base';
 export const pagesBase = {
-  controlledAccess: new PageDef(`${pathPage}/controlledAccess`, 'Acesso Controlado para Dispositivos', 'Acesso Controlado', { onlyAuthenticated: true, roles: [rolesDev.controlledAccess] }),
+  controlledAccess: new PageDef(`${pathPage}/controlledAccess`, { pageTitle: 'Acesso Controlado para Dispositivos', txtDynamicMenu: 'Acesso Controlado', onlyAuthenticated: true, roles: [rolesDev.controlledAccess] }),
   chgUserAndRoute: new PageDef(`${pathPage}/chgUserAndRoute`),
 };
 

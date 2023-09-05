@@ -1,10 +1,11 @@
-import type { NextApiRequest } from 'next';
+import type { NextApiRequest, NextApiResponse } from 'next';
 import type { CookieSerializeOptions } from 'cookie';
 import { Session, applySession, SessionOptions } from 'next-iron-session';
 
-import { CtrlApiExec } from './util';
-import { isAmbDev } from '../app_base/envs';
 import { CutUndef, FillClassProps } from '../libCommon/util';
+
+import { isAmbDev } from '../app_base/envs';
+import { csd } from '../libCommon/dbg';
 
 interface INextApiRequestSession extends NextApiRequest {
   session: Session;
@@ -19,12 +20,11 @@ export class HttpCryptoCookieConfig {
   name?: string;
   TTLSeconds?: number;
   psw?: string;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new HttpCryptoCookieConfig(); }
-  static fill(values: HttpCryptoCookieConfig, init = false) { return CutUndef(FillClassProps(HttpCryptoCookieConfig.new(init), values)); }
+  static new() { return new HttpCryptoCookieConfig(); }
+  static fill(values: HttpCryptoCookieConfig) { return CutUndef(FillClassProps(HttpCryptoCookieConfig.new(), values)); }
 }
 
-export async function HttpCriptoCookieCmdASync(ctrlApiExec: CtrlApiExec, point: string,
+export async function HttpCriptoCookieCmdASync(req: NextApiRequest, res: NextApiResponse, point: string,
   cookieSessionConfig: HttpCryptoCookieConfig, cmd: 'set' | 'get', options: { extendExpiration?: boolean, domain?: string }, value?: any) {
   const cookieOptions: CookieSerializeOptions = {
     // the next line allows to use the session in non-https environments like
@@ -39,10 +39,10 @@ export async function HttpCriptoCookieCmdASync(ctrlApiExec: CtrlApiExec, point: 
   //   value == null) //@@@!!! em algum momento está 'matando' o loggedUser
   //   dbgWarn('HttpCriptoCookieCmd', { caller: context, cmd, cookie: cookieSessionConfig.name, value: value == null ? null : 'notNull' });
 
-  const reqSession = ctrlApiExec.req as INextApiRequestSession;
+  const reqSession = req as INextApiRequestSession;
 
   //try {
-  await applySession(ctrlApiExec.req, ctrlApiExec.res, {
+  await applySession(req, res, { //@!!!!!!!!!!! atualizar e usar o novo método Next.js middlewares
     password: cookieSessionConfig.psw,
     cookieName: cookieSessionConfig.name,
     cookieOptions,
@@ -54,12 +54,12 @@ export async function HttpCriptoCookieCmdASync(ctrlApiExec: CtrlApiExec, point: 
     if (value != null) {
       reqSession.session.set(CookieSession_fldFixed, value);
       const result = await reqSession.session.save();
-      // csl('CookieSessionCmd ******************* set', JSON.stringify(value));
-      // csl('result', result);
+      // csd('CookieSessionCmd ******************* set', JSON.stringify(value));
+      //csd('HttpCriptoCookieCmdASync - set', result);
     }
     else {
       reqSession.session.destroy();
-      //csl('CookieSessionCmd set - destroy');
+      //csd('HttpCriptoCookieCmdASync - set - destroy');
     }
     return null;
   }
@@ -71,7 +71,7 @@ export async function HttpCriptoCookieCmdASync(ctrlApiExec: CtrlApiExec, point: 
     }
     else
       value = null;
-    //csl({ api: `${ctrlApiExec.apiPath}(point ${point})-${JSON.stringify(ctrlApiExec.parm)}`, cmd, cookieSessionConfig, options, cookieOptions, valueGet: value });
+    //csd('HttpCriptoCookieCmdASync - get', CookieSession_fldFixed, value);
     return value;
   }
   // else if (cmd == GlobalStateCmd.renew) { // apenas extender o tempo de vida do cookie

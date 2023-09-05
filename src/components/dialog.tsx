@@ -14,33 +14,37 @@ import { FrmInput } from './fldMyForm';
 import { Box } from '@mui/material';
 
 export interface IDialogInput { label: string }
-export interface IDialogButton { text: string, onClick?: (inputResponses: string[]) => void; fnCheck?: (inputResponses: string[]) => string }
+export interface IDialogButton {
+  text: string;
+  onClick: (inputResponses: string[]) => void;
+  fnCheck?: (inputResponses: string[]) => string;
+}
 
-let _dialogSet: (open: boolean, title?: string, body?: string[], dialogInputs?: IDialogInput[], buttons?: IDialogButton[]) => void = null;
+let _dialogSet: (open: boolean, title?: string, body2?: React.ReactNode, dialogInputs?: IDialogInput[], buttons?: IDialogButton[]) => void = null;
 
-interface IDialogMyProps { title?: string, body: string[] | string, dialogInputs?: IDialogInput[], buttons: IDialogButton[] }
-export const DialogMy = ({ title, body, dialogInputs, buttons }: IDialogMyProps) => {
-  let bodyUse;
-  if (Array.isArray(body))
-    bodyUse = body;
-  else
-    bodyUse = [body];
-
+interface IDialogMyProps {
+  body?: React.ReactNode;
+  title?: string;
+  dialogInputs?: IDialogInput[];
+  buttons?: IDialogButton[];
+}
+export const DialogMy = ({ body, title, dialogInputs, buttons }: IDialogMyProps) => {
   if (_dialogSet == null) {
     //dbgError(`${DialogMy.name} não foi criado, diálogo não processado: `, bodyUse.join('; '));
-    SystemMsgCli(CategMsgSystem.error, 'DialogMy', `${DialogMy.name} não foi criado, diálogo não processado: `, { title, body });
+    SystemMsgCli(CategMsgSystem.error, 'DialogMy', `${DialogMy.name} não foi criado, diálogo não processado: `, { title });
     return;
   }
   // if (props == null)
   //   _dialogSet(false);
   // else
-  _dialogSet(true, title, bodyUse, dialogInputs, buttons);
+  _dialogSet(true, title, body, dialogInputs, buttons);
 };
 
 export function DialogContainer() {
   const [mainStates, setMainStates] = React.useState<{
     open: boolean;
-    title?: string; body?: string[];
+    title?: string;
+    body?: React.ReactNode;
     dialogInputs?: IDialogInput[]; buttons?: IDialogButton[];
   }>({ open: false });
   const [msgErro, setMsgErro] = React.useState<string>(null);
@@ -50,7 +54,7 @@ export function DialogContainer() {
   const handleClose = () => {
     setMainStates({ open: false });
   };
-  _dialogSet = (open: boolean, title?: string, body?: string[], dialogInputs?: IDialogInput[], buttons?: IDialogButton[]) => {
+  _dialogSet = (open: boolean, title?: string, body?: React.ReactNode, dialogInputs?: IDialogInput[], buttons?: IDialogButton[]) => {
     if (open) {
       setInputResponse1('');
       setInputResponse2('');
@@ -75,7 +79,7 @@ export function DialogContainer() {
       if (msgErro != null)
         return;
     }
-    handleClose();
+    handleClose(); // para todos os tipo de ação, deve fechar após a confirmação  @!!!!!!!!!!!3 (encapsular!)
     dialogButton.onClick != null && dialogButton.onClick(inputResponses);
   };
 
@@ -94,13 +98,17 @@ export function DialogContainer() {
               {mainStates.title}
             </DialogTitle_mui>
           }
-          <DialogContent_mui>
+          {/* <DialogContent_mui>
             {mainStates.body.map((text, index) =>
               <DialogContentText_mui key={index} id='alert-dialog-description'>
                 {text}
               </DialogContentText_mui>
             )}
-          </DialogContent_mui>
+          </DialogContent_mui> */}
+          {mainStates.body != null &&
+            <>{mainStates.body}</>
+          }
+
           {mainStates.dialogInputs != null &&
             <Box m={1}>
               {(mainStates.dialogInputs.length > 0) && <FrmInput label={mainStates.dialogInputs[0].label} value={inputResponse1} onChange={(ev) => setInputResponse1(ev.target.value)} />}
@@ -108,13 +116,16 @@ export function DialogContainer() {
               {(mainStates.dialogInputs.length > 2) && <FrmInput label={mainStates.dialogInputs[2].label} value={inputResponse3} onChange={(ev) => setInputResponse3(ev.target.value)} />}
             </Box>
           }
-          {mainStates.buttons != null &&
-            <DialogActions_mui>
-              {mainStates.buttons.map((dialogButton, index) =>
-                <Button_mui key={index} onClick={() => clickButton(dialogButton)}>{dialogButton.text}</Button_mui>
-              )}
-            </DialogActions_mui>
-          }
+          <DialogActions_mui>
+            {mainStates.buttons != null &&
+              <>
+                {mainStates.buttons.map((dialogButton, index) =>
+                  <Button_mui key={index} onClick={() => clickButton(dialogButton)}>{dialogButton.text}</Button_mui>
+                )}
+              </>
+            }
+            <Button_mui onClick={() => handleClose()}>Fechar</Button_mui>
+          </DialogActions_mui>
           {msgErro &&
             <DialogContent_mui>
               {/* class error @!!!! */}

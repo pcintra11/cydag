@@ -1,9 +1,9 @@
-import { EnvApiTimeout } from '../app_base/envs';
 import { ErrorPlus, HttpStatusCode } from '../libCommon/util';
 
-import { LoggedUserBase } from '../app_base/modelTypes';
-import { NotifyAdmASync } from './notifyAdm';
+import { EnvApiTimeout } from '../app_base/envs';
+import { LoggedUserBase } from '../app_base/loggedUserBase';
 
+import { NotifyAdmASync } from './notifyAdm';
 import { CtrlApiExec } from './util';
 
 export async function AlertTimeExecApiASync(elapsedMs: number, ctrlApiExec: CtrlApiExec, loggedUser?: LoggedUserBase, extraInfo?: string) {

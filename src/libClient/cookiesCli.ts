@@ -2,6 +2,7 @@ import Cookies from 'js-cookie';
 
 //import { dbg } from './dbg';
 import { AssertIsClient } from '../libCommon/sideProc';
+import { dbgError } from '../libCommon/dbg';
 
 export interface ICookieOptions {
   expires?: Date; // default : NÂO deleta ao fechar o browser!
@@ -32,6 +33,11 @@ function getJSON(name: string) {
 
 function set(name: string, value: string, options: ICookieOptions = null) {
   AssertIsClient('cookieCli set', { name, value });
+  if (value == null) {
+    //dbgError('cookieCli', name, 'set para null');
+    remove(name);
+    return;
+  }
   return Cookies.set(name, value, options);
 }
 function setJSON(name: string, value: object, options: ICookieOptions = null) {

@@ -34,8 +34,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
-  const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
+  const loggedUserReq = await LoggedUserReqASync(req, res);
+  const ctrlApiExec = GetCtrlApiExec(req, res, loggedUserReq, ['cmd'], ['_id']);
   const parm = ctrlApiExec.parm;
   const parmPsw = parm.psw;
   if (parm.psw != null) parm.psw = '****';
@@ -139,7 +139,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           await CheckBlockAsync(loggedUserNow);
         }
 
-        await HttpCriptoCookieCmdASync(ctrlApiExec, `user:${parm.cmd}`, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, loggedUserNow); // , `user-${parm.cmd}`
+        await HttpCriptoCookieCmdASync(req, res, `user:${parm.cmd}`, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, loggedUserNow); // , `user-${parm.cmd}`
         resumoApi.jsonData({ value: loggedUserNow });
       }
 
@@ -148,7 +148,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         else {
           // //await UserLogWriteASync(new ObjectId(loggedUserReq.userIdStr), loggedUserReq.email, `${parm.cmd}`, ctrlApiExec, new ObjectId(loggedUserReq.sessionIdStr));
           // await LoggedUserSessionModel.updateOne({ _id: new ObjectId(loggedUserReq.sessionIdStr) }, { dateSignOut: agora } as LoggedUserSession);
-          await HttpCriptoCookieCmdASync(ctrlApiExec, `user:${parm.cmd}`, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, null); // , `user-${parm.cmd}(${parm.caller})`
+          await HttpCriptoCookieCmdASync(req, res, `user:${parm.cmd}`, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, null); // , `user-${parm.cmd}(${parm.caller})`
         }
         resumoApi.jsonData({});
       }
@@ -187,7 +187,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           //await CookieUserSetApiAccessASync(ctrlApiExec, loggedUser);
           //await UserLogWriteASync(userDb._id, Unscramble(userDb.email_messy), `${parm.cmd}`, agora, loggedUserSessionIdUse);
           resumoApi.jsonData({ value: loggedUser });
-          await HttpCriptoCookieCmdASync(ctrlApiExec, `user:${parm.cmd}`, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, loggedUser);
+          await HttpCriptoCookieCmdASync(req, res, `user:${parm.cmd}`, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, loggedUser);
           deleteIfOk = true;
         }
 

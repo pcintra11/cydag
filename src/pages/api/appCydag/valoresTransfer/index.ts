@@ -22,7 +22,7 @@ import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/log
 import { LocalidadeModel, ProcessoOrcamentarioModel, UserModel, ValoresTransferModel } from '../../../../appCydag/models';
 import { ValoresTransfer } from '../../../../appCydag/modelTypes';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatusMd, RevisaoValor } from '../../../../appCydag/types';
-import { amountParse } from '../../../../appCydag/util';
+import { amountParseApp } from '../../../../appCydag/util';
 
 import { CmdApi_ValoresTransfer as CmdApi, IChangedLine } from './types';
 import { configCydag } from '../../../../appCydag/configCydag';
@@ -32,8 +32,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
-  const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
+  const loggedUserReq = await LoggedUserReqASync(req, res);
+  const ctrlApiExec = GetCtrlApiExec(req, res, loggedUserReq, ['cmd'], ['_id']);
   const parm = ctrlApiExec.parm;
 
   const resumoApi = new ResumoApi(ctrlApiExec);
@@ -79,7 +79,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           for (const changedLine of changedLines) {
             const dataEdit = changedLine.dataEdit;
             const ValoresTransferData = ValoresTransfer.fill({
-              valMeses: dataEdit.valMeses.map((x) => amountParse(x, configCydag.decimalsValsInput)),
+              valMeses: dataEdit.valMeses.map((x) => amountParseApp(x, configCydag.decimalsValsInput)),
             });
             const someInf = ValoresTransferData.valMeses.reduce((prev, curr) => prev || curr != null, false);
             const key = ValoresTransfer.fill({

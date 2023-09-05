@@ -2,6 +2,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 import cookie from 'cookie';
 
 import { AssertIsServer } from '../libCommon/sideProc';
+import { dbgError } from '../libCommon/dbg';
 
 function getAll(req: NextApiRequest) {
   AssertIsServer('cookiesHttp getAll');
@@ -31,6 +32,11 @@ const infiniteAge = 60 * 60 * 24 * 1000; // 1000 dias
 function set(res: NextApiResponse, name: string, value: string, options: { sameSite?: 'none', secure?: boolean } = {}) {
   // se houver algum do cliente será temporariamente sobroposto (até ser removido no server)
   AssertIsServer('cookiesHttp set', { name });
+  if (value == null) {
+    //dbgError('cookiesHttp', name, 'set para null');
+    remove(res, name, options);
+    return;
+  }
   res.setHeader('Set-Cookie', cookie.serialize(name, value, {
     httpOnly: true,
     maxAge: infiniteAge,
@@ -44,7 +50,7 @@ function set(res: NextApiResponse, name: string, value: string, options: { sameS
 // }
 
 function remove(res: NextApiResponse, name: string, options: { sameSite?: 'none', secure?: boolean } = {}) {
-  set(res, name, '', options);
+  set(res, name, '', options); //@!!!!!!!!! remover o cookie !!!!!
   // res.setHeader('Set-Cookie', cookie.serialize(name, '', {
   //   httpOnly: true,
   //   //expires: new Date(), // não funcionou !!

@@ -1,14 +1,16 @@
-import { configApp } from '../app_hub/appConfig';
-
-import { SystemLog } from '../app_base/modelTypes';
-import { CloseDbASync, ConnectDbASync, UriDb } from './dbMongo';
-import { SystemLogModel } from '../app_base/model';
+import { ObjectId } from 'mongodb';
 
 import { dbgError, ScopeDbg, csd, dbg } from '../libCommon/dbg';
 import { colorAlert, colorErr } from '../libCommon/consoleColor';
 import { CategMsgSystem } from '../libCommon/logSystemMsg_cliSvr';
 import { CtrlContext } from '../libCommon/ctrlContext';
 import { CtrlRecursion } from '../libCommon/ctrlRecursion';
+
+import { SystemLog } from '../app_base/modelTypes';
+import { configApp } from '../app_hub/appConfig';
+import { SystemLogModel } from '../app_base/model';
+
+import { CloseDbASync, ConnectDbASync, UriDb } from './dbMongo';
 
 const scopeServer = 'svr';
 const scopeClient = 'cli';
@@ -102,12 +104,12 @@ async function _systemMsg(categMsgSystem: CategMsgSystem, scope: string, point: 
 
     // ctrlPoints.arMsg.push(msg);
 
-    // // mudar o método para o controle por tempo, uma tabela apenas com uma ocorrencia por 'ponto', verificar qual o ultimo evento
+    // // mudar o método para o controle por tempo, uma tabela apenas com uma ocorrência por 'ponto', verificar qual o ultimo evento
     // if (categMsgSystem === CategMsgSystem.error ||
     //   categMsgSystem === CategMsgSystem.alert) {
     //   //csl('error - pre notifyAdm async'); 
     //   //NotifyAdm(`${Env('amb')} (${scope}) - ${point} - Error`, msg);
-    //   await NotifyAdmASync(mainMsg, msg, ctrlContext, details); //@!!!!!!!!!!! reativar, mas sem risco de loop
+    //   await NotifyAdmASync(mainMsg, msg, ctrlContext, details); //@!!!!!!!! tem risco de loop se a função assíncrona gerar outro chamada pra cá!
     //     // if (ctrlPoints.arMsg.length == 1)
     //     //   NotifyAdm(scope, point, ctrlMsgs, msg, details);
     //     // else {
@@ -133,9 +135,12 @@ async function _systemMsg(categMsgSystem: CategMsgSystem, scope: string, point: 
       scope,
       categ: categMsgSystem,
       point,
+      ip: ctrlContext.ip,
+      browserId: ctrlContext.browserId,
+      userId: new ObjectId(ctrlContext.loggedUserReq?.userIdStr),
       msg,
       details,
-    }, true);
+    });
 
     // aqui, se for chamado no 'connection' e antes de estabilizar pode dar erro
     //csl('inserindo logSystem - ini');

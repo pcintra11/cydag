@@ -1,6 +1,7 @@
+import { Stack, Box } from '@mui/material';
+
 import { EmailShareButton, FacebookShareButton, TelegramShareButton, TwitterShareButton, WhatsappShareButton } from 'react-share';
 import { EmailIcon, FacebookIcon, TelegramIcon, TwitterIcon, WhatsappIcon } from 'react-share';
-import { Stack } from '@mui/material';
 
 import { configApp } from '../app_hub/appConfig';
 
@@ -8,9 +9,18 @@ import { CategMsgSystem } from '../libCommon/logSystemMsg_cliSvr';
 
 import { SystemMsgCli } from '../libClient/systemMsgCli';
 
-export const ShareIcons = ({ url, text, emailSubject, loggedUserInfo, page, point }: { url: string, text: string, emailSubject: string, loggedUserInfo: string, page: string , point: string }) => {
+interface ShareIconsProps {
+  url: string;
+  text: string;
+  emailSubject: string;
+  loggedUserInfo: string;
+  page: string;
+  //point?: string ;
+}
+
+export const ShareIcons = ({ url, text, emailSubject, loggedUserInfo, page }: ShareIconsProps) => {
   const SharedOpen = (socialNetwork: string) => {
-    SystemMsgCli(CategMsgSystem.alert, `shareOpen - ${page}`, `point: ${point} ; socialNetwork: ${socialNetwork} ; loggedUserInfo ${loggedUserInfo}`);
+    SystemMsgCli(CategMsgSystem.alert, `shareOpen - ${page}`, `socialNetwork: ${socialNetwork} ; loggedUserInfo ${loggedUserInfo}`);
   };
 
   const windowWidth = 700;
@@ -18,15 +28,37 @@ export const ShareIcons = ({ url, text, emailSubject, loggedUserInfo, page, poin
 
   // facebook quote não funciona !!
 
+  {/* <Box>
+    Como sugestão use esse texto abaixo para compartilhar, onde já tem o link para o Vizinet com uma breve descrição.
+    Ao copiar/colar na sua rede social (WhatsApp, Facebook, etc.) aguarde alguns segundos para a imagem e texto aparecerem, assim ficará mais interessante a postagem.
+  </Box> */}
+
+  // @!!!!!!! retirar fundo azul
+
   return (
-    <Stack direction='row' alignItems='center' gap={0.5}>
-      <FacebookShareButton
-        url={url}
-        quote={text}
-        hashtag={`#${configApp.appName}`}
-      >
-        <FacebookIcon size={40} round={true} />
-      </FacebookShareButton>
+    <Stack direction='row' alignItems='center' spacing={1.5}>
+      <Box>
+        <WhatsappShareButton
+          url={url}
+          title={text}
+          onClick={() => SharedOpen('whats')}
+          separator=''
+          windowWidth={windowWidth}
+          windowHeight={windowHeight}
+        >
+          <WhatsappIcon size={40} round={true} />
+        </WhatsappShareButton>
+      </Box>
+
+      <Box>
+        <FacebookShareButton
+          url={url}
+          quote={text}
+          hashtag={`#${configApp.appName}`}
+        >
+          <FacebookIcon size={40} round={true} />
+        </FacebookShareButton>
+      </Box>
 
       {/* <FacebookMessengerShareButton
           url={urlShare}
@@ -35,47 +67,44 @@ export const ShareIcons = ({ url, text, emailSubject, loggedUserInfo, page, poin
           <FacebookMessengerIcon size={40} round={true} />
         </FacebookMessengerShareButton> */}
 
-      <WhatsappShareButton
-        url={url}
-        title={text}
-        onClick={() => SharedOpen('whats')}
-        separator=''
-        windowWidth={windowWidth}
-        windowHeight={windowHeight}
-      >
-        <WhatsappIcon size={40} round={true} />
-      </WhatsappShareButton>
+      <Box>
+        <EmailShareButton
+          url={url}
+          body={text}
+          subject={`${emailSubject}`}
+          openShareDialogOnClick={true}
+          onClick={() => SharedOpen('email')}
+          windowWidth={windowWidth}
+          windowHeight={windowHeight}
+        >
+          <EmailIcon size={40} round={true} />
+        </EmailShareButton>
+      </Box>
 
-      <EmailShareButton
-        url={url}
-        body={text}
-        subject={`${emailSubject}`}
-        openShareDialogOnClick={true}
-        onClick={() => SharedOpen('email')}
-        windowWidth={windowWidth}
-        windowHeight={windowHeight}
-      >
-        <EmailIcon size={40} round={true} />
-      </EmailShareButton>
+      <Box>
+        <TelegramShareButton
+          url={url}
+          title={text}
+          onClick={() => SharedOpen('telegram')}
+          windowWidth={windowWidth}
+          windowHeight={windowHeight}
+        >
+          <TelegramIcon size={40} round={true} />
+        </TelegramShareButton>
+      </Box>
 
-      <TelegramShareButton
-        url={url}
-        title={text}
-        onClick={() => SharedOpen('telegram')}
-        windowWidth={windowWidth}
-        windowHeight={windowHeight}
-      >
-        <TelegramIcon size={40} round={true} />
-      </TelegramShareButton>
-      <TwitterShareButton
-        url={url}
-        title={text}
-        onClick={() => SharedOpen('twitter')}
-        windowWidth={windowWidth}
-        windowHeight={windowHeight}
-      >
-        <TwitterIcon size={40} round={true} />
-      </TwitterShareButton>
+      <Box>
+        <TwitterShareButton
+          url={url}
+          title={text}
+          onClick={() => SharedOpen('twitter')}
+          windowWidth={windowWidth}
+          windowHeight={windowHeight}
+        >
+          <TwitterIcon size={40} round={true} />
+        </TwitterShareButton>
+      </Box>
+
     </Stack>
   );
 };

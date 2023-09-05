@@ -5,6 +5,7 @@ import format_dtfns from 'date-fns/format';
 import formatISO_dtfns from 'date-fns/formatISO';
 import parseISO_dtfns from 'date-fns/parseISO';
 import compareAsc_dtfns from 'date-fns/compareAsc';
+import { formatInTimeZone as format_dtfns_tz } from 'date-fns-tz';
 
 import differenceInDays_dtfns from 'date-fns/differenceInDays';
 import differenceInHours_dtfns from 'date-fns/differenceInHours';
@@ -20,7 +21,7 @@ import { configApp } from '../app_hub/appConfig';
 import { EnvDeployConfig, isAmbDev } from '../app_base/envs';
 
 import { PageDef } from './endPoints';
-import { csd, dbg, dbgError, dbgInfo } from './dbg';
+import { csd, dbg, dbgError, dbgInfo, devContextCli } from './dbg';
 import { IGenericObject } from './types';
 import { Portuguese } from './portuguese';
 import { CtrlContext } from './ctrlContext';
@@ -140,10 +141,12 @@ export function FriendlyErrorMsgApi(error: Error | ErrorPlus | { message: string
     //error._plus.httpStatusCode != HttpStatusCode.unexpectedError
     error._plus.managed)
     return error.message;
-  else if (isAmbDev())
-    return error.message;
-  else
-    return configApp.friendlyErrorMessage || error.message;
+  else if (error instanceof Error) {
+    if (devContextCli())
+      return `${error.message} (mostrado o erro original por ser dev)`;
+    else
+      return configApp.friendlyErrorMessage || error.message;
+  }
 }
 
 export function WaitMs(miliSeconds: number) { // é blocante, evitar !
@@ -158,7 +161,7 @@ export async function SleepMs(miliSeconds: number) {
   });
 }
 export async function SleepMsDevRandom(miliSecondsMax: number | null, ctrlContext: CtrlContext, point?: string) {
-  await SleepMsDev(RandomNumber(0, miliSecondsMax || 500), ctrlContext, point);
+  await SleepMsDev(RandomNumber(2000, miliSecondsMax || 2500), ctrlContext, point);
 }
 export async function SleepMsDev(miliSeconds: number, ctrlContext: CtrlContext, point?: string) {
   if (!(isAmbDev() && miliSeconds != 0)) return;
@@ -311,10 +314,13 @@ export function DateFromStrISO(dateIso: string) {
   throw new Error('invalid date');
 }
 
-export function FormatDate(date: Date, format: string) {
-  return format_dtfns(date, format);
+export function FormatDate(date: Date, format: string, timeZone?: string) {
+  if (timeZone != null)
+    return format_dtfns_tz(date, timeZone, format);
+  else
+    return format_dtfns(date, format);
 }
-export function DateDisp(date: Date, components: 'dmy' | 'dmyhm' | 'dmyhms' | 'hmsSSSS') {
+export function DateDisp(date: Date, components: 'dmy' | 'dmyhm' | 'dmyhms' | 'hmsSSSS' | 'hm', timeZone?: string) {
   if (date == null)
     return '';
   let format = '';
@@ -326,7 +332,9 @@ export function DateDisp(date: Date, components: 'dmy' | 'dmyhm' | 'dmyhms' | 'h
     format = 'dd/MM/yyyy HH:mm:ss';
   else if (components == 'hmsSSSS')
     format = 'HH:mm:ss:SSSS';
-  return FormatDate(date, format);
+  else if (components == 'hm')
+    format = 'HH:mm';
+  return FormatDate(date, format, timeZone);
 }
 
 export function ElapsedDisp(elapsedMs: number) {
@@ -378,10 +386,10 @@ export function IdByTime(data?: Date) {
   return comps.join('');
 }
 
-export function IsMobile(userAgent: string) {
-  const isMobile = userAgent.match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i) != null;
-  return isMobile;
-}
+// export function IsMobileMy(userAgent: string) {
+//   const isMobile = userAgent.match(/Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i) != null;
+//   return isMobile;
+// }
 
 // export function StatusErrorServer(error) {
 // if (error instanceof ErrorExecApi)
@@ -851,6 +859,7 @@ export class CtrlCollect<T = any> {
 
 //#region objetos e arrays
 export const ObjHasProp = (obj: object, prop: string) => {
+  if (obj == null) return false;
   return Object.prototype.hasOwnProperty.call(obj, prop);
 };
 
@@ -863,7 +872,7 @@ export const NavigateToProperty = (obj: IGenericObject, prop: string) => {
 };
 
 /**
- * Crie um outro objeto mas com as propriedades prefixadas: ObjPrefix({ aa: '11' }, 'xx' ) => { 'xx.aa': '11' }
+ * Cria um outro objeto mas com as propriedades prefixadas: ObjPrefix({ aa: '11' }, 'xx' ) => { 'xx.aa': '11' }
  */
 export const ObjPrefix = (objSrc: object, ...prefix) => {
   const prefixCompound = prefix.join('.');
@@ -875,18 +884,16 @@ export const ObjPrefix = (objSrc: object, ...prefix) => {
 
 /**
  * ! inverteu a ordem na versão v03i2
- * * Verifica todas as propriedades do obj 1 que não tem correspondente no obj 2 com exatamente o mesmo valor
- * * Prevê objetos com sub objetos e testa as propriedades no último nível
- * ! Precisa revisar 
- * todo: @!!!!!
- * @param obj1
- * @param obj2 
+ * * Relaciona as propriedades do obj 1 que não tem correspondente no obj 2, ou que não tenha exatamente o mesmo valor
+ * * Prevê objetos com sub objetos e testa as propriedades até o último nível
+ * @param obj1 objeto com as possíveis alterações (foi exposto para edição)
+ * @param obj2 objeto original / base
  * @returns Obj com as proprs diferentes
  */
-export const ObjDiff = (obj1: object, obj2: object) => {
+export const ObjDiff = (obj1: object, obj2: object) => { // obsoleta usar ObjDiffNew ou FrmChangedChangedProps #!!!!!!!!!!!
   if (typeof obj2 !== 'object' ||
     obj2 == null)
-    return obj1;
+    return obj1; // no cydag se for inclusão não chamar essa função #!!!!!!!!!
 
   const diff = Object.keys(obj1).reduce((prev, curr) => {
     let propIsDiff = false;
@@ -931,34 +938,61 @@ export const ObjDiff = (obj1: object, obj2: object) => {
     return diff;
 };
 
-export const ObjOriginChangedProps = (objOrigin: object, objNew: object) => { // , prefix?: string)
-  // retorna todas propriedades do objOrigin que foram alteradas no objNew (apenas props no primeiro nível, mas testa em profundidade se for objeto)
-  const propsDiff = Object.keys(objOrigin).reduce((propsDiffAcum, prop) => {
+/**
+ * * Relaciona as propriedades do objAlts que não tem correspondente no objBase, ou que não tenha exatamente o mesmo valor
+ * * Prevê objetos com sub objetos e testa as propriedades até o último nível
+ * @param objAlts objeto com as possíveis alterações (foi exposto para edição)
+ * @param objBase objeto original / base
+ * @returns Obj com as proprs diferentes
+ */
+export const ObjDiffNew = (objAlts: object, objBase: object) => {
+  if (typeof objAlts !== 'object' ||
+    typeof objBase !== 'object') {
+    dbgError('ObjDiffNew', 'parametros não são do tipo objeto');
+    return null;
+  }
+
+  const diff = Object.keys(objAlts).reduce((prev, curr) => {
     let propIsDiff = false;
-    if (typeof objOrigin[prop] === 'object' &&
-      objOrigin[prop] !== null) {
-      if (typeof objNew[prop] === 'object' &&
-        objNew[prop] !== null) {
-        const propsDiff = ObjOriginChangedProps(objOrigin[prop], objNew[prop]); // , prefix == null ? `${prop}.` : `prefix${prop}.`
-        if (propsDiff.length > 0)
+    let propDiffValue;
+    if (typeof objAlts[curr] === 'object' &&
+      objAlts[curr] !== null) {
+      if (typeof objBase[curr] === 'object' &&
+        objBase[curr] !== null) {
+        const propObjDiffValue = ObjDiffNew(objAlts[curr], objBase[curr]);
+        if (propObjDiffValue != null) {
+          //if (Object.keys(propObjDiffValue).length > 0) {
+          //csl('alguma prop dif', Object.keys(propObjDiffValue));
           propIsDiff = true;
-        else if (objOrigin[prop].toString() != objNew[prop].toString())
+          propDiffValue = propObjDiffValue;
+        }
+        else if (objAlts[curr].toString() != objBase[curr].toString()) {
+          //csl('prop dif', prop,objNew[prop].toString(), objOrigin[prop].toString());
           propIsDiff = true;
+          propDiffValue = objBase[curr];
+        }
       }
-      else
+      else {
         propIsDiff = true;
+        propDiffValue = objAlts[curr];
+      }
     }
     else {
-      if (objNew[prop] !== objOrigin[prop])
+      if (objAlts[curr] !== objBase[curr]) {
         propIsDiff = true;
+        propDiffValue = objAlts[curr];
+      }
     }
-    if (!propIsDiff) return propsDiffAcum;
-    return [
-      ...propsDiffAcum,
-      prop,
-    ];
-  }, []);
-  return propsDiff;
+    if (!propIsDiff) return prev;
+    return {
+      ...prev,
+      [curr]: propDiffValue,
+    };
+  }, {});
+  if (Object.keys(diff).length == 0)
+    return null;
+  else
+    return diff;
 };
 
 // /**
@@ -977,7 +1011,7 @@ export const CutUndef = <T>(obj: T) => {
 };
 
 interface IObjUpdAllPropsConfig { onlyPropsInTarget?: boolean, propsAlsoAccept: string[] }
-export const ObjUpdAllProps = <T>(objTarget: T, objSource: object, config?: IObjUpdAllPropsConfig) => { // #!!!!!!!!!!!! sai config, retorno o objeto na própria classe!
+export const ObjUpdAllProps = <T>(objTarget: T, objSource: object, config?: IObjUpdAllPropsConfig) => { // #!!!!!!!!!! sai config, retorno o objeto na própria classe!
   // atualiza todas as propriedades de um object com base em outro object (crud update)
   const propsError = [];
   Object.keys(objSource).forEach((prop) => {
@@ -1059,8 +1093,14 @@ export function RandomWord(length: number) {
 }
 
 //#region scramble
-export interface IScrambleConfigProps { key?: string, withCrc?: boolean, prefixRandomLen?: number }
-export function Scramble(normalText: string, scrambleConfig: IScrambleConfigProps = {}) {
+export class ScrambleConfig {
+  key?: string;
+  withCrc?: boolean;
+  prefixRandomLen?: number;
+  static new() { return new ScrambleConfig(); }
+  static fill(values: ScrambleConfig) { return CutUndef(FillClassProps(ScrambleConfig.new(), values)); }
+}
+export function Scramble(normalText: string, scrambleConfig = ScrambleConfig.new()) {
   return ScrambleX('do', normalText, scrambleConfig);
 }
 // export function Scramble(normalText: string, key: string = undefined, withCrc = false) {
@@ -1068,14 +1108,14 @@ export function Scramble(normalText: string, scrambleConfig: IScrambleConfigProp
 //   return ScrambleX('do', normalText, scrambleConfig);
 // }
 
-export function Unscramble(scrambledText: string, scrambleConfig: IScrambleConfigProps = {}) {
+export function Unscramble(scrambledText: string, scrambleConfig = ScrambleConfig.new()) {
   return ScrambleX('undo', scrambledText, scrambleConfig);
 }
 // export function Unscramble(scrambledText: string, key: string = undefined, withCrc = false) {
 //   const scrambleConfig = { key, withCrc } as IScrambleConfigProps;
 //   return ScrambleX('undo', scrambledText, scrambleConfig);
 // }
-function ScrambleX(cmd: 'do' | 'undo', inputText: string, { key, withCrc, prefixRandomLen }: IScrambleConfigProps) {
+function ScrambleX(cmd: 'do' | 'undo', inputText: string, { key, withCrc, prefixRandomLen }: ScrambleConfig) {
   const method: 'standard' = 'standard';
   const lettersLowerCase = 'abcdefghijklmnopqrstuvwxyz';
   const lettersUpperCase = lettersLowerCase.toUpperCase();
@@ -1111,7 +1151,7 @@ function ScrambleX(cmd: 'do' | 'undo', inputText: string, { key, withCrc, prefix
     for (let index = 0; index < keyForShift.length; index++)
       keyForShiftSum += keyForShift.charCodeAt(index);
 
-    //#region calcula um fator de variação (shift) com base na chave de criptografia composta
+    // calcula um fator de variação (shift) com base na chave de criptografia composta
     const shift = (cadeiaCharsLength: number) => {
       let result = keyForShiftSum % (cadeiaCharsLength);
       if (result < 2 && cadeiaCharsLength >= 2)
@@ -1371,3 +1411,18 @@ export function FilterRelevantWordsForSearch(language: LanguageSearch, texts: st
 }
 //#endregion
 
+
+export function HoraForLog() {
+  return format_dtfns(new Date(), 'HH:mm:ss:SSS');
+}
+
+export class EnumMd<T> {
+  cod: T;
+  descr: string;
+  plus: any;
+  constructor(cod?: T, descr?: string, plus?: any) {
+    this.cod = cod;
+    this.descr = descr;
+    this.plus = plus;
+  }
+}

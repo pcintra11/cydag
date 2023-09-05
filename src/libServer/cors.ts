@@ -6,7 +6,8 @@ import psl from 'psl';
 import { csd, csl, dbg, dbgError, dbgInfo, ScopeDbg } from '../libCommon/dbg';
 import { HttpStatusCode } from '../libCommon/util';
 import { CtrlContext } from '../libCommon/ctrlContext';
-import { EnvSvrCtrlLog } from '../app_base/envs';
+
+import { EnvSvrCtrlLog, isLocalHost } from '../app_base/envs';
 //import { isAmbDev } from '../libCommon/envs';
 
 // Essa função deve ser chamada ANTES de qualquer uso de parm via 'body/json', pois será processada pelo método 'OPTIONS' (não GET ou POST)
@@ -72,6 +73,8 @@ export async function CorsMiddlewareAsync(req: NextApiRequest, res: NextApiRespo
         allowed = 'originAllowedByWhiteList';
       else if (originAllowedByDomain)
         allowed = 'originAllowedByDomain';
+      else if (isLocalHost())
+        allowed = 'localHost';
 
       if (allowed == null) {
         dbgError('CorsMiddleware', `CORS origin not allowed: ${info}`);

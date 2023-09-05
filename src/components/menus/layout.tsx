@@ -5,7 +5,7 @@ import { Box } from '@mui/material';
 import { PageDef } from '../../libCommon/endPoints';
 import { IGenericObject } from '../../libCommon/types';
 
-import { AbortProcComponent, IMenuEntriesForMenuTypesData, LogErrorUnmanaged } from '..';
+import { AbortProcComponent, MenuEntriesForMenuTypesData, LogErrorUnmanaged } from '..';
 import { MenuBarraSuperior } from './menuBarraSup';
 import { MenuLateral } from './menuLateral';
 import { useMenuLateral } from './useMenulateral';
@@ -20,7 +20,7 @@ export interface IMenuLateralContext {
 }
 export const MenuLateralContext = React.createContext<IMenuLateralContext>(null);
 interface ILayout {
-  menuEntriesForMenuTypes: IMenuEntriesForMenuTypesData;
+  menuEntriesForMenuTypes: MenuEntriesForMenuTypesData;
   Component: any;
   pageProps: IGenericObject;
   pageDefCurr: PageDef;
@@ -40,7 +40,7 @@ export function Layout({ menuEntriesForMenuTypes, Component, pageProps, pageDefC
   const pagePropsExtended = { ...pageProps, menuType, protTest1: 'a' }; // teste completo com SSG @@!!!!!!
 
   //csl({pageDefCurr});
-  const pageTitle = pageDefCurr?.pageTitle;
+  const pageTitle = pageDefCurr?.options?.pageTitle;
   //const childrenPage = <Box height='100%'><Component {...pagePropsExtended} /></Box>;
   const childrenPage = <Component {...pagePropsExtended} />;
   // const devConfigComp = (<>{dbgShowCli() && <Box><DevConfigBar /></Box>}</>);

@@ -1,26 +1,24 @@
-import { LoggedUserBase } from '../app_base/modelTypes';
+import { LoggedUserBase } from '../app_base/loggedUserBase';
 
-import { dbgError } from '../libCommon/dbg';
+import { csd, dbgError } from '../libCommon/dbg';
 import { IGenericObject } from '../libCommon/types';
 import { CutUndef, DateFromStrISO, FillClassProps } from '../libCommon/util';
 
 export class LoggedUser extends LoggedUserBase {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new LoggedUser(); }
-  static fill(values: LoggedUser, init = false) { return CutUndef(FillClassProps(LoggedUser.new(init), values)); }
+  static new() { return new LoggedUser(); }
+  static fill(values: LoggedUser) { return CutUndef(FillClassProps(LoggedUser.new(), values)); }
   static deserialize(values: IGenericObject) {
     try {
-      return FillClassProps(LoggedUser.new(),
-        {
-          //..._.omit(values, ['ttlSeconds']),
-          ...values,
-          firstSignIn: DateFromStrISO(values.firstSignIn),
-          lastReSignIn: DateFromStrISO(values.lastReSignIn),
-          lastActivity: DateFromStrISO(values.lastActivity),
-        });
+      return FillClassProps(LoggedUser.new(), {
+        ...values,
+        firstSignIn: DateFromStrISO(values.firstSignIn),
+        lastReSignIn: DateFromStrISO(values.lastReSignIn),
+        lastActivity: DateFromStrISO(values.lastActivity),
+        //ttlSeconds: values.ttlSeconds != null ? Number(values.ttlSeconds) : null,
+      });
     } catch (error) {
       dbgError('LoggedUser.deserialize', error.message, values);
-      return LoggedUser.new(true);
+      return LoggedUser.new();
     }
   }
 }

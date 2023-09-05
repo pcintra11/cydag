@@ -12,7 +12,7 @@ import { CallApiCliASync } from '../../fetcher/fetcherCli';
 
 import { SaveAsXlsx } from '../../libClient/saveAsClient';
 
-import { AbortProc, SelOption, PopupMsg, WaitingObs, SnackBarError, FakeLink } from '../../components';
+import { AbortProc, SelOption, PopupMsg, WaitingObs, FakeLink, LogErrorUnmanaged } from '../../components';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../hooks/useMyForm';
 
 import { IconButtonAppDownload, SelAno, SelEntity } from '../../appCydag/components';
@@ -140,7 +140,8 @@ export default function PageExportPlanej() {
         mountOptionsCC(ano);
       })
       .catch((error) => {
-        SnackBarError(error, `${pageSelf.pagePath}-initialization`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-initialization`);
+        PopupMsg.error(error);
       });
     return () => { mount = false; };
   }, []);
@@ -204,15 +205,16 @@ export default function PageExportPlanej() {
         csl(`tempo total preparação client ${calcExecTime.lapMs()}ms`);
       })
       .catch((error) => {
-        SnackBarError(error, `${pageSelf.pagePath}-getItens`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-getItens`);
+        PopupMsg.error(error);
         setMainStatesCache({ downloadInProgress: false });
       });
   };
 
   const centroCustoOptions = mainStates.centroCustoOptions == null ? null : mainStates.centroCustoOptions.map((x) => new SelOption(x.cod, x.descr));
   return (
-    <Stack gap={1} height='100%'>
-      <Stack direction='row' alignItems='center' gap={1}>
+    <Stack spacing={1} height='100%'>
+      <Stack direction='row' alignItems='center' spacing={1}>
         <SelAno value={ano} onChange={(newValue) => { frmFilter.setValue(ValoresPlanejadosDetalhes.F.ano, newValue || ''); mountOptionsCC(newValue); }}
           options={mainStates.anoCentroCustosArray.map((x) => new SelOption(x.ano, x.ano))}
         />

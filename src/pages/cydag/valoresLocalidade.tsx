@@ -2,7 +2,7 @@ import React from 'react';
 import { useRouter } from 'next/router';
 
 import Box from '@mui/material/Box';
-import { Stack, useTheme } from '@mui/material';
+import { Stack } from '@mui/material';
 
 import { BinSearchItem, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../libCommon/util';
 import { csd } from '../../libCommon/dbg';
@@ -13,17 +13,17 @@ import { CallApiCliASync } from '../../fetcher/fetcherCli';
 
 import { cssTextNoWrapEllipsis } from '../../libClient/util';
 
-import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, SnackBarError, fontSizeGrid, fontSizeIconsInGrid } from '../../components';
+import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, fontSizeGrid, fontSizeIconsInGrid, LogErrorUnmanaged, Tx } from '../../components';
 import { GridCell, GridCellEdit, IFldChange, GridEditFldCtrl, GridEditMainCtrl, ValueType } from '../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../hooks/useMyForm';
 //import { GlobalState, useGlobalState } from '../../hooks/useGlobalState';
 
 import { configApp } from '../../app_hub/appConfig';
 
-import { IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, SelAno, SelRevisao } from '../../appCydag/components';
+import { IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, SelAno, SelRevisao, TxGridCel, TxGridHdr } from '../../appCydag/components';
 import { apisApp, pagesApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
-import { mesesFld, mesesHdr, genValMeses, amountToStr } from '../../appCydag/util';
+import { mesesFld, mesesHdr, genValMeses, amountToStrApp } from '../../appCydag/util';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatusMd, RevisaoValor } from '../../appCydag/types';
 import { ProcessoOrcamentario, ValoresLocalidade, Localidade, localidadeCoringa } from '../../appCydag/modelTypes';
 import { CmdApi_ValoresLocalidade as CmdApi, IChangedLine, DataEdit } from '../api/appCydag/valoresLocalidade/types';
@@ -98,8 +98,6 @@ export default function PageValoresLocalidades() {
   const router = useRouter();
   const { loggedUser, isLoadingUser } = useLoggedUser({ id: pageSelf.pagePath });
 
-  const themePlus = useTheme();
-
   //#region db access
   const initialization = async () => {
     const apiReturn = await apis.crud({ cmd: CmdApi.initialization });
@@ -132,7 +130,8 @@ export default function PageValoresLocalidades() {
         }
       });
     } catch (error) {
-      SnackBarError(error, `${pageSelf.pagePath}-getItens`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-getItens`);
+      PopupMsg.error(error);
     }
   };
   const setItens = async (filter: FrmFilter, changedLines: IChangedLine[]) => {
@@ -140,7 +139,8 @@ export default function PageValoresLocalidades() {
       await apis.crud({ cmd: CmdApi.valoresSet, filter, data: { changedLines } });
       PopupMsg.success(`Valores gravados para ${filter.ano}.`);
     } catch (error) {
-      SnackBarError(error, `${pageSelf.pagePath}-setItens`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-setItens`);
+      PopupMsg.error(error);
     }
   };
   //#endregion
@@ -156,7 +156,8 @@ export default function PageValoresLocalidades() {
         setMainStatesCache({ phase: Phase.ready, processoOrcamentarioArray, localidadeArray });
       })
       .catch((error) => {
-        SnackBarError(error, `${pageSelf.pagePath}-initialization`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-initialization`);
+        PopupMsg.error(error);
       });
     return () => { mount = false; };
   }, []);
@@ -184,7 +185,7 @@ export default function PageValoresLocalidades() {
 
     return (
       <form onSubmit={frmFilter.handleSubmit(getItensSubmit)}>
-        <Stack direction='row' alignItems='center' gap={1}>
+        <Stack direction='row' alignItems='center' spacing={1}>
           {/* <SelectMy width='80px'
             value={ano || ''}
             onChange={(ev) => { frmFilter.setValue(ValoresLocalidade.F.ano, ev.target.value); }}
@@ -222,20 +223,20 @@ export default function PageValoresLocalidades() {
       const comps = [];
       if (dataStructure.headerInfo != null)
         comps.push(`${dataStructure.headerInfo}`);
-      if (comps.length > 0) return (<Box>{comps.join(' ')}</Box>);
+      if (comps.length > 0) return (<Tx>{comps.join(' ')}</Tx>);
       else return (<></>);
     };
 
-    const propsColorsHdr = propsColorHeader(themePlus);
+    const propsColorsHdr = propsColorHeader();
     const HeaderComp = () => {
       return (
         <>
           <GridCell sticky {...propsColorsHdr}>
-            <Box>Localidade</Box>
+            <TxGridHdr>Localidade</TxGridHdr>
           </GridCell>
           {mesesHdr.map((mes, index) =>
             <GridCell key={index} sticky textAlign='right' {...propsColorsHdr}>
-              <Box>{mes}</Box>
+              <TxGridHdr>{mes}</TxGridHdr>
             </GridCell>
           )}
         </>
@@ -294,10 +295,10 @@ export default function PageValoresLocalidades() {
 
       if (canEdit) {
         const descrUse =
-          <Stack direction='row' alignItems='center' gap={1}>
+          <Stack direction='row' alignItems='center' spacing={1}>
             <IconButtonAppCrud icon='clear' onClick={() => chgValMeses('clear')} fontSize={fontSizeIconsInGrid} />
             <IconButtonAppCrud icon='redo' onClick={() => chgValMeses('repeat')} fontSize={fontSizeIconsInGrid} />
-            <Box style={cssTextNoWrapEllipsis}>{localidade.descr}</Box>
+            <Tx style={cssTextNoWrapEllipsis}>{localidade.descr}</Tx>
           </Stack>;
 
         return (
@@ -311,8 +312,8 @@ export default function PageValoresLocalidades() {
       }
       else
         return (<>
-          <GridCell><Box style={cssTextNoWrapEllipsis}>{localidade.descr}</Box></GridCell>
-          {mesesFld.map((_, index) => <GridCell key={index} textAlign='right'>{amountToStr(dataOriginal.valMeses[index], 0)}</GridCell>)}
+          <GridCell><TxGridCel style={cssTextNoWrapEllipsis}>{localidade.descr}</TxGridCel></GridCell>
+          {mesesFld.map((_, index) => <GridCell key={index} textAlign='right'><TxGridCel>{amountToStrApp(dataOriginal.valMeses[index], 0)}</TxGridCel></GridCell>)}
         </>);
     };
 
@@ -366,7 +367,7 @@ export default function PageValoresLocalidades() {
 
   return (
     <GlobalCtrlContext.Provider value={new GlobalEditCtrl()}>
-      <Stack gap={1} height='100%'>
+      <Stack spacing={1} height='100%'>
         <FilterComp />
         <DataComp />
       </Stack>

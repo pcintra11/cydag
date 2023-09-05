@@ -1,5 +1,6 @@
 export function OnClient() {
-  if (typeof window !== 'undefined') return true;
+  // if (typeof window !== 'undefined') return true;
+  if (typeof window === 'object') return true; // evitar esse método @!!!!!
   else return false;
 }
 export function OnServer() {

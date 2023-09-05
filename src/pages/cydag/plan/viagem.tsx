@@ -2,7 +2,7 @@ import React from 'react';
 import { useRouter } from 'next/router';
 
 import Box from '@mui/material/Box';
-import { Stack, useTheme } from '@mui/material';
+import { Stack } from '@mui/material';
 
 import { BinSearchItem, BinSearchProp, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../../libCommon/util';
 import { csd } from '../../../libCommon/dbg';
@@ -11,17 +11,17 @@ import { PageDef } from '../../../libCommon/endPoints';
 import { CalcExecTime } from '../../../libCommon/calcExectime';
 import { CallApiCliASync } from '../../../fetcher/fetcherCli';
 
-import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, SnackBarError, fontSizeGrid, fontSizeIconsInGrid } from '../../../components';
+import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, fontSizeGrid, fontSizeIconsInGrid, LogErrorUnmanaged, Tx } from '../../../components';
 import { GridCellEdit, GridCell, IFldChange, GridEditFldCtrl, GridEditMainCtrl, ValueType } from '../../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 //import { GlobalState, useGlobalState } from '../../hooks/useGlobalState';
 
 import { configApp } from '../../../app_hub/appConfig';
 
-import { IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, SelAno, SelEntity, SelRevisao } from '../../../appCydag/components';
+import { IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, SelAno, SelEntity, SelRevisao, TxGridCel, TxGridHdr } from '../../../appCydag/components';
 import { apisApp, pagesApp } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
-import { amountToStr } from '../../../appCydag/util';
+import { amountToStrApp } from '../../../appCydag/util';
 import { CentroCusto, Funcionario, Localidade, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto, Viagem } from '../../../appCydag/modelTypes';
 import { CentroCustoConfigOption, IAnoCentroCustos, ProcCentrosCustoConfig, RevisaoValor, OrigemFuncMd, OrigemFunc, ProcessoOrcamentarioStatusMd, OperInProcessoOrcamentario, TipoPlanejViagem } from '../../../appCydag/types';
 import { CmdApi_Viagem as CmdApi, IChangedLine, DataEdit, LineState } from '../../api/appCydag/viagem/types';
@@ -103,8 +103,6 @@ export default function PageViagem() {
   const router = useRouter();
   const { loggedUser, isLoadingUser } = useLoggedUser({ id: pageSelf.pagePath });
 
-  const themePlus = useTheme();
-
   //#region db access
   const initialization = async () => {
     const apiReturn = await apis.crud({ cmd: CmdApi.crudInitialization });
@@ -148,7 +146,8 @@ export default function PageViagem() {
         }
       });
     } catch (error) {
-      SnackBarError(error, `${pageSelf.pagePath}-getItens`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-getItens`);
+      PopupMsg.error(error);
     }
   };
   const setItens = async (filter: FrmFilter, changedLines: IChangedLine[]) => {
@@ -157,7 +156,8 @@ export default function PageViagem() {
       PopupMsg.success(`Dados gravados para ${filter.ano} / ${filter.centroCusto}.`);
       getItens(filter);
     } catch (error) {
-      SnackBarError(error, `${pageSelf.pagePath}-setItens`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-setItens`);
+      PopupMsg.error(error);
     }
   };
   //#endregion
@@ -180,7 +180,8 @@ export default function PageViagem() {
         setMainStatesCache({ phase: Phase.ready, anoCentroCustosArray });
       })
       .catch((error) => {
-        SnackBarError(error, `${pageSelf.pagePath}-initialization`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-initialization`);
+        PopupMsg.error(error);
       });
     return () => { mount = false; };
   }, []);
@@ -236,7 +237,7 @@ export default function PageViagem() {
     const centroCustoOptions = mainStatesFilter.centroCustoOptions == null ? null : mainStatesFilter.centroCustoOptions.map((x) => new SelOption(x.cod, x.descr));
     return (
       <form onSubmit={frmFilter.handleSubmit(getItensSubmit)}>
-        <Stack direction='row' alignItems='center' gap={1}>
+        <Stack direction='row' alignItems='center' spacing={1}>
           <SelAno value={ano} onChange={(newValue) => { frmFilter.setValue(Funcionario.F.ano, newValue || ''); mountOptionsCC(newValue); }}
             options={mainStates.anoCentroCustosArray.map((x) => new SelOption(x.ano, x.ano))}
           />
@@ -292,38 +293,38 @@ export default function PageViagem() {
       const comps = [];
       if (dataStructure.headerInfo != null)
         comps.push(`${dataStructure.headerInfo}`);
-      if (comps.length > 0) return (<Box>{comps.join(' ')}</Box>);
+      if (comps.length > 0) return (<Tx>{comps.join(' ')}</Tx>);
       else return (<></>);
     };
 
-    const propsColorsHdr = propsColorHeader(themePlus);
+    const propsColorsHdr = propsColorHeader();
     const HeaderComp1 = () => {
       return (
         <>
-          <GridCell sticky columnSpan={5} textAlign='center' {...propsColorsHdr}>Por Premissas</GridCell>
+          <GridCell sticky columnSpan={5} textAlign='center' {...propsColorsHdr}><TxGridHdr>Por Premissas</TxGridHdr></GridCell>
           <GridCell sticky textAlign='center' {...propsColorsHdr}>
-            <Stack direction='row' alignItems='center' gap={1} justifyContent='center'>
+            <Stack direction='row' alignItems='center' spacing={1} justifyContent='center'>
               <IconButtonAppCrud icon='create' colorSx={propsColorsHdr.color} onClick={() => newLine1()} />
             </Stack>
           </GridCell>
-          <GridCell sticky textAlign='left' {...propsColorsHdr}><Box>Destino</Box></GridCell>
-          <GridCell sticky textAlign='left' {...propsColorsHdr}><Box>Funcionário (opcional)</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Viagens no Ano</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Média de Pernoites</Box></GridCell>
+          <GridCell sticky textAlign='left' {...propsColorsHdr}><TxGridHdr>Destino</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='left' {...propsColorsHdr}><TxGridHdr>Funcionário (opcional)</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Viagens no Ano</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Média de Pernoites</TxGridHdr></GridCell>
         </>
       );
     };
     const HeaderComp2 = () => {
       return (
         <>
-          <GridCell sticky columnSpan={3} textAlign='center' {...propsColorsHdr}>Por Valor</GridCell>
+          <GridCell sticky columnSpan={3} textAlign='center' {...propsColorsHdr}><TxGridHdr>Por Valor</TxGridHdr></GridCell>
           <GridCell sticky textAlign='center' {...propsColorsHdr}>
-            <Stack direction='row' alignItems='center' gap={1} justifyContent='center'>
+            <Stack direction='row' alignItems='center' spacing={1} justifyContent='center'>
               <IconButtonAppCrud icon='create' colorSx={propsColorsHdr.color} onClick={() => newLine2()} />
             </Stack>
           </GridCell>
-          <GridCell sticky textAlign='left' {...propsColorsHdr}><Box>Obs</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Valor</Box></GridCell>
+          <GridCell sticky textAlign='left' {...propsColorsHdr}><TxGridHdr>Obs</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Valor</TxGridHdr></GridCell>
         </>
       );
     };
@@ -373,21 +374,21 @@ export default function PageViagem() {
       let iconsCmd: React.ReactNode = null;
       if (canEdit) {
         if (lineState == LineState.original) {
-          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
+          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' spacing={1}>
             <IconButtonAppCrud icon='edit' onClick={() => changeLineState(LineState.updated)} fontSize={fontSizeIconsInGrid} />
             <IconButtonAppCrud icon='delete' onClick={() => changeLineState(LineState.deleted)} fontSize={fontSizeIconsInGrid} />
           </Stack>;
         }
         else if (lineState == LineState.deleted)
-          iconsCmd = <Box>excl.</Box>;
+          iconsCmd = <Tx>excl.</Tx>;
         else if (lineState == LineState.aborted)
-          iconsCmd = <Box>cancel.</Box>;
+          iconsCmd = <Tx>cancel.</Tx>;
         else if (lineState == LineState.updated)
-          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
+          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' spacing={1}>
             <IconButtonAppCrud icon='delete' onClick={() => changeLineState(LineState.deleted)} fontSize={fontSizeIconsInGrid} />
           </Stack>;
         else if (lineState == LineState.inserted)
-          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
+          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' spacing={1}>
             <IconButtonAppCrud icon='delete' onClick={() => changeLineState(LineState.aborted)} fontSize={fontSizeIconsInGrid} />
           </Stack>;
       }
@@ -416,10 +417,10 @@ export default function PageViagem() {
         return (<>
           <GridCell textAlign='center'>{iconsCmd}</GridCell>
 
-          <GridCell><Box>{BinSearchProp(dataStructure.localidadeMdArray, dataOriginal.localidadeDestino, 'descr', 'cod')}</Box></GridCell>
-          <GridCell><Box>{funcDescr}</Box></GridCell>
-          <GridCell textAlign='right'>{amountToStr(dataOriginal.qtdViagens, 0)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(dataOriginal.mediaPernoites, 0)}</GridCell>
+          <GridCell><TxGridCel>{BinSearchProp(dataStructure.localidadeMdArray, dataOriginal.localidadeDestino, 'descr', 'cod')}</TxGridCel></GridCell>
+          <GridCell><TxGridCel>{funcDescr}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{amountToStrApp(dataOriginal.qtdViagens, 0)}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{amountToStrApp(dataOriginal.mediaPernoites, 0)}</TxGridCel></GridCell>
         </>);
       }
     };
@@ -466,21 +467,21 @@ export default function PageViagem() {
       let iconsCmd: React.ReactNode = null;
       if (canEdit) {
         if (lineState == LineState.original) {
-          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
+          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' spacing={1}>
             <IconButtonAppCrud icon='edit' onClick={() => changeLineState(LineState.updated)} fontSize={fontSizeIconsInGrid} />
             <IconButtonAppCrud icon='delete' onClick={() => changeLineState(LineState.deleted)} fontSize={fontSizeIconsInGrid} />
           </Stack>;
         }
         else if (lineState == LineState.deleted)
-          iconsCmd = <Box>excl.</Box>;
+          iconsCmd = <Tx>excl.</Tx>;
         else if (lineState == LineState.aborted)
-          iconsCmd = <Box>cancel.</Box>;
+          iconsCmd = <Tx>cancel.</Tx>;
         else if (lineState == LineState.updated)
-          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
+          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' spacing={1}>
             <IconButtonAppCrud icon='delete' onClick={() => changeLineState(LineState.deleted)} fontSize={fontSizeIconsInGrid} />
           </Stack>;
         else if (lineState == LineState.inserted)
-          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' gap={1}>
+          iconsCmd = <Stack direction='row' alignItems='center' justifyContent='center' spacing={1}>
             <IconButtonAppCrud icon='delete' onClick={() => changeLineState(LineState.aborted)} fontSize={fontSizeIconsInGrid} />
           </Stack>;
       }
@@ -500,8 +501,8 @@ export default function PageViagem() {
         return (<>
           <GridCell textAlign='center'>{iconsCmd}</GridCell>
 
-          <GridCell><Box>{dataOriginal.obs}</Box></GridCell>
-          <GridCell textAlign='right'>{amountToStr(dataOriginal.valor, configCydag.decimalsValsInput)}</GridCell>
+          <GridCell><TxGridCel>{dataOriginal.obs}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{amountToStrApp(dataOriginal.valor, configCydag.decimalsValsInput)}</TxGridCel></GridCell>
         </>);
       }
     };
@@ -532,7 +533,7 @@ export default function PageViagem() {
     let lineSeqPrem = 0;
     let lineSeqVal = 0;
     return (
-      <Stack gap={1} height='100%'>
+      <Stack spacing={1} height='100%'>
         <InfoComp />
 
         <Box display='grid' gap={0.2} flex='1' overflow='auto'
@@ -584,7 +585,7 @@ export default function PageViagem() {
 
   return (
     <GlobalCtrlContext.Provider value={new GlobalEditCtrl()}>
-      <Stack gap={1} height='100%'>
+      <Stack spacing={1} height='100%'>
         <FilterComp />
         <DataComp />
       </Stack>

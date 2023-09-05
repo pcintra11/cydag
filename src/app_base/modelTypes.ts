@@ -1,30 +1,20 @@
 import { ObjectId } from 'mongodb';
 
+import { IPinfoVip } from '../techno_ipInfo/types';
+import { BrowserInfoVip } from '../techno_whichBrowser/clientInfoSvr';
+
 import { dbgError } from '../libCommon/dbg';
 import { IGenericObject } from '../libCommon/types';
 import { CutUndef, DateFromStrISO, FillClassProps } from '../libCommon/util';
 
 import { SendEmailParams } from '../libServer/sendMail';
 
-export class LoggedUserBase {
-  sessionIdStr?: string;
-  userIdStr?: string;
-  email?: string;
-  emailSigned?: string; // o usuário adm poderá simular outros usuários, então preserva que é o adm original que se autenticou
-  name?: string;
-  roles?: string[]; //@!!!!!!!! mascarar?
-  firstSignIn?: Date;
-  lastReSignIn?: Date;
-  lastActivity?: Date; // acesso API ou acionamento de transação no menu
-}
-
 //#region db
 export class MainCtrl {
   key?: string;
   blockMsg?: string;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new MainCtrl(); }
-  static fill(values: MainCtrl, init = false) { return CutUndef(FillClassProps(MainCtrl.new(init), values)); }
+  static new() { return new MainCtrl(); }
+  static fill(values: MainCtrl) { return CutUndef(FillClassProps(MainCtrl.new(), values)); }
 }
 
 export class SentMessage {
@@ -35,9 +25,8 @@ export class SentMessage {
   message?: string;
   resultOk?: string;
   resultError?: string;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new SentMessage(); }
-  static fill(values: SentMessage, init = false) { return CutUndef(FillClassProps(SentMessage.new(init), values)); }
+  static new() { return new SentMessage(); }
+  static fill(values: SentMessage) { return CutUndef(FillClassProps(SentMessage.new(), values)); }
 }
 
 export class SendMailLog {
@@ -50,9 +39,8 @@ export class SendMailLog {
   resultError?: string;
   attention?: string;
   shouldDelete?: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new SendMailLog(); }
-  static fill(values: SendMailLog, init = false) { return CutUndef(FillClassProps(SendMailLog.new(init), values)); }
+  static new() { return new SendMailLog(); }
+  static fill(values: SendMailLog) { return CutUndef(FillClassProps(SendMailLog.new(), values)); }
 }
 
 export class ApiSyncLog {
@@ -72,13 +60,12 @@ export class ApiSyncLog {
   elapsedMs?: number;
   result?: IGenericObject;
   attention?: string;
-  sessionIdStr?: string;
+  //sessionIdStr?: string;
   shouldDelete?: boolean;
   additionalInfo?: string;
-  referer?: string;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new ApiSyncLog(); }
-  static fill(values: ApiSyncLog, init = false) { return CutUndef(FillClassProps(ApiSyncLog.new(init), values)); }
+  //referer?: string;
+  static new() { return new ApiSyncLog(); }
+  static fill(values: ApiSyncLog) { return CutUndef(FillClassProps(ApiSyncLog.new(), values)); }
 }
 
 export class ApiAsyncLog {
@@ -97,18 +84,21 @@ export class ApiAsyncLog {
   resultError?: string;
   attention?: string;
   shouldDelete?: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new ApiAsyncLog(); }
-  static fill(values: ApiAsyncLog, init = false) { return CutUndef(FillClassProps(ApiAsyncLog.new(init), values)); }
+  static new() { return new ApiAsyncLog(); }
+  static fill(values: ApiAsyncLog) { return CutUndef(FillClassProps(ApiAsyncLog.new(), values)); }
 }
 
-export class RefererLog {
+export class SiteEntryPoint { // era RefererLog
   date?: Date;
   url?: string;
   referer?: string;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new RefererLog(); }
-  static fill(values: RefererLog, init = false) { return CutUndef(FillClassProps(RefererLog.new(init), values)); }
+  ip?: string;
+  ipInfo?: IPinfoVip;
+  browserId?: string;
+  userAgent?: string;
+  browserInfo?: BrowserInfoVip;
+  static new() { return new SiteEntryPoint(); }
+  static fill(values: SiteEntryPoint) { return CutUndef(FillClassProps(SiteEntryPoint.new(), values)); }
 }
 
 export class ControlledAccess {
@@ -120,9 +110,8 @@ export class ControlledAccess {
   info?: string; // qdo for dado autorização é o texto que identifica quem está usando
   dateAuthorized?: Date;
   searchTerms?: string;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new ControlledAccess(); }
-  static fill(values: ControlledAccess, init = false) { return CutUndef(FillClassProps(ControlledAccess.new(init), values)); }
+  static new() { return new ControlledAccess(); }
+  static fill(values: ControlledAccess) { return CutUndef(FillClassProps(ControlledAccess.new(), values)); }
   static deserialize(values: IGenericObject) {
     try {
       return FillClassProps(ControlledAccess.new(), {
@@ -132,25 +121,25 @@ export class ControlledAccess {
       });
     } catch (error) {
       dbgError('ControlledAccess.deserialize', error.message, values);
-      return ControlledAccess.new(true);
+      return ControlledAccess.new();
     }
   }
 }
 //#endregion
 
 export class SystemLog {
-  //app: string;
   appVersion?: string;
-  //appDomain: string;
   date?: Date;
   scope?: string;
   categ?: string;
   point?: string;
+  ip?: string;
+  browserId?: string;
+  userId?: ObjectId;
   msg?: string;
   details?: object;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new SystemLog(); }
-  static fill(values: SystemLog, init = false) { return CutUndef(FillClassProps(SystemLog.new(init), values)); }
+  static new() { return new SystemLog(); }
+  static fill(values: SystemLog) { return CutUndef(FillClassProps(SystemLog.new(), values)); }
 }
 
 export class NotifAdmMessage {
@@ -160,9 +149,8 @@ export class NotifAdmMessage {
   last?: Date;
   notifLastProc?: string;
   total?: number;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new NotifAdmMessage(); }
-  static fill(values: NotifAdmMessage, init = false) { return CutUndef(FillClassProps(NotifAdmMessage.new(init), values)); }
+  static new() { return new NotifAdmMessage(); }
+  static fill(values: NotifAdmMessage) { return CutUndef(FillClassProps(NotifAdmMessage.new(), values)); }
 }
 export class NotifyAdmCtrl {
   key?: string;
@@ -170,9 +158,8 @@ export class NotifyAdmCtrl {
   last?: Date;
   messages?: NotifAdmMessage[];
   lockedStr?: string;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new NotifyAdmCtrl(); }
-  static fill(values: NotifyAdmCtrl, init = false) { return CutUndef(FillClassProps(NotifyAdmCtrl.new(init), values)); }
+  static new() { return new NotifyAdmCtrl(); }
+  static fill(values: NotifyAdmCtrl) { return CutUndef(FillClassProps(NotifyAdmCtrl.new(), values)); }
 }
 export class DbTest {
   key?: string;

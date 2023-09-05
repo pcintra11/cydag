@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 
 import { Autocomplete, Box, Stack, TextField, useTheme } from '@mui/material';
 
-import { chgUserAndRouteContext } from '../_appResources';
+//import { chgUserAndRouteContext } from '../_appResources';
 
 import { IsErrorManaged, ObjUpdAllProps, ErrorPlus, BinSearchItem } from '../../libCommon/util';
 import { csd, dbg, ScopeDbg } from '../../libCommon/dbg';
@@ -14,7 +14,7 @@ import { CallApiCliASync } from '../../fetcher/fetcherCli';
 
 import { ctrlContextFromGlobals } from '../../libClient/clientGlobals';
 
-import { Btn, BtnLine, PopupMsg, WaitingObs } from '../../components';
+import { Btn, BtnLine, PopupMsg, Tx, WaitingObs } from '../../components';
 import { AbortProc, LogErrorUnmanaged } from '../../components';
 import { FrmError } from '../../components';
 import { FrmDefaultValues, FrmSetValues, NormalizePropsString, useFrm } from '../../hooks/useMyForm';
@@ -48,9 +48,9 @@ export default function PageUserSimulate() {
   mainStatesCache = { ...mainStates }; const setMainStatesCache = (newValues: MainStates) => { if (!mount) return; ObjUpdAllProps(mainStatesCache, newValues); setMainStates({ ...mainStatesCache }); };
 
   //const { logRedirSetGet } = React.useContext(_AppLogRedir);
-  const { chgUserAndRouteStart } = React.useContext(chgUserAndRouteContext);
+  //const { chgUserAndRouteStart } = React.useContext(chgUserAndRouteContext);
   const router = useRouter();
-  const { loggedUser, isLoadingUser } = useLoggedUser({ id: pageSelf.pagePath });
+  const { loggedUser, isLoadingUser, setUser } = useLoggedUser({ id: pageSelf.pagePath });
   //const agora = new Date();
 
   const themePlus = useTheme();
@@ -128,9 +128,9 @@ export default function PageUserSimulate() {
   const efetiva = async (data: FrmData) => {
     try {
       const loggedUserNow = await UserSimulateASync(data.email);
-      chgUserAndRouteStart({ loggedUser: loggedUserNow, pagePath: pagesApp.home.pagePath });
-      // logRedirSetGet({ loggedUser: loggedUserNow, pagePath: pagesApp.home.pagePath });
-      // setTimeout(() => router.push(pagesApp.logRedir.pagePath), 0);
+      //chgUserAndRouteStart({ loggedUser: loggedUserNow, pagePath: pagesApp.home.pagePath });
+      setUser(loggedUserNow, pageSelf.pagePath);
+      router.push({ pathname: pagesApp.home.pagePath });
     } catch (error) {
       LogErrorUnmanaged(error, `${pageSelf.pagePath}-onSubmit`);
       if (!IsErrorManaged(error)) {
@@ -171,13 +171,13 @@ export default function PageUserSimulate() {
     if (optionEmailSelected == undefined) optionEmailSelected = null;
 
     return (
-      <Stack gap={1} height='100%' overflow='auto'>
+      <Stack spacing={1} height='100%' overflow='auto'>
         {isInitiating && <WaitingObs />}
         <form onSubmit={frmUserSimulate.handleSubmit(onSubmit)}>
-          <Stack gap={1}>
-            <Box>
+          <Stack spacing={1}>
+            <Tx>
               Usuário atualmente em simulação: {loggedUser.email != loggedUser.emailSigned ? loggedUser.email : 'nenhum'}
-            </Box>
+            </Tx>
             <Box>
               <Autocomplete
                 sx={{ width: '99.5%' }}

@@ -1,8 +1,6 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import queryString from 'query-string';
 
-import { EnvDeployConfig } from '../app_base/envs';
-
 import { csd, dbg, dbgError, ScopeDbg } from '../libCommon/dbg';
 import { IGenericObject } from '../libCommon/types';
 import { ErrorPlus, HttpStatusCode } from '../libCommon/util';
@@ -10,6 +8,8 @@ import { OnServer } from '../libCommon/sideProc';
 import { CalcExecTime } from '../libCommon/calcExectime';
 import { CtrlContext } from '../libCommon/ctrlContext';
 import { CtrlRecursion } from '../libCommon/ctrlRecursion';
+
+import { EnvDeployConfig } from '../app_base/envs';
 
 //let seqCtrl = 0;
 
@@ -31,7 +31,7 @@ export interface IFetchOptions {
   forceError?: string;
 }
 
-export async function CallApiASync(apiPath: string, ctrlContext: CtrlContext, callSeq: string, browserId: string = null, parm: IGenericObject = null, // loggedUser: LoggedUser = null,
+export async function CallApiASync(apiPath: string, ctrlContext: CtrlContext, callSeq: string, browserId: string = null, timeZone: string = null, parm: IGenericObject = null, // loggedUser: LoggedUser = null,
   sideCall: 'client' | 'server',
   info = null,
   fetchOptions: IFetchOptions = {}) {
@@ -56,9 +56,9 @@ export async function CallApiASync(apiPath: string, ctrlContext: CtrlContext, ca
 
     const method = fetchOptions?.method || 'post';
 
-    dbgA(1, 'api', urlApi, method, info); // , JSON.stringify(parm)
-    dbgA(3, 'parm', parm);
-    dbgA(4, 'fetchOptions', fetchOptions);
+    dbgA(1, 'api', urlApi, { parm, method, fetchOptions, info }); // , JSON.stringify(parm)
+    // dbgA(3, 'parm', parm);
+    // dbgA(4, 'fetchOptions', fetchOptions);
 
     const axiosRequestConfig: AxiosRequestConfig = {};
 
@@ -76,7 +76,7 @@ export async function CallApiASync(apiPath: string, ctrlContext: CtrlContext, ca
 
     let response: AxiosResponse = null;
 
-    const _parmPlus: any = { sideCall, callSeq, browserId, ctrlLog: ctrlContext.ctrlLog }; // { loggedUser };
+    const _parmPlus: any = { sideCall, callSeq, browserId, timeZone, ctrlLog: ctrlContext.ctrlLog }; // { loggedUser };
     //dbgA(5, '_parmPlus', _parmPlus);
 
     const parmFull = internalApi ? { ...parm, _parmPlus } : parm;
@@ -269,8 +269,7 @@ export async function getRedirectedUrl(url: string) {
       method: 'GET', url, params: {}
     });
     return response.request._redirectable._options.href;
-  }
-  catch (error) {
+  } catch (error) {
     dbgError('getRedirectedUrl', error.message);
     return null;
   }

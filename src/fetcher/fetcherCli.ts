@@ -1,5 +1,3 @@
-import { EnvApiTimeout } from '../app_base/envs';
-
 import { CategMsgSystem } from '../libCommon/logSystemMsg_cliSvr';
 import { IGenericObject } from '../libCommon/types';
 import { csd, dbgError } from '../libCommon/dbg';
@@ -10,6 +8,10 @@ import { SystemMsgCli } from '../libClient/systemMsgCli';
 import { IFetchOptions, CallApiASync } from './fetcher';
 import { globals } from '../libClient/clientGlobals';
 import { CtrlContext } from '../libCommon/ctrlContext';
+
+//import { LogErrorUnmanaged } from '../components';
+
+import { EnvApiTimeout } from '../app_base/envs';
 
 let callSeq = 0;
 export async function CallApiCliASync<T>(apiPath: string, parm: IGenericObject = null,
@@ -32,7 +34,8 @@ export async function CallApiCliASync<T>(apiPath: string, parm: IGenericObject =
   const timeOut = fetchOptions.timeOut != null ? fetchOptions.timeOut : EnvApiTimeout().waitCallFromCli;
   try {
     //if (forceError) throw new Error('Error forced');
-    const data: T = await CallApiASync(apiPath, ctrlContext, callSeqThis, globals.browserId, parm, 'client', '', { ...fetchOptions, timeOut });
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const data: T = await CallApiASync(apiPath, ctrlContext, callSeqThis, globals.browserId, timeZone, parm, 'client', '', { ...fetchOptions, timeOut });
     const elapsedMs = calcExecTimeApiCall.elapsedMs();
     if (elapsedMs >= EnvApiTimeout().alertCallFromCli) {
       const paramsVarianteSel = ['cmd'];
@@ -49,8 +52,7 @@ export async function CallApiCliASync<T>(apiPath: string, parm: IGenericObject =
     }
     if (fetchOptions?.fetchAndForget === true) return;
     else return data;
-  }
-  catch (error) {
+  } catch (error) {
     //csd('CallApiCliASync', { error });
     // if (ErrorPlusHttpStatusCode(error) == HttpStatusCode.gatewayTimeout) { // compilação no server muito demorada
     //   //let erroContornado = false;
@@ -74,8 +76,8 @@ export async function CallApiCliASync<T>(apiPath: string, parm: IGenericObject =
     // }
     // else
     if (fetchOptions?.fetchAndForget === true) {
-      SystemMsgCli(CategMsgSystem.error, 'CallApiCliASync-fetchAndForget', error.message, { apiPath, parm, fetchOptions });
-      //LogErrorUnmanaged(error, );
+      dbgError('CallApiCliASync-fetchAndForget', error.message);
+      // não pode, entra em loop!!!  LogErrorUnmanaged(error, 'CallApiCliASync-fetchAndForget');
       return;
     }
     else throw error;

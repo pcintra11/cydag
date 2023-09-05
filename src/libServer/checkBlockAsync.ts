@@ -1,9 +1,10 @@
-import { LoggedUserBase, MainCtrl } from '../app_base/modelTypes';
-import { keyMainCtrl, MainCtrlModel } from '../app_base/model';
-
 import { rolesDev } from '../libCommon/endPoints';
-import { EnvBlockMsg } from '../app_base/envs';
 import { ErrorPlus } from '../libCommon/util';
+
+import { LoggedUserBase } from '../app_base/loggedUserBase';
+import { MainCtrl } from '../app_base/modelTypes';
+import { keyMainCtrl, MainCtrlModel } from '../app_base/model';
+import { EnvBlockMsg } from '../app_base/envs';
 
 export type LogSentMessagesFn = (resultOk: string, resultError: string) => Promise<void>;
 
@@ -14,7 +15,7 @@ export async function CheckBlockAsync(loggedUser: LoggedUserBase) {
       MainCtrl.fill({
         key: keyMainCtrl,
         blockMsg: null
-      }, true));
+      }));
   if (!(loggedUser != null &&
     (loggedUser.roles.includes(rolesDev.dev) ||
       (loggedUser.email !== loggedUser.emailSigned)))) {

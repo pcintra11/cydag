@@ -1,20 +1,19 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { configApp } from '../../../../app_hub/appConfig';
-
-import { ConnectDbASync, CloseDbASync } from '../../../../libServer/dbMongo';
-
 import { HoraDebug, SleepMsDev, WaitMs } from '../../../../libCommon/util';
 import { csd, dbg, ScopeDbg } from '../../../../libCommon/dbg';
 import { CategMsgSystem } from '../../../../libCommon/logSystemMsg_cliSvr';
 import { IGenericObject } from '../../../../libCommon/types';
 import { CtrlContext } from '../../../../libCommon/ctrlContext';
 
+import { ConnectDbASync, CloseDbASync } from '../../../../libServer/dbMongo';
 import { NewPromiseExecUntilCloseDb } from '../../../../libServer/opersASync';
 import { GetCtrlApiExec, ResumoApi } from '../../../../libServer/util';
 import { SystemMsgSvrASync } from '../../../../libServer/systemMsgSvr';
 import { SendMailASync, sysEmailSupport } from '../../../../libServer/sendMail';
+
+import { configApp } from '../../../../app_hub/appConfig';
 import { EnvInfoHost } from '../../../../app_base/envs';
 import { JunkModel } from '../../../../app_base/model';
 
@@ -22,7 +21,7 @@ import { JunkModel } from '../../../../app_base/model';
 //   csl(...parms);
 // }
 export default async (req: NextApiRequest, res: NextApiResponse) => {
-  const ctrlApiExec = GetCtrlApiExec(req, res);
+  const ctrlApiExec = GetCtrlApiExec(req, res, null);
   const parm = ctrlApiExec.parm;
   const resumoApi = new ResumoApi(ctrlApiExec);
   //const agora = new Date();
@@ -52,8 +51,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
   try {
     Rotina(ctrlApiExec.ctrlContext.context, parm, ctrlApiExec.ctrlContext);
-  }
-  catch (error) {
+  } catch (error) {
     await SystemMsgSvrASync(CategMsgSystem.error, '*', error.message, ctrlApiExec.ctrlContext);
   }
 

@@ -28,7 +28,8 @@ export async function CallApiSvrASync(apiPath: string, ctrlContext: CtrlContext,
     const calcExecTimeApiCall = new CalcExecTime();
     const timeOut = fetchOptions.timeOut != null ? fetchOptions.timeOut : EnvApiTimeout().waitCallFromSvr;
     //csd('CallApiSvrASync - calling');
-    const data = await CallApiASync(apiPath, ctrlContext, callSeqThis, null, parm, 'server', info, { ...fetchOptions, timeOut });
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const data = await CallApiASync(apiPath, ctrlContext, callSeqThis, null, timeZone, parm, 'server', info, { ...fetchOptions, timeOut });
     //csd('CallApiSvrASync - result', data);
     const elapsedMs = calcExecTimeApiCall.elapsedMs();
     if (elapsedMs > (EnvApiTimeout().exec * 0.5))

@@ -1,3 +1,5 @@
+import type { NextApiRequest, NextApiResponse } from 'next';
+
 import { CookieUserConfig } from '../libCommon/loggedUserSvr';
 
 import { EnvDeployConfig } from '../app_base/envs';
@@ -6,15 +8,14 @@ import { ApiDef, CheckRoleAllowed } from '../libCommon/endPoints';
 import { csd } from '../libCommon/dbg';
 
 import { HttpCriptoCookieCmdASync } from '../libServer/httpCryptoCookie';
-import { CtrlApiExec } from '../libServer/util';
 
 import { UserMd } from './models';
 import { LoggedUser } from './loggedUser';
 import { User } from './modelTypes';
 
-export const LoggedUserReqASync = async (ctrlApiExec: CtrlApiExec, extendCookieExpiration = false) => {
+export const LoggedUserReqASync = async (req: NextApiRequest, res: NextApiResponse, extendCookieExpiration = false) => {
   const cookieUserConfig = CookieUserConfig();
-  const loggedUserStringfy = await HttpCriptoCookieCmdASync(ctrlApiExec, 'LoggedUserReqASync', cookieUserConfig, 'get', { domain: EnvDeployConfig().domain, extendExpiration: extendCookieExpiration });
+  const loggedUserStringfy = await HttpCriptoCookieCmdASync(req, res, 'LoggedUserReqASync', cookieUserConfig, 'get', { domain: EnvDeployConfig().domain, extendExpiration: extendCookieExpiration });
   const loggedUserReq = loggedUserStringfy != null ? LoggedUser.deserialize(loggedUserStringfy) : null;
   return loggedUserReq;
 };

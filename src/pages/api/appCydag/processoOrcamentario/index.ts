@@ -41,8 +41,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   await CorsMiddlewareAsync(req, res, CorsWhitelist(), { credentials: true });
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
-  const ctrlApiExec = GetCtrlApiExec(req, res, ['cmd'], ['_id']);
-  const loggedUserReq = await LoggedUserReqASync(ctrlApiExec);
+  const loggedUserReq = await LoggedUserReqASync(req, res);
+  const ctrlApiExec = GetCtrlApiExec(req, res, loggedUserReq, ['cmd'], ['_id']);
   const parm = ctrlApiExec.parm;
 
   const resumoApi = new ResumoApi(ctrlApiExec);
@@ -403,6 +403,7 @@ const PreCalcValores = async (processoOrcamentario: Entity, ctrlApiExec: CtrlApi
 };
 const EncerraProcessoOrcamentario = async (processoOrcamentario: Entity, ctrlApiExec: CtrlApiExec) => {
   const { vals } = await GetValsPlanejados(processoOrcamentario, RevisaoValor.atual, [], true, false, false, false, ctrlApiExec);
+  await ValoresPlanejadosHistoricoModel.deleteMany({ ano: processoOrcamentario.ano });
   await ValoresPlanejadosHistoricoModel.insertMany(vals.map((val) => ({ ano: processoOrcamentario.ano, ..._.omit(val, ['idDetalhe', 'descr']) })));
 };
 

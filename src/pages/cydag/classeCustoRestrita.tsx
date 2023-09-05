@@ -12,7 +12,7 @@ import { csd } from '../../libCommon/dbg';
 
 import { CallApiCliASync } from '../../fetcher/fetcherCli';
 
-import { AlertMy, FrmSetError, PopupMsg, SnackBarError } from '../../components';
+import { AlertMy, FrmSetError, PopupMsg, Tx } from '../../components';
 import { Btn, BtnLine, WaitingObs } from '../../components';
 import { AbortProc, LogErrorUnmanaged } from '../../components';
 import { FrmError, FrmInput } from '../../components';
@@ -58,7 +58,7 @@ export default function PageClasseCustoRestritaCrud() {
 
   interface MainStates {
     error?: Error | ErrorPlus; phase?: Phase;
-    filter?: IGenericObject; filterApplyed?: boolean;
+    filter?: IGenericObject; filterApplied?: boolean;
     listing?: { searching: boolean, dataRows?: Entity_Crud[], partialResults?: boolean }; data?: Entity_Crud; index?: number;
     classeCustoArray?: ClasseCusto[]; centroCustoArray?: CentroCusto[];
     errorFlds?: { classeCustoError?: string; centroCustoArrayError?: string; };
@@ -76,7 +76,7 @@ export default function PageClasseCustoRestritaCrud() {
     const filter = NormalizePropsString(dataForm);
     try {
       const calcExecTimeSearch = new CalcExecTime();
-      setMainStatesCache({ filterApplyed: true, listing: { searching: true } });
+      setMainStatesCache({ filterApplied: true, listing: { searching: true } });
       const apiReturn = await apis.crud({ cmd: CmdApi.list, filter });
       const documents = (apiReturn.value.documents as IGenericObject[]).map((data) => Entity_Crud.deserialize(data));
       //csl({apiReturn, documents});
@@ -85,7 +85,8 @@ export default function PageClasseCustoRestritaCrud() {
       await ForceWait(calcExecTimeSearch.elapsedMs(), configApp.forceWaitMinimumMs);
       setMainStatesCache({ listing: { searching: false, dataRows: documents, partialResults: apiReturn.value.partialResults } });
     } catch (error) {
-      SnackBarError(error, `${pageSelf.pagePath}-onSubmit`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-onSubmit`);
+      PopupMsg.error(error);
     }
   };
   const checkData = (data: FrmData) => {
@@ -148,7 +149,7 @@ export default function PageClasseCustoRestritaCrud() {
     mount = true;
     if (!router.isReady || isLoadingUser) return;
     if (!PageDef.IsUserAuthorized(pageSelf, loggedUser?.roles)) throw new ErrorPlus('Não autorizado.');
-    setMainStatesCache({ phase: Phase.list, filter: { classeCusto: '' }, filterApplyed: false, listing: { searching: false, dataRows: [] } });
+    setMainStatesCache({ phase: Phase.list, filter: { classeCusto: '' }, filterApplied: false, listing: { searching: false, dataRows: [] } });
     CallApiCliASync<any>(apisApp.classeCusto.apiPath, {
       cmd: CmdApi_ClasseCusto.list, getAll: true,
       filter: { origemArray: [OrigemClasseCusto.inputada, OrigemClasseCusto.totalImputada] },
@@ -160,7 +161,8 @@ export default function PageClasseCustoRestritaCrud() {
         setMainStatesCache({ classeCustoArray });
       })
       .catch((error) => {
-        SnackBarError(error, `${pageSelf.pagePath}-CmdApi_ClasseCusto.list`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-CmdApi_ClasseCusto.list`);
+        PopupMsg.error(error);
       });
     CallApiCliASync<any>(apisApp.centroCusto.apiPath, { cmd: CmdApi_CentroCusto.list, getAll: true })
       .then(async (apiReturn) => {
@@ -168,7 +170,8 @@ export default function PageClasseCustoRestritaCrud() {
         setMainStatesCache({ centroCustoArray });
       })
       .catch((error) => {
-        SnackBarError(error, `${pageSelf.pagePath}-CmdApi_CentroCusto.list`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-CmdApi_CentroCusto.list`);
+        PopupMsg.error(error);
       });
     return () => { mount = false; };
   }, [router.isReady, isLoadingUser, loggedUser?.email]);
@@ -194,24 +197,24 @@ export default function PageClasseCustoRestritaCrud() {
     if (mainStates.phase == Phase.list) {
       const colsGridConfig = [
         new ColGridConfig(
-          <Stack direction='row' alignItems='center' gap={1} justifyContent='center'>
+          <Stack direction='row' alignItems='center' spacing={1} justifyContent='center'>
             <IconButtonAppCrud icon='create' onClick={() => setPhase(Phase.insert)} />
           </Stack>,
           ({ index }: { index: number }) => (
-            <Stack direction='row' alignItems='center' gap={1}>
+            <Stack direction='row' alignItems='center' spacing={1}>
               <IconButtonAppCrud icon='edit' onClick={() => setPhase(Phase.update, index)} />
               <IconButtonAppCrud icon='delete' onClick={() => setPhase(Phase.delete, index)} />
             </Stack>
           )
         ),
-        new ColGridConfig('Classe de Custo', ({ data }: { data: Entity_Crud }) => data.classeCusto),
-        new ColGridConfig('Centros de Custo Permitidos', ({ data }: { data: Entity_Crud }) => data.centroCustoArray.join(', '), { width: '1fr' }),
+        new ColGridConfig(<Tx>Classe de Custo</Tx>, ({ data }: { data: Entity_Crud }) => <Tx>{data.classeCusto}</Tx>),
+        new ColGridConfig(<Tx>Centros de Custo Permitidos</Tx>, ({ data }: { data: Entity_Crud }) => <Tx>{data.centroCustoArray.join(', ')}</Tx>, { width: '1fr' }),
       ];
 
       return (
-        <Stack gap={1} height='100%'>
+        <Stack spacing={1} height='100%'>
           <form onSubmit={frmFilter.handleSubmit(onSubmitList)}>
-            <Stack direction='row' alignItems='center' gap={1}>
+            <Stack direction='row' alignItems='center' spacing={1}>
               <Box flex={1}>
                 <FrmInput placeholder='classe de custo' frm={frmFilter} name={Entity_Crud.F.classeCusto} width='100%' autoFocus />
               </Box>
@@ -221,10 +224,10 @@ export default function PageClasseCustoRestritaCrud() {
           <Box flex={1} overflow='hidden'>
             {mainStates.listing.searching
               ? <WaitingObs text='buscando' />
-              : <Stack gap={1} height='100%'>
+              : <Stack spacing={1} height='100%'>
                 {(mainStates.listing.partialResults) && <AlertMy>Resultados parciais</AlertMy>}
-                {(mainStates.filterApplyed && mainStates.listing.dataRows.length == 0) && <Box>Nada encontrado</Box>}
-                <TableGrid
+                {(mainStates.filterApplied && mainStates.listing.dataRows.length == 0) && <Tx>Nada encontrado</Tx>}
+                <TableGrid fullHeightScroll
                   colsGridConfig={colsGridConfig}
                   dataRows={mainStates.listing.dataRows}
                 />
@@ -269,9 +272,9 @@ export default function PageClasseCustoRestritaCrud() {
 
 
     return (
-      <Stack gap={1} height='100%' overflow='auto'>
+      <Stack spacing={1} height='100%' overflow='auto'>
         <form onSubmit={frmData.handleSubmit(phaseCrud.onSubmit)}>
-          <Stack gap={1}>
+          <Stack spacing={1}>
 
             <FormControl>
               <Autocomplete

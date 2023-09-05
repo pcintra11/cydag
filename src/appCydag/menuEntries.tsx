@@ -3,7 +3,7 @@ import { Box, LinearProgress } from '@mui/material';
 import { PageDef } from '../libCommon/endPoints';
 import { csd } from '../libCommon/dbg';
 
-import { IMenuEntriesForMenuTypesData, MenuEntry } from '../components';
+import { MenuEntriesForMenuTypesData, MenuEntry } from '../components';
 
 import { pagesSuporte } from '../app_suporte/endPoints';
 
@@ -68,25 +68,25 @@ const menuTotal: IMenuEntry[] = [ // aqui todas as transações, serão filtrada
     pagesApp.analiseAnualRxOCentroCusto,
     pagesApp.analiseAnualRxOControladoria,
     pagesApp.comparativoAnualControladoria,
-  ]), 
+  ]),
 
   new SubMenu('Exportações', [
     pagesApp.exportaPlanej,
     pagesApp.exportaRealPlanej,
     pagesApp.exportaFuncionario,
-  ]), 
+  ]),
 
   pagesApp.userSimulate,
   pagesApp.signOut,
   new SubMenu('Dev', [
     pagesApp.funcsAdm,
-    pagesSuporte.inspect,
+    //pagesSuporte.inspect,
     pagesSuporte.playg,
   ]),
 ];
 
 export function MenuEntriesApp(loggedUser: LoggedUser, isLoadingUser: boolean) {
-  let menuEntriesData: IMenuEntriesForMenuTypesData = {};
+  let menuEntriesData = MenuEntriesForMenuTypesData.new();
 
   const MenuEntries = (menuItens: IMenuEntry[]) => {
     const menuEntries: MenuEntry[] = [];
@@ -103,9 +103,9 @@ export function MenuEntriesApp(loggedUser: LoggedUser, isLoadingUser: boolean) {
           //csl('PageDef', item);
           if (PageDef.IsUserAuthorized(item, loggedUser.roles)) {
             if (item.pagePath == pageDummy.pagePath)
-              menuEntries.push(MenuEntry.PagePath(item, <Box color='#BEBEBE'>{item.txtDynamicMenu}</Box>)); // , { title: item.pageTitle }
+              menuEntries.push(MenuEntry.PagePath(item, <Box color='#BEBEBE'>{PageDef.MenuText(item)}</Box>)); // , { title: item.pageTitle }
             else
-              menuEntries.push(MenuEntry.PagePath(item));
+              menuEntries.push(MenuEntry.PagePath(item, PageDef.MenuText(item)));
           }
         }
       }
@@ -120,7 +120,7 @@ export function MenuEntriesApp(loggedUser: LoggedUser, isLoadingUser: boolean) {
     //menuEntries = [MenuEntry.OnlyShow(<Box>{loggedUser.email}</Box>), ...MenuEntries(menuTotal)];
     menuEntries = MenuEntries(menuTotal);
 
-  menuEntriesData = { menuEntries, menuEntriesLeft: menuEntries, menuEntriesRight: [] };
+  menuEntriesData = MenuEntriesForMenuTypesData.fill({ menuEntries, menuEntriesLeft: menuEntries, menuEntriesRight: [] });
 
   return menuEntriesData;
 }

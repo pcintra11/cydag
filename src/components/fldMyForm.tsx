@@ -30,7 +30,8 @@ interface IFrmInputProps {
   placeholder?: string;
   autoFocus?: boolean;
   disabled?: boolean;
-  hide?: boolean;
+  displayNone?: boolean;
+  visibilityHidden?: boolean;
   suppressErrorMessage?: boolean;
   onChange?: (ev) => void;
   onBlur?: (ev) => void;
@@ -52,7 +53,8 @@ export const FrmInput = ({
   placeholder,
   autoFocus,
   disabled,
-  hide,
+  displayNone,
+  visibilityHidden,
   suppressErrorMessage,
   onChange: onChangeParm,
   onBlur: onBlurParm,
@@ -83,8 +85,11 @@ export const FrmInput = ({
       textFieldProps.fullWidth = true;
     else
       sx.width = width;
-    if (hide)
+    if (displayNone)
       sx.display = 'none';
+
+    if (visibilityHidden)
+      sx.visibility = 'hidden';
 
     const inputProps = {
       placeholder,
@@ -112,7 +117,7 @@ export const FrmInput = ({
     //   textFieldProps.helperText = textsHelperText[0];
     // else if (textsHelperText.length === 2)
     //   textFieldProps.helperText = <>{textsHelperText[0]}<br />{textsHelperText[1]}</>;
-    textFieldProps.helperText = <>{textsHelperText.map((x, i) => i == 0 ? <span key={i}>{x}</span> : <span key={i}><br />{x}</span>)}</>; //@!!!!!!!!
+    textFieldProps.helperText = <>{textsHelperText.map((x, i) => i == 0 ? <span key={i}>{x}</span> : <span key={i}><br />{x}</span>)}</>;
 
     if (frm != null) {
       // nesse caso o 'defaultValue' vem da inicialização de defaultValues do useForm
@@ -307,6 +312,7 @@ interface IFrmCheckboxProps {
   onChange?: (ev) => void;
   onBlur?: (ev) => void;
   value?: boolean;
+  width?: string;
   noWrap?: boolean;
 }
 export const FrmCheckbox = ({
@@ -318,6 +324,7 @@ export const FrmCheckbox = ({
   onChange: onChangeParm,
   onBlur: onBlurParm,
   value,
+  width,
   noWrap,
 }: IFrmCheckboxProps) => {
   if ((frm == null && name != null) ||
@@ -330,6 +337,8 @@ export const FrmCheckbox = ({
   };
   if (hide)
     sx.display = 'none';
+  if (width != null)
+    sx.width = width;
 
   let errorObj = null;
   let component;
@@ -345,6 +354,7 @@ export const FrmCheckbox = ({
           return (
             <FormControlLabel_mui
               label={noWrap ? <Typography_mui noWrap variant="body1">{label}</Typography_mui> : label}
+              style={sx}
               control={
                 <Checkbox_mui
                   onChange={(ev) => allHandlers_Event(ev, onChange, onChangeParm)}
@@ -678,26 +688,26 @@ export function FrmError(frm: UseFormReturn<any>, error: Error | ErrorPlus) {
           //shouldFocus: true, // não funcionou !
         });
         //frm.setFocus(name); // dá erro se o campo não existir ! @@!!!!!!
-      }
-      catch (error) {
-        dbgError('FrmError', error.message);
+      } catch (error) {
+        dbgError('FrmError', error.message, `msg: "${message}"`);
       }
     }
     else {
-      dbgError('FrmError', `campo de formulário ${name} não consta no formulário`);
+      dbgError('FrmError', `campo de formulário ${name} não consta no formulário`, `msg: "${message}"`);
       PopupMsg.error(message);
     }
   }
   else {
-    //dbgError('formulário ou nome de campo não informados');
+    //dbgError('FrmError', 'formulário ou nome de campo não informados', `msg: "${message}"`);
     PopupMsg.error(message);
   }
 }
-export function SnackBarError(error: Error | ErrorPlus | string, point: string) {
-  LogErrorUnmanaged(error, point || 'SnackBarError');
-  const message = (typeof error == 'string') ? error : FriendlyErrorMsgApi(error);
-  PopupMsg.error(message);
-}
+// export function SnackBarError(error: Error | ErrorPlus | string, point: string) {
+//   if (typeof error !== 'string')
+//     LogErrorUnmanaged(error, point || 'SnackBarError');
+//   const message = (typeof error == 'string') ? error : FriendlyErrorMsgApi(error);
+//   PopupMsg.error(message);
+// }
 
 // export function FrmClearErrorGeneric(frm: UseFormReturn<any>) {
 //   FrmSetError(null, fldErrorGeneric, frm);

@@ -13,7 +13,7 @@ import { CallApiCliASync } from '../../../fetcher/fetcherCli';
 
 import { cssTextNoWrapEllipsis } from '../../../libClient/util';
 
-import { AbortProc, Btn, BtnLine, IconButtonMy, SelOption, PopupMsg, SwitchMy, WaitingObs, SnackBarError, PageByVariant, fontSizeGrid, fontSizeIconsInGrid, FakeLink } from '../../../components';
+import { AbortProc, Btn, BtnLine, IconButtonMy, SelOption, PopupMsg, SwitchMy, WaitingObs, PageByVariant, fontSizeGrid, fontSizeIconsInGrid, FakeLink, LogErrorUnmanaged, Tx } from '../../../components';
 import { HierNode } from '../../../components/hier';
 import { GridCell } from '../../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
@@ -21,10 +21,10 @@ import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../.
 
 import { configApp } from '../../../app_hub/appConfig';
 
-import { IconApp, IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, propsColorByTotLevel, SelRevisao, SelEntity, SelAno } from '../../../appCydag/components';
+import { IconApp, IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, propsColorByTotLevel, SelRevisao, SelEntity, SelAno, TxGridHdr, TxGridCel } from '../../../appCydag/components';
 import { apisApp, pagesApp, quadroPage } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
-import { anoAdd, mesesFld, mesesHdr, genValMeses, sumRound, sumValMeses, amountParse, amountToStr } from '../../../appCydag/util';
+import { anoAdd, mesesFld, mesesHdr, genValMeses, sumRound, sumValMeses, amountParseApp, amountToStrApp } from '../../../appCydag/util';
 import { CentroCusto, ClasseCusto, ClasseCustoRestrita, FatorCusto, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto } from '../../../appCydag/modelTypes';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatusMd, ValoresPlanejadosDetalhes, ValoresTotCentroCustoClasseCusto } from '../../../appCydag/types';
 import { CentroCustoConfigOption, IAnoCentroCustos, OrigemClasseCusto, ProcCentrosCustoConfig, RevisaoValor } from '../../../appCydag/types';
@@ -123,17 +123,17 @@ class NodeContent {
     if (nodeClasseCusto)
       return (
         <Tooltip title={this.descr}>
-          <Stack direction='row' alignItems='center' gap={0.5}>
-            <Box className='showConta'>{this.cod}</Box>
-            <Box className='showConta'>-</Box>
-            <Box style={cssTextNoWrapEllipsis}>{this.descr}</Box>
+          <Stack direction='row' alignItems='center' spacing={0.5}>
+            <Tx className='showConta'>{this.cod}</Tx>
+            <Tx className='showConta'>-</Tx>
+            <Tx style={cssTextNoWrapEllipsis}>{this.descr}</Tx>
           </Stack>
         </Tooltip>
       );
     else
       return (
         <Tooltip title={this.descr}>
-          <Box style={cssTextNoWrapEllipsis}>{this.descr}</Box>
+          <Tx style={cssTextNoWrapEllipsis}>{this.descr}</Tx>
         </Tooltip>
       );
   }
@@ -255,7 +255,8 @@ export default function PageQuadroGeral() {
       });
     } catch (error) {
       statesCompsSubord.setMainStatesData2({ dataStructure: null });
-      SnackBarError(error, `${pageSelf.pagePath}-getItens`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-getItens`);
+      PopupMsg.error(error);
     }
   };
   const setItens = async (filter: FrmFilter, changedLines: IChangedLine[]) => {
@@ -263,7 +264,8 @@ export default function PageQuadroGeral() {
       await apis.crud({ cmd: CmdApi.quadroInputItensSet, filter, data: { changedLines } });
       PopupMsg.success(`Valores gravados para ${filter.ano} / ${filter.centroCusto}`);
     } catch (error) {
-      SnackBarError(error, `${pageSelf.pagePath}-setItens`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-setItens`);
+      PopupMsg.error(error);
     }
   };
   //#endregion
@@ -412,7 +414,8 @@ export default function PageQuadroGeral() {
         setMainStatesCache({ phase: Phase.ready, anoCentroCustosArray, classeCustoRestritaArray, fatorCustoArray, classeCustoArray });
       })
       .catch((error) => {
-        SnackBarError(error, `${pageSelf.pagePath}-initialization`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-initialization`);
+        PopupMsg.error(error);
       });
     return () => { mount = false; };
   }, [router?.asPath]);
@@ -498,7 +501,7 @@ export default function PageQuadroGeral() {
     const centroCustoOptions = mainStatesFilter.centroCustoOptions == null ? null : mainStatesFilter.centroCustoOptions.map((x) => new SelOption(x.cod, x.descr));
     return (
       <form onSubmit={frmFilter.handleSubmit(getItensSubmit)}>
-        <Stack direction='row' alignItems='center' gap={1}>
+        <Stack direction='row' alignItems='center' spacing={1}>
           {/* <SelectMy width='80px'
             value={ano || ''}
             onChange={
@@ -584,11 +587,11 @@ export default function PageQuadroGeral() {
       const comps = [];
       if (dataStructure.headerInfo != null)
         comps.push(`${dataStructure.headerInfo}`);
-      if (comps.length > 0) return (<Box style={cssTextNoWrapEllipsis}>{comps.join(' ')}</Box>);
+      if (comps.length > 0) return (<Tx style={cssTextNoWrapEllipsis}>{comps.join(' ')}</Tx>);
       else return (<></>);
     };
 
-    const propsColorsHdr = propsColorHeader(themePlus);
+    const propsColorsHdr = propsColorHeader();
     const HeaderComp = () => {
       //const { personalizationAttrs, setPersonalizationAttrs } = usePersonalization();
       const [showConta, setShowConta] = React.useState(statesCompsSubord.showConta);
@@ -597,20 +600,20 @@ export default function PageQuadroGeral() {
       return (
         <>
           <GridCell sticky {...propsColorsHdr}>
-            <Stack direction='row' alignItems='center' gap={3}>
-              <Box>Conta</Box>
-              <SwitchMy size='small' label={<Box sx={{ color: propsColorsHdr.color, fontSize: 'small' }}>código</Box>} checked={showConta}
+            <Stack direction='row' alignItems='center' spacing={3}>
+              <TxGridHdr>Conta</TxGridHdr>
+              <SwitchMy size='small' label={<TxGridHdr sx={{ color: propsColorsHdr.color, fontSize: 'small' }}>código</TxGridHdr>} checked={showConta}
                 onChange={(ev) => { setShowConta(ev.target.checked); statesCompsSubord.setShowConta(ev.target.checked); }} />
             </Stack>
           </GridCell>
           {mesesHdr.map((mes, index) =>
             <GridCell key={index} sticky textAlign='right' {...propsColorsHdr}>
-              <Box>{mes}</Box>
+              <TxGridHdr>{mes}</TxGridHdr>
             </GridCell>
           )}
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Orç.{anoAbrev}</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Orç.{anoAntAbrev}</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Real.{anoAntAbrev}</Box></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Orç.{anoAbrev}</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Orç.{anoAntAbrev}</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Real.{anoAntAbrev}</TxGridHdr></GridCell>
         </>
       );
     };
@@ -639,11 +642,11 @@ export default function PageQuadroGeral() {
         //const { personalizationAttrs } = usePersonalization();
 
         if (node.nodeContent.valMesesStr == null)
-          node.nodeContent.valMesesStr = node.nodeContent.valMeses.map((x) => amountToStr(x, configCydag.decimalsValsInput));
+          node.nodeContent.valMesesStr = node.nodeContent.valMeses.map((x) => amountToStrApp(x, configCydag.decimalsValsInput));
         const [, forceRefresh] = React.useState<any>({});
         const changeValMes = (sxMes: number, valStr) => {
           try {
-            amountParse(valStr, configCydag.decimalsValsInput);
+            amountParseApp(valStr, configCydag.decimalsValsInput);
             globalCtrl.logTouchedCells(node.id, node.nodeContent.descrAcum, valMesFld(sxMes), false);
           }
           catch (error) {
@@ -657,7 +660,7 @@ export default function PageQuadroGeral() {
         };
         const blurValMes = (sxMes: number, valStr) => {
           try {
-            const val = amountParse(valStr, configCydag.decimalsValsInput);
+            const val = amountParseApp(valStr, configCydag.decimalsValsInput);
             //if (!isNaN(val)) {
             chgValMeses('setMes', sxMes, val);
             atuValsEdit([{ sxMes, val }]);
@@ -680,7 +683,7 @@ export default function PageQuadroGeral() {
 
         const atuValsEdit = (alts: ISxMesVal[]) => {
           alts.forEach((x) => {
-            node.nodeContent.valMesesStr[x.sxMes] = amountToStr(x.val, configCydag.decimalsValsInput);
+            node.nodeContent.valMesesStr[x.sxMes] = amountToStrApp(x.val, configCydag.decimalsValsInput);
             globalCtrl.logTouchedCells(node.id, node.nodeContent.descrAcum, valMesFld(x.sxMes), false);
           });
           forceRefresh({});
@@ -776,7 +779,7 @@ export default function PageQuadroGeral() {
         };
 
         const descrUse =
-          <Stack direction='row' alignItems='center' gap={1}>
+          <Stack direction='row' alignItems='center' spacing={1}>
             <IconButtonAppCrud icon='clear' onClick={() => chgValMeses('clear')} fontSize={fontSizeIconsInGrid} />
             <IconButtonAppCrud icon='redo' onClick={() => chgValMeses('repeat')} fontSize={fontSizeIconsInGrid} />
             {node.nodeType == 'detClasseCusto'
@@ -811,9 +814,9 @@ export default function PageQuadroGeral() {
             </Box> */}
             </GridCell>
           )}
-          <GridCell textAlign='right'>{amountToStr(valTotAno, configCydag.decimalsValsInput)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.valTotPlanejAnoAnt, configCydag.decimalsValsInput)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.valTotRealAnoAnt, configCydag.decimalsValsInput)}</GridCell>
+          <GridCell textAlign='right'><TxGridCel>{amountToStrApp(valTotAno, configCydag.decimalsValsInput)}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{amountToStrApp(node.nodeContent.valTotPlanejAnoAnt, configCydag.decimalsValsInput)}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{amountToStrApp(node.nodeContent.valTotRealAnoAnt, configCydag.decimalsValsInput)}</TxGridCel></GridCell>
         </>);
       };
 
@@ -838,14 +841,14 @@ export default function PageQuadroGeral() {
         };
 
         const descrUse =
-          <Stack direction='row' alignItems='center' gap={1}>
+          <Stack direction='row' alignItems='center' spacing={1}>
             {(node.group && node.nodeType == NodeType.classeCusto && node.nodeContent.editable && dataStructure.canEdit) &&
               <IconButtonMy padding={0} onClick={() => newDetClasseCusto()}>
                 <IconApp icon='create' fontSize={fontSizeIconsInGrid} />
               </IconButtonMy>
             }
             {node.group
-              ? <Stack direction='row' alignItems='center' gap={1} sx={{ cursor: 'pointer' }} onClick={() => setStateOpen(!stateOpen)}>
+              ? <Stack direction='row' alignItems='center' spacing={1} sx={{ cursor: 'pointer' }} onClick={() => setStateOpen(!stateOpen)}>
                 <IconApp icon={stateOpen ? 'colapse' : 'expand'} fontSize={fontSizeIconsInGrid} />
                 {node.nodeContent.descrComp(node.nodeType === NodeType.classeCusto)}
               </Stack>
@@ -860,10 +863,10 @@ export default function PageQuadroGeral() {
         const propsColorDescr = node.nodeType == 'detClasseCusto' ? propsColorByTotLevel(themePlus, level) : propsColorLevel;
         return (<>
           <GridCell {...propsColorDescr}><Box pl={paddingLeft}>{descrUse}</Box></GridCell>
-          {mesesFld.map((_, index) => <GridCell key={index} textAlign='right' {...propsColorLevel}>{amountToStr(node.nodeContent.valMeses[index], configCydag.decimalsValsInput)}</GridCell>)}
-          <GridCell textAlign='right' {...propsColorLevel}>{amountToStr(valorTotAno, configCydag.decimalsValsInput)}</GridCell>
-          <GridCell textAlign='right' {...propsColorLevel}>{amountToStr(node.nodeContent.valTotPlanejAnoAnt, configCydag.decimalsValsInput)}</GridCell>
-          <GridCell textAlign='right' {...propsColorLevel}>{amountToStr(node.nodeContent.valTotRealAnoAnt, configCydag.decimalsValsInput)}</GridCell>
+          {mesesFld.map((_, index) => <GridCell key={index} textAlign='right' {...propsColorLevel}><TxGridCel>{amountToStrApp(node.nodeContent.valMeses[index], configCydag.decimalsValsInput)}</TxGridCel></GridCell>)}
+          <GridCell textAlign='right' {...propsColorLevel}><TxGridCel>{amountToStrApp(valorTotAno, configCydag.decimalsValsInput)}</TxGridCel></GridCell>
+          <GridCell textAlign='right' {...propsColorLevel}><TxGridCel>{amountToStrApp(node.nodeContent.valTotPlanejAnoAnt, configCydag.decimalsValsInput)}</TxGridCel></GridCell>
+          <GridCell textAlign='right' {...propsColorLevel}><TxGridCel>{amountToStrApp(node.nodeContent.valTotRealAnoAnt, configCydag.decimalsValsInput)}</TxGridCel></GridCell>
         </>);
       };
 
@@ -969,7 +972,7 @@ export default function PageQuadroGeral() {
 
   return (
     <GlobalCtrlContext.Provider value={new GlobalEditCtrl()}>
-      <Stack gap={1} height='100%'>
+      <Stack spacing={1} height='100%'>
         <FilterComp />
         <DataComp />
       </Stack>

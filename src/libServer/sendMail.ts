@@ -2,16 +2,16 @@ import nodemailer, { SentMessageInfo } from 'nodemailer';
 import Mail from 'nodemailer/lib/mailer';
 import SMTPTransport from 'nodemailer/lib/smtp-transport';
 
-import { configApp } from '../app_hub/appConfig';
-
-import { Env, EnvSvrEmailConfig, IEmailConfig, isAmbPrd } from '../app_base/envs';
 import { dbg, ScopeDbg } from '../libCommon/dbg';
 import { CalcExecTime } from '../libCommon/calcExectime';
-
-import { LogSentMessagesFn } from './util';
 import { CtrlContext } from '../libCommon/ctrlContext';
 import { CtrlRecursion } from '../libCommon/ctrlRecursion';
 import { CutUndef, FillClassProps } from '../libCommon/util';
+
+import { configApp } from '../app_hub/appConfig';
+import { Env, EnvSvrEmailConfig, EmailConfig, isAmbPrd } from '../app_base/envs';
+
+import { LogSentMessagesFn } from './util';
 
 interface IEmailSend {
   host: string;
@@ -32,9 +32,8 @@ export class SendEmailParams {
   replyTo?: string | Mail.Address;
   forceErrPsw?: boolean;
   forceErrTO?: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new SendEmailParams(); }
-  static fill(values: SendEmailParams, init = false) { return CutUndef(FillClassProps(SendEmailParams.new(init), values)); }
+  static new() { return new SendEmailParams(); }
+  static fill(values: SendEmailParams) { return CutUndef(FillClassProps(SendEmailParams.new(), values)); }
 }
 
 const _ctrlRecursion: { func: string, ctrlRecursion: CtrlRecursion }[] = [];
@@ -97,7 +96,7 @@ async function _SendMailASync(sendEmailParams: SendEmailParams, ctrlContext: Ctr
 
   try {
 
-    let emailConfigUse: IEmailSend | IEmailConfig = null;
+    let emailConfigUse: IEmailSend | EmailConfig = null;
     if (emailConfig != null)
       emailConfigUse = emailConfig;
     else

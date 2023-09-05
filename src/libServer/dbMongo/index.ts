@@ -1,15 +1,14 @@
 import mongoose, { Mongoose } from 'mongoose';
 import { ObjectId } from 'mongodb';
 
-import { EnvSvrDatabase } from '../../app_base/envs';
-
 import { csd, dbg, dbgError, dbgInfo, dbgWarn, ScopeDbg } from '../../libCommon/dbg';
 import { CalcExecTime } from '../../libCommon/calcExectime';
 import { DateToStrISO, HoraDebug } from '../../libCommon/util';
 import { CtrlContext } from '../../libCommon/ctrlContext';
 
-import { LockObjASync, UnLockObj } from '../util';
+import { EnvSvrDatabase } from '../../app_base/envs';
 
+import { LockObjASync, UnLockObj } from '../util';
 import { ResolvePromisesExecUntilCloseDb } from '../opersASync';
 
 let _forceDbClose = false;

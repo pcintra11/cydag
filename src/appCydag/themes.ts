@@ -16,8 +16,7 @@ export const themeSchemesApp: IThemeSchemes = {
   buttonVariant: 'contained',
   colorBackDroparea: 'lightblue',
   maxWidth: [
-    { key: 'full', props: { maxWidth: 99999 } },
-    // { key: '700', props: { maxWidth: 700 } },
+    { key: 'full', props: { maxWidth: null } },
   ],
   color: [
     //{ key: 'petroleo', props: { bodyDark: false, primaryBackColor: new ThreeColors('#546E7A', '#607D8B', '#455A64') } },
@@ -33,8 +32,7 @@ export const themeSchemesApp: IThemeSchemes = {
     { key: 'Roboto', props: { fontFamilies: ['Roboto', 'Helvetica', 'Verdana', 'Arial', 'Courier'] } },
     { key: 'Roboto10', props: { fontFamilies: ['Roboto', 'Helvetica', 'Verdana', 'Arial', 'Courier'], fontSize: 10 } },
     { key: 'Roboto20', props: { fontFamilies: ['Roboto', 'Helvetica', 'Verdana', 'Arial', 'Courier'], fontSize: 20 } },
-    { key: 'Freestyle Script', props: { fontFamilies: ['Freestyle Script', 'Courier'] } },
-    { key: 'Jokerman', props: { fontFamilies: ['Jokerman', 'Courier'] } },
+    { key: 'Segoe Script', props: { fontFamilies: ['Segoe Script'] } },
     { key: 'Arial', props: { fontFamilies: ['Arial'] } },
   ],
   spacing: [

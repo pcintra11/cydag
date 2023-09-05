@@ -1,12 +1,14 @@
-import { DateDifMinutes, HoraDebug, SleepMs } from '../libCommon/util';
+import { DateDifMinutes, HoraDebug, HoraForLog, SleepMs } from '../libCommon/util';
 import { CalcExecTime } from '../libCommon/calcExectime';
 import { CtrlContext } from '../libCommon/ctrlContext';
 import { CtrlRecursion } from '../libCommon/ctrlRecursion';
-import { csd, dbg, dbgError, dbgNotifyAdm, ScopeDbg } from '../libCommon/dbg';
+import { colorErr } from '../libCommon/consoleColor';
+import { csd, dbg, dbgError, ScopeDbg } from '../libCommon/dbg';
 
-import { CloseDbASync, ConnectDbASync, LockStatus, lockWait, UriDb } from './dbMongo';
 import { NotifAdmMessage, NotifyAdmCtrl } from '../app_base/modelTypes';
 import { keyNotifyAdmCtrl, NotifyAdmCtrlModel } from '../app_base/model';
+
+import { CloseDbASync, ConnectDbASync, LockStatus, lockWait, UriDb } from './dbMongo';
 import { sysEmailSupport } from './sendMail';
 import { NotifAdmSendEmailAsyncApi } from './asyncProcsCalls';
 
@@ -14,9 +16,15 @@ const _ctrlRecursion: { func: string, ctrlRecursion: CtrlRecursion }[] = [];
 const GetCtrlRecursion = (func: string) => {
   let item = _ctrlRecursion.find((x) => x.func == func);
   if (item == null)
-    _ctrlRecursion.push(item = { func, ctrlRecursion: new CtrlRecursion(`notifyAdm->${func}`, 10) });
+    _ctrlRecursion.push(item = { func, ctrlRecursion: new CtrlRecursion(`notifyAdm->${func}`, 1) });
   return item.ctrlRecursion;
 };
+
+function dbgNotifyAdm(...params) {
+  //if (dbgShow())
+  // eslint-disable-next-line no-console
+  console.log(colorErr(HoraForLog() + ' notifyAdm'), ...params);
+}
 
 //const lockCtrl = { id: 'notifyAdmCtrl' };
 
@@ -92,7 +100,7 @@ export async function NotifyAdmASync(mainMsg: string, variableInfo: string, ctrl
                     NotifyAdmCtrl.fill({
                       key: keyNotifyAdmCtrl,
                       lockedStr
-                    }, true)) as any)._doc as NotifyAdmCtrl;
+                    })) as any)._doc as NotifyAdmCtrl;
                   //dbgT(1, mainMsg, 'created');
                   result = { doc: docDb, lockStatus: LockStatus.normal };
                 }
@@ -127,12 +135,12 @@ export async function NotifyAdmASync(mainMsg: string, variableInfo: string, ctrl
               last: agora,
               notifLastProc: `email: ${notifEmailReason} ; sms: ${notifSMSReason}`,
               total: 1,
-            }, true)];
+            })];
         }
         else {
           if (DateDifMinutes(agora, sysCtrl.last) > delayNextNotifMinutes)
             notifEmailReason = `mais de ${delayNextNotifMinutes} minutos do último envio`;
-          sysCtrl.messages[notifAdmMessageJaIndex].variableInfos = [variableInfo, ...sysCtrl.messages[notifAdmMessageJaIndex].variableInfos.slice(0, 9)]; // sempre fica as últimas!
+          sysCtrl.messages[notifAdmMessageJaIndex].variableInfos = [variableInfo, ...sysCtrl.messages[notifAdmMessageJaIndex].variableInfos.slice(0, 99)]; // sempre fica as últimas!
           sysCtrl.messages[notifAdmMessageJaIndex].last = agora;
           sysCtrl.messages[notifAdmMessageJaIndex].notifLastProc = `email: ${notifEmailReason} ; sms: ${notifSMSReason}`;
           sysCtrl.messages[notifAdmMessageJaIndex].total++;

@@ -24,7 +24,7 @@ const blackBackColorSobreposSemiTransparent = '#707070';
 // const colorCodeBrown = '#A52A2A';
 // const colorCodeGreen = '#008000';
 
-export interface IThemeVariants { maxWidthScheme?: string, colorScheme?: string; fontScheme?: string; spacingScheme?: string }
+export interface IThemeVariants { maxWidthScheme?: string, maxWidthDetailScheme?: string, colorScheme?: string; fontScheme?: string; spacingScheme?: string }
 
 export const fontFamiliesDefault = ['Roboto', 'Helvetica', 'Verdana', 'Arial', 'Courier'];
 
@@ -38,7 +38,8 @@ export class ThreeColors {
     this.stronger = stronger || regular;
   }
 }
-interface IThemeSchemeMaxWidth { key: string, props: { maxWidth: number } } // em px !
+interface IThemeSchemeMaxWidth { key: string, props: { maxWidth: string } }
+interface IThemeSchemeMaxWidthDetail { key: string, props: { maxWidthDetail: string } }
 interface IThemeSchemeColor { key: string, props: { bodyDark: boolean, primaryBackColor: ThreeColors, secondaryBackColor?: ThreeColors } }
 interface IThemeSchemeFont { key: string, props: { fontFamilies: string[], fontSize?: number } }
 interface IThemeSchemeSpacing { key: string, props: { spacing: number } }
@@ -51,6 +52,7 @@ export interface IThemeSchemes {
   buttonVariant?: ButtonVariantType,
   colorBackDroparea?: string;
   maxWidth?: IThemeSchemeMaxWidth[],
+  maxWidthDetail?: IThemeSchemeMaxWidthDetail[],
   color?: IThemeSchemeColor[],
   font?: IThemeSchemeFont[],
   spacing?: IThemeSchemeSpacing[],
@@ -67,7 +69,8 @@ export interface IThemeSchemes {
  * Tudo que pode ser personalizado na app
  */
 export interface IThemePlusConfig {
-  maxWidth?: number;
+  maxWidth?: string; // body (o mais genérico, para todas telas)
+  maxWidthDetail?: string; // para os conteúdos que não podem ser muito largos, com detalhamentos, imagens isoladas, etc
   fontFamilies: string[];
   fontSize: number;
   spacing?: number;
@@ -83,7 +86,8 @@ export interface IThemePlusConfig {
   // @@@! tb para cor disabled !!! montar uma pagina de demonstração completa (themes)  
 }
 export const themePlusConfigDefault: IThemePlusConfig = {
-  maxWidth: 99999,
+  maxWidth: '99999px', // @!!!!!!!!!! user null !!!
+  maxWidthDetail: '99999px',
   fontFamilies: fontFamiliesDefault,
   fontSize: 16,
   //spacing: 8, // em px
@@ -119,8 +123,8 @@ declare module '@mui/material/styles' {
     //   danger: string;
     // };
     // minhaCor: string;
-    themePlusConfig: IThemePlusConfig;
-    themePlusDeriv: IThemePlusDeriv;
+    themePlusConfig?: IThemePlusConfig;
+    themePlusDeriv?: IThemePlusDeriv;
   }
   // allow configuration using `createTheme`
   interface ThemeOptions {
@@ -128,8 +132,8 @@ declare module '@mui/material/styles' {
     //   danger?: string;
     // };
     // minhaCor?: string;
-    themePlusConfig: IThemePlusConfig;
-    themePlusDeriv: IThemePlusDeriv;
+    themePlusConfig?: IThemePlusConfig;
+    themePlusDeriv?: IThemePlusDeriv;
   }
 }
 
@@ -240,6 +244,17 @@ export function GenThemePlus(themeSchemes: IThemeSchemes, themeVariants?: ITheme
     // borderHeavyColor: backColorAlt2,
   });
 
+  // const mediaQuery = mediaQueryMy(themePlus);
+  // csd({ mediaQuery });
+  // themePlus.typography.h3 = {
+  // fontSize: '1rem',
+  // // '@media (min-width:600px)': {
+  // //   fontSize: '.8rem',
+  // // },
+  // [theme.breakpoints.up('md')]: {
+  //   fontSize: '0.7rem',
+  // },
+
   return <IThemePlus>themePlus;
 }
 // export function ThemeObj(theme) {
@@ -297,8 +312,7 @@ export function ForeColorByBack(backColor: string) {
       if (Color(backColor).contrast(Color(result)) >= 18)
         result = '#222222';
     }
-  }
-  catch (error) {
+  } catch (error) {
     dbgError('ForeColorByBack', `Erro ao interpretar backColor '${backColor}' e assumido blue como cor de fonte (tente usar o código da cor no formato #xxxxxx)`);
     result = 'blue';
   }
@@ -368,15 +382,19 @@ const GenThemeConfig = (themeSchemes: IThemeSchemes, themeVariants?: IThemeVaria
   if (themeSchemes.inputVariant != null) themeConfig.inputVariant = themeSchemes.inputVariant;
   if (themeSchemes.colorBackDroparea != null) themeConfig = { ...themeConfig, colorBackDroparea: themeSchemes.colorBackDroparea };
   if (themeSchemes.maxWidth?.length > 0) themeConfig = { ...themeConfig, ...themeSchemes.maxWidth[0].props };
+  if (themeSchemes.maxWidthDetail?.length > 0) themeConfig = { ...themeConfig, ...themeSchemes.maxWidthDetail[0].props };
   if (themeSchemes.color?.length > 0) themeConfig = { ...themeConfig, ...themeSchemes.color[0].props };
   if (themeSchemes.font?.length > 0) themeConfig = { ...themeConfig, ...themeSchemes.font[0].props };
   if (themeSchemes.spacing?.length > 0) themeConfig = { ...themeConfig, ...themeSchemes.spacing[0].props };
-
   if (themeVariants != null) {
     if (themeVariants.maxWidthScheme != null && themeSchemes.maxWidth != null) {
       const maxWidthScheme = themeSchemes.maxWidth.find((x) => x.key == themeVariants.maxWidthScheme);
       if (maxWidthScheme != null) themeConfig = { ...themeConfig, ...maxWidthScheme.props };
       //else dbgError(`maxWidthScheme ${themeVariants.maxWidthScheme} não previsto`);
+    }
+    if (themeVariants.maxWidthDetailScheme != null && themeSchemes.maxWidthDetail != null) {
+      const maxWidthDetailScheme = themeSchemes.maxWidthDetail.find((x) => x.key == themeVariants.maxWidthDetailScheme);
+      if (maxWidthDetailScheme != null) themeConfig = { ...themeConfig, ...maxWidthDetailScheme.props };
     }
     if (themeVariants.colorScheme != null && themeSchemes.color != null) {
       const colorScheme = themeSchemes.color.find((x) => x.key == themeVariants.colorScheme);

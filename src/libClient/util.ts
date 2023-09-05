@@ -13,6 +13,9 @@ export const propsByMessageLevel = (theme: IThemePlus, level: MessageLevelUpload
   return sxProps;
 };
 
+/***
+ * Apenas onde não tiver quebra de linha
+ */
 export const cssTextNoWrapEllipsis: CSSProperties = {
   whiteSpace: 'nowrap',
   textOverflow: 'ellipsis',

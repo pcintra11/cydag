@@ -1,6 +1,6 @@
-import { EnvSvrSessionUser } from '../app_base/envs';
-
 import { HttpCryptoCookieConfig } from '../libServer/httpCryptoCookie';
+
+import { EnvSvrSessionUser } from '../app_base/envs';
 
 export const CookieUserConfig = () => {
   const sessionUserConfig = EnvSvrSessionUser();

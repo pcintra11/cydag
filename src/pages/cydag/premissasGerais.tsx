@@ -15,7 +15,7 @@ import { CallApiCliASync } from '../../fetcher/fetcherCli';
 
 import { cssTextNoWrapEllipsis } from '../../libClient/util';
 
-import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, SnackBarError, SwitchMy, fontSizeGrid, fontSizeIconsInGrid } from '../../components';
+import { AbortProc, Btn, BtnLine, SelOption, PopupMsg, WaitingObs, SwitchMy, fontSizeGrid, fontSizeIconsInGrid, LogErrorUnmanaged, Tx } from '../../components';
 import { HierNode } from '../../components/hier';
 import { GridCell } from '../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../hooks/useMyForm';
@@ -23,10 +23,10 @@ import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../.
 
 import { configApp } from '../../app_hub/appConfig';
 
-import { IconApp, IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, propsColorByTotLevel, SelRevisao, SelEntity, SelAno } from '../../appCydag/components';
+import { IconApp, IconButtonAppCrud, IconButtonAppSearch, propsColorHeader, propsColorByTotLevel, SelRevisao, SelEntity, SelAno, TxGridHdr, TxGridCel } from '../../appCydag/components';
 import { apisApp, pagesApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
-import { mesesFld, mesesHdr, genValMeses, amountToStr, amountParse } from '../../appCydag/util';
+import { mesesFld, mesesHdr, genValMeses, amountToStrApp, amountParseApp } from '../../appCydag/util';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatusMd, RevisaoValor, TipoColaboradorMd, TipoSegmCentroCusto } from '../../appCydag/types';
 import { AgrupPremissas, Empresa, Premissa, ProcessoOrcamentario, ValoresPremissa, empresaCoringa, agrupPremissasCoringa } from '../../appCydag/modelTypes';
 import { CmdApi_PremissaGeral as CmdApi, IChangedLine } from '../api/appCydag/premissasGerais/types';
@@ -178,7 +178,8 @@ export default function PagePremissasGerais() {
         }
       });
     } catch (error) {
-      SnackBarError(error, `${pageSelf.pagePath}-getItens`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-getItens`);
+      PopupMsg.error(error);
     }
   };
   const setItens = async (filter: FrmFilter, changedLines: IChangedLine[]) => {
@@ -186,7 +187,8 @@ export default function PagePremissasGerais() {
       await apis.crud({ cmd: CmdApi.valoresSet, filter: _.pick(filter, [ValoresPremissa.F.ano, ValoresPremissa.F.revisao]), data: { changedLines } });
       PopupMsg.success(`Valores gravados para ${filter.ano}.`);
     } catch (error) {
-      SnackBarError(error, `${pageSelf.pagePath}-setItens`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-setItens`);
+      PopupMsg.error(error);
     }
   };
   //#endregion
@@ -331,7 +333,8 @@ export default function PagePremissasGerais() {
         setMainStatesCache({ phase: Phase.ready, processoOrcamentarioArray, premissaArray, agrupPremissasArray, empresaArray });
       })
       .catch((error) => {
-        SnackBarError(error, `${pageSelf.pagePath}-initialization`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-initialization`);
+        PopupMsg.error(error);
       });
     return () => { mount = false; };
   }, []);
@@ -363,7 +366,7 @@ export default function PagePremissasGerais() {
     const empresaOptions = [Empresa.fill(empresaCoringa), ...mainStates.empresaArray].map((x) => new SelOption(x.cod, x.descr));
     return (
       <form onSubmit={frmFilter.handleSubmit(getItensSubmit)}>
-        <Stack direction='row' alignItems='center' gap={1}>
+        <Stack direction='row' alignItems='center' spacing={1}>
           {/* <SelectMy width='80px'
             value={ano || ''}
             onChange={(ev) => { frmFilter.setValue(ValoresPremissa.F.ano, ev.target.value); }}
@@ -405,19 +408,19 @@ export default function PagePremissasGerais() {
       const comps = [];
       if (dataStructure.headerInfo != null)
         comps.push(`${dataStructure.headerInfo}`);
-      if (comps.length > 0) return (<Box>{comps.join(' ')}</Box>);
+      if (comps.length > 0) return (<Tx>{comps.join(' ')}</Tx>);
       else return (<></>);
     };
 
-    const propsColorsHdr = propsColorHeader(themePlus);
+    const propsColorsHdr = propsColorHeader();
     const HeaderComp = () => {
       return (
         <>
-          <GridCell sticky {...propsColorsHdr}><Box>Premissa</Box></GridCell>
-          <GridCell sticky textAlign='center' {...propsColorsHdr}><Box>Ativa</Box></GridCell>
+          <GridCell sticky {...propsColorsHdr}><TxGridHdr>Premissa</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='center' {...propsColorsHdr}><TxGridHdr>Ativa</TxGridHdr></GridCell>
           {mesesHdr.map((mes, index) =>
             <GridCell key={index} sticky textAlign='right' {...propsColorsHdr}>
-              <Box>{mes}</Box>
+              <TxGridHdr>{mes}</TxGridHdr>
             </GridCell>
           )}
         </>
@@ -448,7 +451,7 @@ export default function PagePremissasGerais() {
 
       const LineEditComp = ({ level }: { level: number }) => {
         if (node.nodeContent.valMesesStr == null)
-          node.nodeContent.valMesesStr = node.nodeContent.valMeses.map((x) => amountToStr(x, node.nodeContent.decimais));
+          node.nodeContent.valMesesStr = node.nodeContent.valMeses.map((x) => amountToStrApp(x, node.nodeContent.decimais));
         const [, forceRefresh] = React.useState<any>({});
         const changeAtiva = (val: boolean) => {
           globalCtrl.logTouchedCells(node.id, node.nodeContent.descrAcum, 'ativa', false);
@@ -459,7 +462,7 @@ export default function PagePremissasGerais() {
 
         const changeValMes = (sxMes: number, valStr) => {
           try {
-            amountParse(valStr, node.nodeContent.decimais);
+            amountParseApp(valStr, node.nodeContent.decimais);
             globalCtrl.logTouchedCells(node.id, node.nodeContent.descrAcum, valMesFld(sxMes), false);
           }
           catch (error) {
@@ -470,7 +473,7 @@ export default function PagePremissasGerais() {
         };
         const blurValMes = (sxMes: number, valStr) => {
           try {
-            const val = amountParse(valStr, node.nodeContent.decimais);
+            const val = amountParseApp(valStr, node.nodeContent.decimais);
             chgValMeses('setMes', sxMes, val);
             atuValsEdit([{ sxMes, val }]);
           }
@@ -480,7 +483,7 @@ export default function PagePremissasGerais() {
 
         const atuValsEdit = (alts: ISxMesVal[]) => {
           alts.forEach((x) => {
-            node.nodeContent.valMesesStr[x.sxMes] = amountToStr(x.val, node.nodeContent.decimais);
+            node.nodeContent.valMesesStr[x.sxMes] = amountToStrApp(x.val, node.nodeContent.decimais);
             globalCtrl.logTouchedCells(node.id, node.nodeContent.descrAcum, valMesFld(x.sxMes), false);
           });
           forceRefresh({});
@@ -542,10 +545,10 @@ export default function PagePremissasGerais() {
         };
 
         const descrUse =
-          <Stack direction='row' alignItems='center' gap={1}>
+          <Stack direction='row' alignItems='center' spacing={1}>
             <IconButtonAppCrud icon='clear' onClick={() => chgValMeses('clear')} fontSize={fontSizeIconsInGrid} />
             <IconButtonAppCrud icon='redo' onClick={() => chgValMeses('repeat')} fontSize={fontSizeIconsInGrid} />
-            <Box style={cssTextNoWrapEllipsis}>{node.nodeContent.descr}</Box>
+            <Tx style={cssTextNoWrapEllipsis}>{node.nodeContent.descr}</Tx>
           </Stack>;
 
         const paddingLeft = 0.8 * level;
@@ -581,11 +584,11 @@ export default function PagePremissasGerais() {
         const descrUse =
           <>
             {node.group
-              ? <Stack direction='row' alignItems='center' gap={1} sx={{ cursor: 'pointer' }} onClick={() => setStateOpen(!stateOpen)}>
+              ? <Stack direction='row' alignItems='center' spacing={1} sx={{ cursor: 'pointer' }} onClick={() => setStateOpen(!stateOpen)}>
                 <IconApp icon={stateOpen ? 'colapse' : 'expand'} fontSize={fontSizeIconsInGrid} />
-                <Box style={cssTextNoWrapEllipsis}>{node.nodeContent.descr}</Box>
+                <Tx style={cssTextNoWrapEllipsis}>{node.nodeContent.descr}</Tx>
               </Stack>
-              : <Box style={cssTextNoWrapEllipsis}>{node.nodeContent.descr}</Box>
+              : <Tx style={cssTextNoWrapEllipsis}>{node.nodeContent.descr}</Tx>
             }
           </>;
 
@@ -599,8 +602,8 @@ export default function PagePremissasGerais() {
         else {
           return (<>
             <GridCell {...propsColorDescr}><Box pl={paddingLeft}>{descrUse}</Box></GridCell>
-            <GridCell textAlign='center' {...propsColorLevel}>{BooleanToSN(node.nodeContent.ativa)}</GridCell>
-            {mesesFld.map((_, index) => <GridCell key={index} textAlign='right' {...propsColorLevel}>{amountToStr(node.nodeContent.valMeses[index], node.nodeContent.decimais)}</GridCell>)}
+            <GridCell textAlign='center' {...propsColorLevel}><TxGridCel>{BooleanToSN(node.nodeContent.ativa)}</TxGridCel></GridCell>
+            {mesesFld.map((_, index) => <GridCell key={index} textAlign='right' {...propsColorLevel}><TxGridCel>{amountToStrApp(node.nodeContent.valMeses[index], node.nodeContent.decimais)}</TxGridCel></GridCell>)}
           </>);
         }
       };
@@ -698,7 +701,7 @@ export default function PagePremissasGerais() {
 
   return (
     <GlobalCtrlContext.Provider value={new GlobalEditCtrl()}>
-      <Stack gap={1} height='100%'>
+      <Stack spacing={1} height='100%'>
         <FilterComp />
         <DataComp />
       </Stack>

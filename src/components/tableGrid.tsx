@@ -6,6 +6,7 @@ import { IGenericObject } from '../libCommon/types';
 import { csd } from '../libCommon/dbg';
 
 import { AbortProcComponent, LogErrorUnmanaged } from './abortProc';
+import { Tx } from './ui';
 //import { Button, BtnLine, FakeLink, IconButton, VisualBlock, WaitingLine } from '../components';
 
 //import { useMediaQuery } from 'react-responsive';
@@ -141,10 +142,11 @@ interface ITableGridProps {
   preGrid?: React.ReactNode;
   posGrid?: React.ReactNode;
   scrollingAreaRef?: React.MutableRefObject<HTMLDivElement>;
-
+  fullHeightScroll?: true;
   //alternColor?: boolean;
 }
-export function TableGrid({ colsGridConfig, extraLinesGridConfig, dataRows, preGrid, posGrid, scrollingAreaRef }: ITableGridProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function TableGrid({ colsGridConfig, extraLinesGridConfig, dataRows, preGrid, posGrid, scrollingAreaRef, fullHeightScroll }: ITableGridProps) {
   const themePlus = useTheme();
 
   // const stTableGridColumnBase: CSSProperties = {
@@ -190,6 +192,7 @@ export function TableGrid({ colsGridConfig, extraLinesGridConfig, dataRows, preG
   //     columnGap: '0.5rem',
   //   } as CSSProperties,
   // };
+
   //#region funções
   // const styleByOptions = (options: ColGridConfigOptions) => {
   //   let style = null;
@@ -199,7 +202,6 @@ export function TableGrid({ colsGridConfig, extraLinesGridConfig, dataRows, preG
   //     style = g_st2.tableGridColumnAlignRight;
   //   return style;
   // };
-
 
   const TableHeader = () => {
     // .xxxg-tableHeader { //@!!!!!
@@ -249,8 +251,8 @@ export function TableGrid({ colsGridConfig, extraLinesGridConfig, dataRows, preG
         {colsGridConfig.map((_, index) =>
           <Box key={index}>
             {index == 0
-              ? <Box>{FriendlyErrorMsgApi(error)}</Box>
-              : <Box>*erro*</Box>
+              ? <Tx>{FriendlyErrorMsgApi(error)}</Tx>
+              : <Tx>*erro*</Tx>
             }
           </Box>
         )}
@@ -303,16 +305,16 @@ export function TableGrid({ colsGridConfig, extraLinesGridConfig, dataRows, preG
           z-index: 1;
         }
         .cel {
-          border: 1px solid ${themePlus.themePlusDeriv.borderLightColor};
+          border: 1px solid ${themePlus.themePlusDeriv?.borderLightColor};
           padding: 3px 8px;
           overflow: hidden;
           xwhite-space: nowrap;
           text-overflow: ellipsis;         
           &.firstRow {
-            border-top: 2px solid  ${themePlus.themePlusDeriv.borderHeavyColor};
+            border-top: 2px solid  ${themePlus.themePlusDeriv?.borderHeavyColor};
           }
           &:hover {
-            XXXbackground-color: ${themePlus.themePlusDeriv.destaque2.backColor};
+            XXXbackground-color: ${themePlus.themePlusDeriv?.destaque2.backColor};
           }
         }
         .extraLine {

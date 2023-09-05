@@ -9,14 +9,17 @@ import { csl } from '../../libCommon/dbg';
 import { IGenericObject } from '../../libCommon/types';
 import { PageDef } from '../../libCommon/endPoints';
 import { CalcExecTime } from '../../libCommon/calcExectime';
+import { rolesDev } from '../../libCommon/endPoints';
 import { CallApiCliASync } from '../../fetcher/fetcherCli';
 
 import { SaveAsXlsx } from '../../libClient/saveAsClient';
 
-import { AbortProc, SelOption, PopupMsg, WaitingObs, SnackBarError, SwitchMy, FakeLink } from '../../components';
+import { AbortProc, SelOption, PopupMsg, WaitingObs, SwitchMy, FakeLink, LogErrorUnmanaged } from '../../components';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../hooks/useMyForm';
 
-import { devFeature, IconButtonAppDownload, SelAno, SelEntity, SelRevisao } from '../../appCydag/components';
+import { isAmbDev } from '../../app_base/envs';
+
+import { IconButtonAppDownload, SelAno, SelEntity, SelRevisao } from '../../appCydag/components';
 import { apisApp, pagesApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 import { CentroCusto, ClasseCusto } from '../../appCydag/modelTypes';
@@ -25,6 +28,7 @@ import { CentroCustoConfigOption, IAnoCentroCustos, OrigemClasseCustoMd, Revisao
 import { CmdApi_ValoresContas } from '../api/appCydag/valoresContas/types';
 import { mesesFld } from '../../appCydag/util';
 import { CmdApi_ClasseCusto, SortType_ClasseCusto } from '../api/appCydag/classeCusto/types';
+import { LoggedUser } from '../../appCydag/loggedUser';
 
 //#region ok
 enum Phase {
@@ -45,6 +49,11 @@ const fldFrmExtra = {
   showCalc: 'showCalc' as 'showCalc',
 };
 //#endregion
+
+export const devFeature = (loggedUser: LoggedUser) => {
+  return isAmbDev() ||
+    loggedUser?.roles?.includes(rolesDev.dev);
+};
 
 let mount; let mainStatesCache;
 const apis = { // cdm sempre aqui?? #!!!!!!
@@ -122,7 +131,8 @@ export default function PageExportPlanej() {
         mountOptionsCC(ano);
       })
       .catch((error) => {
-        SnackBarError(error, `${pageSelf.pagePath}-initialization`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-initialization`);
+        PopupMsg.error(error);
       });
     return () => { mount = false; };
   }, []);
@@ -182,7 +192,8 @@ export default function PageExportPlanej() {
         csl(`tempo total preparação client ${calcExecTime.lapMs()}ms`);
       })
       .catch((error) => {
-        SnackBarError(error, `${pageSelf.pagePath}-getItens`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-getItens`);
+        PopupMsg.error(error);
         setMainStatesCache({ downloadInProgress: false });
       });
   };
@@ -190,8 +201,8 @@ export default function PageExportPlanej() {
   const centroCustoOptions = mainStates.centroCustoOptions == null ? null : mainStates.centroCustoOptions.map((x) => new SelOption(x.cod, x.descr));
   return (
     // <form onSubmit={frmFilter.handleSubmit(getValoresPlanejadosSubmit)}> #!!!!!! eliminar todos submit ?
-    <Stack gap={1} height='100%'>
-      <Stack direction='row' alignItems='center' gap={1}>
+    <Stack spacing={1} height='100%'>
+      <Stack direction='row' alignItems='center' spacing={1}>
         {/* <SelectMy width='80px'
           value={ano || ''}
           onChange={(ev) => { frmFilter.setValue(ValoresPlanejados.F.ano, ev.target.value); }}
@@ -216,7 +227,7 @@ export default function PageExportPlanej() {
       {revisao === RevisaoValor.atual &&
         <>
           <SwitchMy checked={withDetails} label='Com detalhes para as contas' onChange={(ev) => frmFilter.setValue(fldFrmExtra.withDetails, ev.target.checked)} />
-          {devFeature() &&
+          {devFeature(loggedUser) &&
             <SwitchMy checked={showCalc} label='Mostra cálculos' onChange={(ev) => frmFilter.setValue(fldFrmExtra.showCalc, ev.target.checked)} />
           }
         </>

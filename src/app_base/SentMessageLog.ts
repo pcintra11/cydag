@@ -19,10 +19,9 @@ export async function SentMessageLogASync(sentMessage: SentMessage, resultOk: st
         date: agora,
         resultOk,
         resultError,
-      }, true));
+      }));
     await CloseDbASync({ ctrlContext });
-  }
-  catch (error) {
+  } catch (error) {
     dbgError('SentMessageLog', error.message);
   }
 }

@@ -1,24 +1,24 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 
-import Menu_mui from '@mui/material/Menu';
-import MenuItem_mui from '@mui/material/MenuItem';
-import Divider_mui from '@mui/material/Divider';
+import { Box, Menu, MenuItem, Divider, SxProps } from '@mui/material';
 
 import { PageDef } from '../../libCommon/endPoints';
 
-import { Typo } from '../ui';
+import { Tx } from '../ui';
 import { MenuEntry, MenuEntryType, routerPageDef } from '.';
-import { Box } from '@mui/material';
 
 // um componente que, ao clicar, abre um menu de opções abaixo
 interface IMenuFloatProps {
   anchor: React.ReactNode;
   itens: MenuEntry[];
-  style?: React.CSSProperties;
+  sx?: SxProps;
   pageDefCurr: PageDef;
 }
-export function MenuFloat({ anchor, itens, pageDefCurr, style }: IMenuFloatProps) {
+
+const compByType = (content: React.ReactNode | string, bolder?: boolean) => typeof content === 'string' ? <Tx bold={bolder}>{content}</Tx> : <>{content}</>;
+
+export function MenuFloat({ anchor, itens, pageDefCurr, sx }: IMenuFloatProps) {
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const router = useRouter();
@@ -31,17 +31,17 @@ export function MenuFloat({ anchor, itens, pageDefCurr, style }: IMenuFloatProps
   // @@@! cor do submenu
   // está causando impacto em paginas com muito conteúdo (css?)
 
-  const ContentItem = ({ menuEntry, isPageCurrent }: { menuEntry: MenuEntry, isPageCurrent: boolean }) => {
-    const renderComp = (isPageCurrent && typeof menuEntry.content === 'string') ? <Typo bold>{menuEntry.content}</Typo> : <>{menuEntry.content}</>;
-    return renderComp;
-  };
+  // const ContentItem = ({ menuEntry, isPageCurrent }: { menuEntry: MenuEntry, isPageCurrent: boolean }) => {
+  //   const renderComp = typeof menuEntry.content === 'string' ? <Tx bold={isPageCurrent}>{menuEntry.content}</Tx> : <>{menuEntry.content}</>;
+  //   return renderComp;
+  // };
 
   return (
     <>
-      <Box onClick={handleClick} style={{ ...style, cursor: 'pointer' }}>
+      <Box onClick={handleClick} sx={{ ...sx, cursor: 'pointer' }}>
         {anchor}
       </Box>
-      <Menu_mui
+      <Menu
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
@@ -78,17 +78,17 @@ export function MenuFloat({ anchor, itens, pageDefCurr, style }: IMenuFloatProps
         {itens.map((menuEntry, i) => {
           const isPageCurrent = pageDefCurr == menuEntry.pageDef && !pageDefCurr?.pagePath.endsWith('dummy');
           if (menuEntry.type == MenuEntryType.group)
-            return <MenuItem_mui key={i}>{menuEntry.content} (sem ação para tipo {menuEntry.type})</MenuItem_mui>;
+            return <MenuItem key={i}>{compByType(menuEntry.content)} (sem ação para tipo {menuEntry.type})</MenuItem>;
           else if (menuEntry.type == MenuEntryType.pagePath)
-            return <MenuItem_mui key={i} onClick={() => routerPageDef(menuEntry.pageDef, router, menuEntry.query, pageDefCurr)}><ContentItem menuEntry={menuEntry} isPageCurrent={isPageCurrent} /></MenuItem_mui>;
+            return <MenuItem key={i} onClick={() => routerPageDef(menuEntry.pageDef, router, menuEntry.query, pageDefCurr)}>{compByType(menuEntry.content, isPageCurrent)}</MenuItem>;
           else if (menuEntry.type == MenuEntryType.onlyShow)
-            return <MenuItem_mui key={i}>{menuEntry.content}</MenuItem_mui>;
+            return <MenuItem key={i}>{compByType(menuEntry.content)}</MenuItem>;
           else if (menuEntry.type == MenuEntryType.divider)
-            return <Divider_mui key={i} />;
+            return <Divider key={i} />;
           else
-            return <MenuItem_mui key={i}>{menuEntry.type} ???</MenuItem_mui>;
+            return <MenuItem key={i}>{menuEntry.type} ???</MenuItem>;
         })}
-      </Menu_mui>
+      </Menu>
     </>
   );
 }

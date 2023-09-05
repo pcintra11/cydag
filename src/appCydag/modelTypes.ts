@@ -12,8 +12,8 @@ import { configApp } from '../app_hub/appConfig';
 
 import { UserMd } from './models';
 import { LoggedUser } from './loggedUser';
-import { rolesApp, roleSimulateUserDyn } from './endPoints';
-import { amountParse, amountParseValsCalc } from './util';
+import { rolesApp, roleDynamicSimulatingUser } from './endPoints';
+import { amountParseApp, amountParseValsCalcApp } from './util';
 import { CategRegional, CategRegionalMd, InterfaceSapStatus, InterfaceSapCateg, OrigemClasseCusto, OrigemFunc, ProcessoOrcamentarioStatus, RevisaoValor, RevisaoValorMd, TipoColaborador, TipoColaboradorMd, TipoParticipPerOrcam, TipoParticipPerOrcamMd, TipoPlanejViagem, TipoSegmCentroCusto, TipoSegmCentroCustoMd } from './types';
 import { configCydag } from './configCydag';
 
@@ -244,7 +244,7 @@ export class User {
       rolesUse.push(rolesApp.dyn_consTodosCCs);
     }
     if (emailSigned != userMd.email)
-      rolesUse.push(roleSimulateUserDyn);
+      rolesUse.push(roleDynamicSimulatingUser);
     return LoggedUser.fill({
       sessionIdStr: null,
       userIdStr: userMd._id.toString(),
@@ -978,9 +978,9 @@ export class ValoresTransfer {
       new FldCsvDef('valMeses', {
         suppressColumn: true,
         def: (data: IGenericObject) => [
-          amountParse(data.m01, configCydag.decimalsValsInput), amountParse(data.m02, configCydag.decimalsValsInput), amountParse(data.m03, configCydag.decimalsValsInput), amountParse(data.m04, configCydag.decimalsValsInput),
-          amountParse(data.m05, configCydag.decimalsValsInput), amountParse(data.m06, configCydag.decimalsValsInput), amountParse(data.m07, configCydag.decimalsValsInput), amountParse(data.m08, configCydag.decimalsValsInput),
-          amountParse(data.m09, configCydag.decimalsValsInput), amountParse(data.m10, configCydag.decimalsValsInput), amountParse(data.m11, configCydag.decimalsValsInput), amountParse(data.m12, configCydag.decimalsValsInput),
+          amountParseApp(data.m01, configCydag.decimalsValsInput), amountParseApp(data.m02, configCydag.decimalsValsInput), amountParseApp(data.m03, configCydag.decimalsValsInput), amountParseApp(data.m04, configCydag.decimalsValsInput),
+          amountParseApp(data.m05, configCydag.decimalsValsInput), amountParseApp(data.m06, configCydag.decimalsValsInput), amountParseApp(data.m07, configCydag.decimalsValsInput), amountParseApp(data.m08, configCydag.decimalsValsInput),
+          amountParseApp(data.m09, configCydag.decimalsValsInput), amountParseApp(data.m10, configCydag.decimalsValsInput), amountParseApp(data.m11, configCydag.decimalsValsInput), amountParseApp(data.m12, configCydag.decimalsValsInput),
         ]
       }),
       new FldCsvDef('lastUpdated', { down: (data: ValoresTransfer) => DateToStrISO(data.lastUpdated), up: (data: IGenericObject) => DateFromStrISO(data.lastUpdated) || agora, def: () => new Date() }),
@@ -1022,9 +1022,9 @@ export class ValoresImputados {
         new FldCsvDef('valMeses', {
           suppressColumn: true,
           def: (data: IGenericObject) => [
-            amountParse(data.m01, configCydag.decimalsValsInput), amountParse(data.m02, configCydag.decimalsValsInput), amountParse(data.m03, configCydag.decimalsValsInput), amountParse(data.m04, configCydag.decimalsValsInput),
-            amountParse(data.m05, configCydag.decimalsValsInput), amountParse(data.m06, configCydag.decimalsValsInput), amountParse(data.m07, configCydag.decimalsValsInput), amountParse(data.m08, configCydag.decimalsValsInput),
-            amountParse(data.m09, configCydag.decimalsValsInput), amountParse(data.m10, configCydag.decimalsValsInput), amountParse(data.m11, configCydag.decimalsValsInput), amountParse(data.m12, configCydag.decimalsValsInput),
+            amountParseApp(data.m01, configCydag.decimalsValsInput), amountParseApp(data.m02, configCydag.decimalsValsInput), amountParseApp(data.m03, configCydag.decimalsValsInput), amountParseApp(data.m04, configCydag.decimalsValsInput),
+            amountParseApp(data.m05, configCydag.decimalsValsInput), amountParseApp(data.m06, configCydag.decimalsValsInput), amountParseApp(data.m07, configCydag.decimalsValsInput), amountParseApp(data.m08, configCydag.decimalsValsInput),
+            amountParseApp(data.m09, configCydag.decimalsValsInput), amountParseApp(data.m10, configCydag.decimalsValsInput), amountParseApp(data.m11, configCydag.decimalsValsInput), amountParseApp(data.m12, configCydag.decimalsValsInput),
           ]
         }),
         new FldCsvDef('lastUpdated', { down: (data: ValoresImputados) => DateToStrISO(data.lastUpdated), up: (data: IGenericObject) => DateFromStrISO(data.lastUpdated) || agora, def: () => new Date() }),
@@ -1078,9 +1078,9 @@ export class ValoresPlanejadosHistorico {
         new FldCsvDef('valMeses', {
           suppressColumn: true,
           def: (data: IGenericObject) => [
-            amountParseValsCalc(data.m01), amountParseValsCalc(data.m02), amountParseValsCalc(data.m03), amountParseValsCalc(data.m04),
-            amountParseValsCalc(data.m05), amountParseValsCalc(data.m06), amountParseValsCalc(data.m07), amountParseValsCalc(data.m08),
-            amountParseValsCalc(data.m09), amountParseValsCalc(data.m10), amountParseValsCalc(data.m11), amountParseValsCalc(data.m12),
+            amountParseValsCalcApp(data.m01), amountParseValsCalcApp(data.m02), amountParseValsCalcApp(data.m03), amountParseValsCalcApp(data.m04),
+            amountParseValsCalcApp(data.m05), amountParseValsCalcApp(data.m06), amountParseValsCalcApp(data.m07), amountParseValsCalcApp(data.m08),
+            amountParseValsCalcApp(data.m09), amountParseValsCalcApp(data.m10), amountParseValsCalcApp(data.m11), amountParseValsCalcApp(data.m12),
           ]
         }),
       ]);
@@ -1117,9 +1117,9 @@ export class ValoresRealizados {
         new FldCsvDef('valMeses', {
           suppressColumn: true,
           def: (data: IGenericObject) => [
-            amountParseValsCalc(data.m01), amountParseValsCalc(data.m02), amountParseValsCalc(data.m03), amountParseValsCalc(data.m04),
-            amountParseValsCalc(data.m05), amountParseValsCalc(data.m06), amountParseValsCalc(data.m07), amountParseValsCalc(data.m08),
-            amountParseValsCalc(data.m09), amountParseValsCalc(data.m10), amountParseValsCalc(data.m11), amountParseValsCalc(data.m12),
+            amountParseValsCalcApp(data.m01), amountParseValsCalcApp(data.m02), amountParseValsCalcApp(data.m03), amountParseValsCalcApp(data.m04),
+            amountParseValsCalcApp(data.m05), amountParseValsCalcApp(data.m06), amountParseValsCalcApp(data.m07), amountParseValsCalcApp(data.m08),
+            amountParseValsCalcApp(data.m09), amountParseValsCalcApp(data.m10), amountParseValsCalcApp(data.m11), amountParseValsCalcApp(data.m12),
           ]
         }),
       ]);
@@ -1253,7 +1253,7 @@ export class Funcionario {
       new FldCsvDef('nome', { mandatoryValue: true }),
       new FldCsvDef('tipoColaborador', { mandatoryValue: true, down: (data: Funcionario) => data.tipoColaborador.toString(), up: (data: IGenericObject) => TipoColaboradorMd.codeFromStr(data.tipoColaborador) }),
       new FldCsvDef('funcao'),
-      new FldCsvDef('salario_messy', { mandatoryValue: true, fldDisp: 'salarioBase', down: () => null, up: (data: IGenericObject) => Funcionario.scrambleSalario(amountParse(data.salarioBase, configCydag.decimalsSalario), data.centroCusto, data.cpf) }),
+      new FldCsvDef('salario_messy', { mandatoryValue: true, fldDisp: 'salarioBase', down: () => null, up: (data: IGenericObject) => Funcionario.scrambleSalario(amountParseApp(data.salarioBase, configCydag.decimalsSalario), data.centroCusto, data.cpf) }),
       new FldCsvDef('dependentes', { mandatoryValue: false, up: (data: IGenericObject) => StrToNumber(data.dependentes) }),
       new FldCsvDef('valeTransp', { mandatoryValue: false, up: (data: IGenericObject) => StrToNumber(data.valeTransp, configCydag.decimalsValsInput) }),
       new FldCsvDef('idVaga'),
@@ -1355,9 +1355,9 @@ export class Terceiro {
       new FldCsvDef('valMeses', {
         suppressColumn: true,
         def: (data: IGenericObject) => [
-          amountParseValsCalc(data.m01), amountParseValsCalc(data.m02), amountParseValsCalc(data.m03), amountParseValsCalc(data.m04),
-          amountParseValsCalc(data.m05), amountParseValsCalc(data.m06), amountParseValsCalc(data.m07), amountParseValsCalc(data.m08),
-          amountParseValsCalc(data.m09), amountParseValsCalc(data.m10), amountParseValsCalc(data.m11), amountParseValsCalc(data.m12),
+          amountParseValsCalcApp(data.m01), amountParseValsCalcApp(data.m02), amountParseValsCalcApp(data.m03), amountParseValsCalcApp(data.m04),
+          amountParseValsCalcApp(data.m05), amountParseValsCalcApp(data.m06), amountParseValsCalcApp(data.m07), amountParseValsCalcApp(data.m08),
+          amountParseValsCalcApp(data.m09), amountParseValsCalcApp(data.m10), amountParseValsCalcApp(data.m11), amountParseValsCalcApp(data.m12),
         ]
       }),
       new FldCsvDef('created', { down: (data: Terceiro) => DateToStrISO(data.created), up: (data: IGenericObject) => DateFromStrISO(data.created) || agora, def: () => new Date() }),

@@ -1,11 +1,3 @@
-import { configApp } from '../app_hub/appConfig';
-
-import { ApiAsyncLogModel, SendMailLogModel } from '../app_base/model';
-import { ApiAsyncLog, SendMailLog } from '../app_base/modelTypes';
-import { apisBase } from '../app_base/endPoints';
-import { CloseDbASync, ConnectDbASync, UriDb } from './dbMongo';
-
-import { EnvApiTimeout, EnvInfoHost } from '../app_base/envs';
 import { csd, dbgError } from '../libCommon/dbg';
 import { IGenericObject } from '../libCommon/types';
 import { CalcExecTime } from '../libCommon/calcExectime';
@@ -13,6 +5,13 @@ import { CtrlContext } from '../libCommon/ctrlContext';
 
 import { CallApiSvrASync } from '../fetcher/fetcherSvr';
 
+import { configApp } from '../app_hub/appConfig';
+import { ApiAsyncLogModel, SendMailLogModel } from '../app_base/model';
+import { ApiAsyncLog, SendMailLog } from '../app_base/modelTypes';
+import { apisBase } from '../app_base/endPoints';
+import { EnvApiTimeout, EnvInfoHost } from '../app_base/envs';
+
+import { CloseDbASync, ConnectDbASync, UriDb } from './dbMongo';
 import { SendEmailParams, SendMailASync } from './sendMail';
 import { LogSentMessagesFn } from './util';
 
@@ -56,7 +55,7 @@ export async function CallAsyncApi(type: AsyncProcTypes, customType: string, inf
         info,
         register: agora,
         params,
-      }, true)) as any)._doc as ApiAsyncLog;
+      })) as any)._doc as ApiAsyncLog;
     CallApiSvrASync(apiToCall, ctrlContext, info, { idStr: asyncProc._id.toString(), type, info, forceDelay, deleteIfOk }, { fetchAndForget: true });
     // .then(() => dbgA(1, '************* ok'))
     // .catch((error) => dbgError('CallAsyncApi', type, error.message));
@@ -84,7 +83,7 @@ export async function SendMailASyncManaged(sendEmailParams: SendEmailParams, ctr
         SendMailLog.fill({
           sendEmailParams,
           started: new Date(),
-        }, true)) as any)._doc as SendMailLog;
+        })) as any)._doc as SendMailLog;
       sendMailLogId = log._id;
     } catch (error) {
       dbgError('SendMailASyncManaged', 'create', error.message);

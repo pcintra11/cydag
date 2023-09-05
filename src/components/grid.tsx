@@ -1,10 +1,12 @@
 import React from 'react';
 import { Box, Input, SxProps } from '@mui/material';
 
-import { amountParse, amountToStr } from '../appCydag/util';
-import { SelectMy, SelOption, SwitchMy } from './ui';
 import { csd } from '../libCommon/dbg';
 import { CutUndef, FillClassProps } from '../libCommon/util';
+
+import { amountParseApp, amountToStrApp } from '../appCydag/util';
+
+import { SelectMy, SelOption, SwitchMy } from './ui';
 
 interface IGridCell {
   textAlign?: 'right' | 'left' | 'center',
@@ -87,9 +89,8 @@ export class GridEditMainCtrl {
    * Função que será chamada para compartilhar os valores editados
    */
   fldNewValue: (fldChange: IFldChange) => void;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new GridEditMainCtrl(); }
-  static fill(values: GridEditMainCtrl, init = false) { return CutUndef(FillClassProps(GridEditMainCtrl.new(init), values)); }
+  static new() { return new GridEditMainCtrl(); }
+  static fill(values: GridEditMainCtrl) { return CutUndef(FillClassProps(GridEditMainCtrl.new(), values)); }
 }
 
 /**
@@ -106,17 +107,16 @@ export class GridEditFldCtrl {
    * atuVal => 'setState' para o chamador forçar algum valor (replicação de valores em array, zerar todas colunas, etc)
    */
   atuVal?: any;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  static new(init?: boolean) { return new GridEditFldCtrl(); }
-  static fill(values: GridEditFldCtrl, init = false) { return CutUndef(FillClassProps(GridEditFldCtrl.new(init), values)); }
+  static new() { return new GridEditFldCtrl(); }
+  static fill(values: GridEditFldCtrl) { return CutUndef(FillClassProps(GridEditFldCtrl.new(), values)); }
 }
 
 const valueOriginalForEdit = (dataOriginal: any, fld: string, index?: number, valueType?: ValueType, decimals?: number) => {
   let result: any;
   //const valorOrig = NavigateToProperty(dataOriginal, fld);
   const valorOrig = index == null ? dataOriginal[fld] : dataOriginal[fld][index];
-  if (valueType === ValueType.amount) result = amountToStr(valorOrig, decimals);
-  else if (valueType === ValueType.number) result = amountToStr(valorOrig, 0);
+  if (valueType === ValueType.amount) result = amountToStrApp(valorOrig, decimals);
+  else if (valueType === ValueType.number) result = amountToStrApp(valorOrig, 0);
   else if (valueType === ValueType.boolean) result = valorOrig;
   else result = valorOrig || '';
   //csd({ fld, valorOrig, valueType, result });
@@ -151,16 +151,15 @@ export const GridCellEdit = ({ mainCtrl, fldCtrl, index, disabled }: { mainCtrl:
         if (valToSend == '') valToSend = undefined;
         else {
           if (valueType === ValueType.amount)
-            amountParse(value, decimals);
+            amountParseApp(value, decimals);
           else if (valueType === ValueType.number)
-            amountParse(value, 0);
+            amountParseApp(value, 0);
         }
       }
       if (mandatory &&
         valToSend === undefined)
         throw new Error('campo obrigatório');
-    }
-    catch (error) {
+    } catch (error) {
       valueError = true;
     }
     //csd({ fld, mandatory, value, valueDb });

@@ -67,9 +67,9 @@ export function useLoggedUser(parm: IParm = {}) {
   const parmDef: IParm = { reRender: true, id: null };
   const parmUse: IParm = { ...parmDef, ...parm };
   const { reRender, id } = parmUse;
-  const [handleRedirectFase] = React.useState(false); // ainda não está em uso !
-  const { accounts, inProgress } = useMsal();
-  //const [msalInitiating, setMsalInitiating] = React.useState(true);
+  // const [handleRedirectFase] = React.useState(false); // ainda não está em uso !
+  // const { accounts, inProgress } = useMsal();
+  // //const [msalInitiating, setMsalInitiating] = React.useState(true);
 
   //csd('useLoggedUser render', {handleRedirectFase: handleRedirectFase, inProgress, accounts});
 
@@ -78,12 +78,13 @@ export function useLoggedUser(parm: IParm = {}) {
     //   return { loggedUser, isLoadingUser }; // , ...userFunctions
     if (globalUser == null) {
       if (EnvDeployConfig().mode_auth == 'azure')
-        globalUser = new GlobalState({ loadingStateWaitExternal: true, id: 'loggedUser', debug: false });
+        //globalUser = new GlobalState({ loadingStateWaitExternal: true, id: 'loggedUser', debug: false });
+        globalUser = new GlobalState({ id: 'loggedUser', debug: false });
       else
         globalUser = new GlobalState({ defaultValueAsyncFunction: () => GetLoggedUserFromHttpCookieASync(`useLoggedUser-${id}`), id: 'loggedUser', debug: false });
     }
 
-    // o login será feito por aqui OU na pagina signInAzure
+    // o login NÂO SERÀ MAIS feito por aqui, apenas na pagina signInAzure
     // para funcionar aqui o azure já deve estar autenticado E o evento handleRedirect já ter sido processado
     // o desligamento do status 'loading' será totalmente nesse componente 
 
@@ -91,49 +92,50 @@ export function useLoggedUser(parm: IParm = {}) {
     const { value: userAux, setState, isLoading: isLoadingUser } = useGlobalState(globalUser, { reRender, id });
     const loggedUser = userAux as LoggedUser;
 
-    if (EnvDeployConfig().mode_auth == 'azure') {
-      // determina um limite de tempo para o evento handleRedirect ocorrer
-      // React.useEffect(() => {
-      //   mount = true;
-      //   setTimeout(() => {
-      //     if (!mount) return;
-      //     csd('timeout **********************');
-      //     setHandleRedirectFase(true);
-      //   }, 5000);
-      //   return () => { mount = false; };
-      // }, []);
+    // // determina um limite de tempo para o evento handleRedirect ocorrer
+    // // React.useEffect(() => {
+    // //   mount = true;
+    // //   setTimeout(() => {
+    // //     if (!mount) return;
+    // //     csd('timeout **********************');
+    // //     setHandleRedirectFase(true);
+    // //   }, 5000);
+    // //   return () => { mount = false; };
+    // // }, []);
 
-      // React.useEffect(() => {
-      //   //csd('useLoggedUser effect handleRedirect', inProgress);
-      //   if (!handleRedirectFase) { // tentativa em postergar o isLoading MAS não está ainda funfando
-      //     if (inProgress == 'handleRedirect')
-      //       setHandleRedirectFase(true);
-      //   }
-      // }, [inProgress]);
+    // // React.useEffect(() => {
+    // //   //csd('useLoggedUser effect handleRedirect', inProgress);
+    // //   if (!handleRedirectFase) { // tentativa em postergar o isLoading MAS não está ainda funfando
+    // //     if (inProgress == 'handleRedirect')
+    // //       setHandleRedirectFase(true);
+    // //   }
+    // // }, [inProgress]);
 
-      React.useEffect(() => {
-        if (!isLoadingUser) return;
-        // if (!handleRedirectFase) return; aqui está causando travamento do msal processes 
-        if (inProgress !== 'none') return;
-        const accountAzureApp = accounts.find((x) => x.idTokenClaims.aud === clientId);
-        if (accountAzureApp != null) {
-          UserSignInASync(accountAzureApp.username.toLowerCase(), pswSignInAzure)
-            .then((loggedUserNow) => setUser(loggedUserNow, 'useLoggedUser', false))
-            .catch(() => setUser(null, 'useLoggedUser', false));
-        }
-        else
-          setUser(null, 'useLoggedUser', false);
-      }, [isLoadingUser, handleRedirectFase, inProgress, accounts.map((x) => x.idTokenClaims?.aud).join(',')]);
-    }
-
-    // if (userAux != null) {
-    //   if (isOriginValueFromCookie) {
-    //     //loggedUser = LoggedUser.deserialize(userAux);
-    //     reloginFromCookieNotConfirmed = true; // posteriormente será 'setado com origin memory' (revalidação de login)
+    // csd({ isLoadingUser, inProgress, accounts });
+    // React.useEffect(() => {
+    //   if (EnvDeployConfig().mode_auth == 'azure') {
+    //     if (!isLoadingUser) return;
+    //     // if (!handleRedirectFase) return; aqui está causando travamento do msal processes 
+    //     if (inProgress !== 'none') return;
+    //     const accountAzureApp = accounts.find((x) => x.idTokenClaims.aud === clientId);
+    //     if (accountAzureApp != null) {
+    //       UserSignInASync(accountAzureApp.username.toLowerCase(), pswSignInAzure)
+    //         .then((loggedUserNow) => setUser(loggedUserNow, 'useLoggedUser', false))
+    //         .catch(() => setUser(null, 'useLoggedUser', false));
+    //     }
+    //     else
+    //       setUser(null, 'useLoggedUser', false);
     //   }
-    //   // else
-    //   //   loggedUser = userAux as LoggedUser;
-    // }
+    // }, [isLoadingUser, handleRedirectFase, inProgress, accounts.map((x) => x.idTokenClaims?.aud).join(',')]);
+
+    // // if (userAux != null) {
+    // //   if (isOriginValueFromCookie) {
+    // //     //loggedUser = LoggedUser.deserialize(userAux);
+    // //     reloginFromCookieNotConfirmed = true; // posteriormente será 'setado com origin memory' (revalidação de login)
+    // //   }
+    // //   // else
+    // //   //   loggedUser = userAux as LoggedUser;
+    // // }
 
     const setUser = (loggedUser: LoggedUser, caller?: string, isLoading?: boolean) => {
       //csd('setUser', { loggedUser, caller, isLoading });

@@ -13,17 +13,17 @@ import { CallApiCliASync } from '../../../fetcher/fetcherCli';
 
 import { cssTextNoWrapEllipsis } from '../../../libClient/util';
 
-import { AbortProc, SelOption, PopupMsg, SwitchMy, WaitingObs, SnackBarError, fontSizeGrid, fontSizeIconsInGrid } from '../../../components';
+import { AbortProc, SelOption, PopupMsg, SwitchMy, WaitingObs, fontSizeGrid, fontSizeIconsInGrid, LogErrorUnmanaged, Tx } from '../../../components';
 import { HierNode } from '../../../components/hier';
 import { GridCell } from '../../../components/grid';
 import { FrmDefaultValues, NormalizePropsString, useFrm, useWatchMy } from '../../../hooks/useMyForm';
 
 import { configApp } from '../../../app_hub/appConfig';
 
-import { IconApp, IconButtonAppSearch, propsColorHeader, propsColorByTotLevel, SelAno, SelMes, propsColorByCompRealPlan } from '../../../appCydag/components';
+import { IconApp, IconButtonAppSearch, propsColorHeader, propsColorByTotLevel, SelAno, SelMes, propsColorByCompRealPlan, TxGridHdr, TxGridCel } from '../../../appCydag/components';
 import { apisApp, pagesApp } from '../../../appCydag/endPoints';
 import { useLoggedUser } from '../../../appCydag/useLoggedUser';
-import { amountToStr, percToStr, mesDefault } from '../../../appCydag/util';
+import { amountToStrApp, percToStrApp, mesDefault } from '../../../appCydag/util';
 import { ClasseCusto, Diretoria, FatorCusto, ProcessoOrcamentario, UnidadeNegocio } from '../../../appCydag/modelTypes';
 import { ValoresAnaliseAnual, ColValsAnaliseAnual, CategRegional, CategRegionalMd } from '../../../appCydag/types';
 import { CmdApi_ValoresContas as CmdApi } from '../../api/appCydag/valoresContas/types';
@@ -55,15 +55,15 @@ class NodeContent {
   descrComp(nodeClasseCusto: boolean) {
     if (nodeClasseCusto)
       return (
-        <Stack direction='row' alignItems='center' gap={0.5}>
-          <Box className='showConta'>{this.cod}</Box>
-          <Box className='showConta'>-</Box>
-          <Box style={cssTextNoWrapEllipsis}>{this.descr}</Box>
+        <Stack direction='row' alignItems='center' spacing={0.5}>
+          <Tx className='showConta'>{this.cod}</Tx>
+          <Tx className='showConta'>-</Tx>
+          <Tx style={cssTextNoWrapEllipsis}>{this.descr}</Tx>
         </Stack>
       );
     else
       return (
-        <Box style={cssTextNoWrapEllipsis}>{this.descr}</Box>
+        <Tx style={cssTextNoWrapEllipsis}>{this.descr}</Tx>
       );
   }
 }
@@ -143,7 +143,8 @@ export default function PageAnaliseAnualControladoria() {
         }
       });
     } catch (error) {
-      SnackBarError(error, `${pageSelf.pagePath}-getItens`);
+      LogErrorUnmanaged(error, `${pageSelf.pagePath}-getItens`);
+      PopupMsg.error(error);
     }
   };
   //#endregion
@@ -267,7 +268,8 @@ export default function PageAnaliseAnualControladoria() {
         setMainStatesCache({ phase: Phase.ready, processoOrcamentarioArray, unidadeNegocioArray, diretoriaArray, fatorCustoArray, classeCustoArray });
       })
       .catch((error) => {
-        SnackBarError(error, `${pageSelf.pagePath}-initialization`);
+        LogErrorUnmanaged(error, `${pageSelf.pagePath}-initialization`);
+        PopupMsg.error(error);
       });
     return () => { mount = false; };
   }, [router?.asPath]);
@@ -298,7 +300,7 @@ export default function PageAnaliseAnualControladoria() {
     const processoOrcamentarioArray = mainStates.processoOrcamentarioArray != null ? mainStates.processoOrcamentarioArray : [];
     return (
       <form onSubmit={frmFilter.handleSubmit(getItensSubmit)}>
-        <Stack direction='row' alignItems='center' gap={1}>
+        <Stack direction='row' alignItems='center' spacing={1}>
           <SelAno value={ano} onChange={(newValue) => frmFilter.setValue(ValoresAnaliseAnual.F.ano, newValue || '')}
             options={processoOrcamentarioArray.map((x) => new SelOption(x.ano, x.ano))}
           />
@@ -323,43 +325,43 @@ export default function PageAnaliseAnualControladoria() {
       const comps: string[] = [];
       if (dataStructure.headerInfo != null)
         comps.push(dataStructure.headerInfo);
-      if (comps.length > 0) return (<Box style={cssTextNoWrapEllipsis}>{comps.join(' ')}</Box>);
+      if (comps.length > 0) return (<Tx style={cssTextNoWrapEllipsis}>{comps.join(' ')}</Tx>);
       else return (<></>);
     };
 
-    const propsColorsHdr = propsColorHeader(themePlus);
+    const propsColorsHdr = propsColorHeader();
     const HeaderComp = () => {
       //const { personalizationAttrs, setPersonalizationAttrs } = usePersonalization();
       const [showConta, setShowConta] = React.useState(statesCompsSubord.showConta);
       return (
         <>
-          <GridCell sticky textAlign='center' columnSpan={1} {...propsColorsHdr}><Box></Box></GridCell>
-          <GridCell sticky textAlign='center' columnSpan={4} {...propsColorsHdr}><Box>Meta</Box></GridCell>
-          <GridCell sticky textAlign='center' columnSpan={4} {...propsColorsHdr}><Box>YTD</Box></GridCell>
-          <GridCell sticky textAlign='center' columnSpan={4} {...propsColorsHdr}><Box>Mês</Box></GridCell>
+          <GridCell sticky textAlign='center' columnSpan={1} {...propsColorsHdr}><TxGridHdr></TxGridHdr></GridCell>
+          <GridCell sticky textAlign='center' columnSpan={4} {...propsColorsHdr}><TxGridHdr>Meta</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='center' columnSpan={4} {...propsColorsHdr}><TxGridHdr>YTD</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='center' columnSpan={4} {...propsColorsHdr}><TxGridHdr>Mês</TxGridHdr></GridCell>
 
           <GridCell sticky {...propsColorsHdr}>
-            <Stack direction='row' alignItems='center' gap={3}>
-              <Box>Conta</Box>
-              <SwitchMy size='small' label={<Box sx={{ color: propsColorsHdr.color, fontSize: 'small' }}>código</Box>} checked={showConta}
+            <Stack direction='row' alignItems='center' spacing={3}>
+              <TxGridHdr>Conta</TxGridHdr>
+              <SwitchMy size='small' label={<TxGridHdr sx={{ color: propsColorsHdr.color, fontSize: 'small' }}>código</TxGridHdr>} checked={showConta}
                 onChange={(ev) => { setShowConta(ev.target.checked); statesCompsSubord.setShowConta(ev.target.checked); }} />
             </Stack>
           </GridCell>
 
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Meta Ano</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Real+Orç. Ano</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Var. Proj.</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>R/O %</Box></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Meta Ano</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Real+Orç. Ano</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Var. Proj.</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>R/O %</TxGridHdr></GridCell>
 
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Meta YTD</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Real+Orç. YTD</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Var. YTD</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>R/O %</Box></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Meta YTD</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Real+Orç. YTD</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Var. YTD</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>R/O %</TxGridHdr></GridCell>
 
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Meta Mês</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Real Mês</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>Var. Mês</Box></GridCell>
-          <GridCell sticky textAlign='right' {...propsColorsHdr}><Box>R/O %</Box></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Meta Mês</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Real Mês</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>Var. Mês</TxGridHdr></GridCell>
+          <GridCell sticky textAlign='right' {...propsColorsHdr}><TxGridHdr>R/O %</TxGridHdr></GridCell>
         </>
       );
     };
@@ -383,7 +385,7 @@ export default function PageAnaliseAnualControladoria() {
         const descrUse =
           <>
             {node.group
-              ? <Stack direction='row' alignItems='center' gap={1} sx={{ cursor: 'pointer' }} onClick={() => setStateOpen(!stateOpen)}>
+              ? <Stack direction='row' alignItems='center' spacing={1} sx={{ cursor: 'pointer' }} onClick={() => setStateOpen(!stateOpen)}>
                 <IconApp icon={stateOpen ? 'colapse' : 'expand'} fontSize={fontSizeIconsInGrid} />
                 {node.nodeContent.descrComp(node.nodeType === NodeType.classeCusto)}
               </Stack>
@@ -412,20 +414,20 @@ export default function PageAnaliseAnualControladoria() {
         return (<>
           <GridCell {...propsColorLevel}><Box pl={paddingLeft}>{descrUse}</Box></GridCell>
 
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planTot, configCydag.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(realProj, configCydag.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right' {...propsColorVarRealProj}>{amountToStr(varRealProjAbs, configCydag.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right'>{percToStr(varRealProjPerc)}</GridCell>
+          <GridCell textAlign='right'><TxGridCel>{amountToStrApp(node.nodeContent.vals.planTot, configCydag.decimalsValsCons)}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{amountToStrApp(realProj, configCydag.decimalsValsCons)}</TxGridCel></GridCell>
+          <GridCell textAlign='right' {...propsColorVarRealProj}><TxGridCel>{amountToStrApp(varRealProjAbs, configCydag.decimalsValsCons)}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{percToStrApp(varRealProjPerc)}</TxGridCel></GridCell>
 
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planYTD, configCydag.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.realYTD, configCydag.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right' {...propsColorVarYTD}>{amountToStr(varYTDAbs, configCydag.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right'>{percToStr(varYTDPerc)}</GridCell>
+          <GridCell textAlign='right'><TxGridCel>{amountToStrApp(node.nodeContent.vals.planYTD, configCydag.decimalsValsCons)}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{amountToStrApp(node.nodeContent.vals.realYTD, configCydag.decimalsValsCons)}</TxGridCel></GridCell>
+          <GridCell textAlign='right' {...propsColorVarYTD}><TxGridCel>{amountToStrApp(varYTDAbs, configCydag.decimalsValsCons)}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{percToStrApp(varYTDPerc)}</TxGridCel></GridCell>
 
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.planMes, configCydag.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right'>{amountToStr(node.nodeContent.vals.realMes, configCydag.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right' {...propsColorVarMes}>{amountToStr(varMesAbs, configCydag.decimalsValsCons)}</GridCell>
-          <GridCell textAlign='right'>{percToStr(varMesPerc)}</GridCell>
+          <GridCell textAlign='right'><TxGridCel>{amountToStrApp(node.nodeContent.vals.planMes, configCydag.decimalsValsCons)}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{amountToStrApp(node.nodeContent.vals.realMes, configCydag.decimalsValsCons)}</TxGridCel></GridCell>
+          <GridCell textAlign='right' {...propsColorVarMes}><TxGridCel>{amountToStrApp(varMesAbs, configCydag.decimalsValsCons)}</TxGridCel></GridCell>
+          <GridCell textAlign='right'><TxGridCel>{percToStrApp(varMesPerc)}</TxGridCel></GridCell>
         </>);
       };
 
@@ -453,7 +455,7 @@ export default function PageAnaliseAnualControladoria() {
     const nrCols = 13;
     const CompShowHier = ({ nodes, title }: { nodes: HierNode<NodeContent>[], title: string }) => //##!!!!!!
       <>
-        <GridCell columnSpan={nrCols} {...propsColorsHdr} textAlign='center'>{title}</GridCell>
+        <GridCell columnSpan={nrCols} {...propsColorsHdr} textAlign='center'><TxGridHdr>{title}</TxGridHdr></GridCell>
         {nodes.filter((node) => node.idPai == null).map((node, index) =>
           <ValoresNodeComp key={index} nodes={nodes} node={node} level={0} />
         )}
@@ -497,7 +499,7 @@ export default function PageAnaliseAnualControladoria() {
 
   return (
     <>
-      <Stack gap={1} height='100%'>
+      <Stack spacing={1} height='100%'>
         <FilterComp />
         <DataComp />
       </Stack>

@@ -1,6 +1,7 @@
+import { isVercelHost } from '../app_base/envs';
+
 import clc, { Format } from 'cli-color';
 import { OnClient } from './sideProc';
-import { isVercelHost } from '../app_base/envs';
 
 const colorErrX = clc.red.bold;
 const colorAlertX = clc.yellow;

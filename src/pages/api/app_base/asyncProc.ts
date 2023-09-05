@@ -1,20 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { ObjectId } from 'mongodb';
 
-import { AsyncProcCustom } from '../../../app_hub/asyncApiCustomProc';
-
-import { SentMessageLogASync } from '../../../app_base/SentMessageLog';
-import { ApiAsyncLogModel } from '../../../app_base/model';
-import { ApiAsyncLog } from '../../../app_base/modelTypes';
-import { apisBase } from '../../../app_base/endPoints';
-import { ConnectDbASync, CloseDbASync } from '../../../libServer/dbMongo';
-
-import { EnvApiTimeout, isAmbNone } from '../../../app_base/envs';
 import { SleepMsDev } from '../../../libCommon/util';
 import { csd, dbg, dbgError, ScopeDbg } from '../../../libCommon/dbg';
 import { CategMsgSystem } from '../../../libCommon/logSystemMsg_cliSvr';
 import { CalcExecTime } from '../../../libCommon/calcExectime';
 
+import { ConnectDbASync, CloseDbASync } from '../../../libServer/dbMongo';
 import { GetCtrlApiExec, ReqNoParm, ResumoApi } from '../../../libServer/util';
 import { ApiStatusDataByErrorASync } from '../../../libServer/apiStatusDataByError';
 //import { CorsMiddlewareAsync } from '../../../libServer/cors';
@@ -23,6 +15,13 @@ import { AlertTimeExecApiASync } from '../../../libServer/alertTimeExecApi';
 import { SystemMsgSvrASync } from '../../../libServer/systemMsgSvr';
 import { AsyncProcTypes } from '../../../libServer/asyncProcsCalls';
 
+import { AsyncProcCustom } from '../../../app_hub/asyncApiCustomProc';
+import { SentMessageLogASync } from '../../../app_base/SentMessageLog';
+import { ApiAsyncLogModel } from '../../../app_base/model';
+import { ApiAsyncLog } from '../../../app_base/modelTypes';
+import { apisBase } from '../../../app_base/endPoints';
+import { EnvApiTimeout, isAmbNone } from '../../../app_base/envs';
+
 // let testGlob1 = 0;
 // let hora1 = HoraDebug();
 const apiSelf = apisBase.asyncProc;
@@ -30,7 +29,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
   if (isAmbNone()) return ResumoApi.jsonAmbNone(res);
   if (ReqNoParm(req)) return ResumoApi.jsonNoParm(res);
   // await CorsMiddlewareAsync(req, res, null, { credentials: true }); //@!!!!!!! aqui usar 'jobs background' (ou algo assim), não fazer qbg API
-  const ctrlApiExec = GetCtrlApiExec(req, res, ['type'], ['info']);
+  const ctrlApiExec = GetCtrlApiExec(req, res, null, ['type'], ['info']);
   const parm = ctrlApiExec.parm;
   const resumoApi = new ResumoApi(ctrlApiExec);
   //const agora = new Date();
@@ -108,7 +107,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           shouldDelete = true;
           dbgX(1, 'ok', resultOk);
         } catch (error) {
-          //await SystemMsgSvrASync(CategMsgSystem.error, asyncProc.type, error.message, ctrlApiExec.ctrlContext, parm); // gravar log @!!!!!!!!!!!
+          await SystemMsgSvrASync(CategMsgSystem.error, asyncProc.type, error.message, ctrlApiExec.ctrlContext, parm);
           resultError = error.message;
         }
       }
