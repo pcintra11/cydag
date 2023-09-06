@@ -29,7 +29,7 @@ export const themeSchemesApp: IThemeSchemes = {
     { key: 'laranjaD', props: { bodyDark: true, primaryBackColor: new ThreeColors('#f16523') } },
   ],
   font: [
-    { key: 'Roboto', props: { fontFamilies: ['Roboto', 'Helvetica', 'Verdana', 'Arial', 'Courier'] } },
+    { key: 'Roboto', props: { fontFamilies: ['Roboto', 'Helvetica', 'Verdana', 'Arial', 'Courier'], fontSize: 15 } },
     { key: 'Roboto10', props: { fontFamilies: ['Roboto', 'Helvetica', 'Verdana', 'Arial', 'Courier'], fontSize: 10 } },
     { key: 'Roboto20', props: { fontFamilies: ['Roboto', 'Helvetica', 'Verdana', 'Arial', 'Courier'], fontSize: 20 } },
     { key: 'Segoe Script', props: { fontFamilies: ['Segoe Script'] } },

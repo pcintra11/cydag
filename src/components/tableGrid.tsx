@@ -265,6 +265,7 @@ export function TableGrid({ colsGridConfig, extraLinesGridConfig, dataRows, preG
 
     const gridTemplateColumns = colsGridConfig.reduce((acum, curr) => acum += `${curr.options?.width || 'auto'} `, '');
 
+    //#!!!!!!!!!!!1 no header ou detalhe icon e texto não estão alinhados
     return (
       <Box display='flex' flexDirection='column' gap={0.5} height='100%' overflow='hidden'>
 
@@ -297,7 +298,7 @@ export function TableGrid({ colsGridConfig, extraLinesGridConfig, dataRows, preG
         <style jsx global>{`
         .header {
           padding: 3px 8px;
-          align-self: end;
+          align-self: center;
           XXbackground-color: green;
           background-color: ${themePlus.palette.background.default};
           position: sticky;
@@ -307,6 +308,7 @@ export function TableGrid({ colsGridConfig, extraLinesGridConfig, dataRows, preG
         .cel {
           border: 1px solid ${themePlus.themePlusDeriv?.borderLightColor};
           padding: 3px 8px;
+          //align-self: center;
           overflow: hidden;
           xwhite-space: nowrap;
           text-overflow: ellipsis;         

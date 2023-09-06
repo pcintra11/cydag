@@ -14,7 +14,8 @@ export const globalStyle = () => (
       margin: 0;
       padding: 0rem;
 
-      font-size: 1rem; font-family: Verdana; color: magenta; /* pra chamar a atenção mesmo, pois não pode ocorrer! */
+      XXfont-size: 1rem;
+      font-family: Verdana; color: black; /* pra chamar a atenção mesmo, pois não pode ocorrer! */
       XXbackground-color: green;     
     }
 
@@ -23,5 +24,3 @@ export const globalStyle = () => (
     } 
   `}</style>
 );
-
-//#!!!!!!!!!!!!!!!!!!! 10

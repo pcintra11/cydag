@@ -24,7 +24,7 @@ import { IGenericObject } from '../libCommon/types';
 import { csd } from '../libCommon/dbg';
 import { InputVariantType } from '../styles/themeTools';
 
-import { isAmbPrd } from '../app_base/envs';
+import { isLocalHost } from '../app_base/envs';
 import { imgGabaritoArray } from '../app_suporte/imgsTest';
 
 export type ThemeColors = 'primary' | 'secondary' | 'success' | 'error';
@@ -629,7 +629,7 @@ export const ImgResponsive = ({ src, objectFit, objectPosition, maxHeight, borde
 
   if (src == null) return (<></>);
 
-  const imsgsUse = [{ name: 'original', fileName: null, url: src }, ...imgGabaritoArray];
+  const imsgsUse = [{ name: 'orig', fileName: null, url: src }, ...imgGabaritoArray];
   const ChangeSrcImg = (sent: number) => {
     let nextImg = imgCircle + sent;
     if (nextImg >= imsgsUse.length) nextImg = 0;
@@ -642,19 +642,19 @@ export const ImgResponsive = ({ src, objectFit, objectPosition, maxHeight, borde
   // https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_image_text   (text over image)
   return (
     <>
-      {isAmbPrd()
+      {!isLocalHost()
         ? <img src={imgSrc} style={styleImgUse} />
         :
         <div style={{ position: 'relative' }}>
           <img src={imgSrc} style={styleImgUse} />
           <div style={{ position: 'absolute', color: 'white', backgroundColor: 'gray', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
-            <a href={imsgsUse[imgCircle].url} target='_blank' rel='noreferrer'>abrir {imsgsUse[imgCircle].name}</a>
+            <a href={imsgsUse[imgCircle].url} target='_blank' rel='noreferrer'>{imsgsUse[imgCircle].name}</a>
           </div>
-          <div style={{ position: 'absolute', color: 'white', backgroundColor: 'gray', left: '8px', bottom: '8px' }}>
-            <FakeLink onClick={() => ChangeSrcImg(-1)}>menos</FakeLink>
+          <div style={{ position: 'absolute', color: 'white', backgroundColor: 'gray', left: '8px', top: '8px' }}>
+            <FakeLink onClick={() => ChangeSrcImg(-1)}>&lt;</FakeLink>
           </div>
-          <div style={{ position: 'absolute', color: 'white', backgroundColor: 'gray', right: '8px', bottom: '8px' }}>
-            <FakeLink onClick={() => ChangeSrcImg(+1)}>mais</FakeLink>
+          <div style={{ position: 'absolute', color: 'white', backgroundColor: 'gray', right: '8px', top: '8px' }}>
+            <FakeLink onClick={() => ChangeSrcImg(+1)}>&gt;</FakeLink>
           </div>
         </div>
       }

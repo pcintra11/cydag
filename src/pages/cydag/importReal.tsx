@@ -154,7 +154,8 @@ export default function PageImportReal() {
              {(mainStates.ctrlInterfaceMd.info.msgs as string[]).map((x, index) => <Box key={index}>{x}</Box>)} */}
               <Tx>Veja abaixo os detalhes</Tx>
               <Stack spacing={1} height='100%' overflow='auto'>
-                <ReactJson src={mainStates.ctrlInterfaceMd.info} name='interfaceStatus' collapsed={false} collapseStringsAfterLength={30} />
+                <ReactJson src={mainStates.ctrlInterfaceMd.info} name='interfaceStatus' collapsed={false} collapseStringsAfterLength={30}
+                displayDataTypes={false} />
               </Stack>
             </>
           }
