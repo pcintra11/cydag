@@ -55,7 +55,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       else {
         emailSession = parm.email;
         userDbSession = await UserModel.findOne({ email: parm.email }).lean();
-        if (userDbSession.ctrl.rolesControlled.length !== 0) throw new ErrorPlus('Esse usuário não pode ser simulado');
+        if (userDbSession.rolesControlled.length !== 0) throw new ErrorPlus('Esse usuário não pode ser simulado');
       }
       CheckUserAllowed(userDbSession, emailSession);
 

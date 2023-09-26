@@ -36,6 +36,6 @@ export const CheckUserAllowed = (userDb: UserMd, email: string) => {
     throw new ErrorPlus(`Conta ${email} não encontrada.`, { data: { fldName: User.F.email }, httpStatusCode: HttpStatusCode.notFound });
   if (!userDb.ativo)
     throw new ErrorPlus(`Conta ${email} não está ativa.`, { httpStatusCode: HttpStatusCode.unAuthorized });
-  // if (userDb.ctrl.blockedReason != null)
+  // if (userDb.blockedReason != null)
   //   throw new ErrorPlus('Conta bloqueada.');
 };
