@@ -136,16 +136,35 @@ export function IsErrorLogged(error: Error | ErrorPlus | string) {
     return false;
 }
 
-export function FriendlyErrorMsgApi(error: Error | ErrorPlus | { message: string }) {
-  if (error instanceof ErrorPlus &&
+export function FriendlyErrorMsgApi(error: any) {
+  if (typeof error === 'string')
+    return error;
+  else if (error instanceof ErrorPlus) {
     //error._plus.httpStatusCode != HttpStatusCode.unexpectedError
-    error._plus.managed)
-    return error.message;
+    if (error._plus.managed)
+      return error.message;
+    else {
+      if (devContextCli())
+        return `${error.message} (mostrado o erro original por ser dev)`;
+      else
+        return configApp.friendlyErrorMessage || error.message;
+    }
+  }
   else if (error instanceof Error) {
     if (devContextCli())
       return `${error.message} (mostrado o erro original por ser dev)`;
     else
       return configApp.friendlyErrorMessage || error.message;
+  }
+  else if (error.message != null) {
+    if (devContextCli())
+      return `${error.message} (mostrado o erro original por ser dev)`;
+    else
+      return configApp.friendlyErrorMessage || error.message;
+  }
+  else {
+    dbgError('FriendlyErrorMsgApi', 'tipo de erro não previsto', { error });
+    return 'ocorreu um erro';
   }
 }
 
@@ -161,7 +180,8 @@ export async function SleepMs(miliSeconds: number) {
   });
 }
 export async function SleepMsDevRandom(miliSecondsMax: number | null, ctrlContext: CtrlContext, point?: string) {
-  await SleepMsDev(RandomNumber(2000, miliSecondsMax || 2500), ctrlContext, point);
+  if (isAmbDev())
+    await SleepMsDev(RandomNumber(1000, miliSecondsMax || 1500), ctrlContext, point);
 }
 export async function SleepMsDev(miliSeconds: number, ctrlContext: CtrlContext, point?: string) {
   if (!(isAmbDev() && miliSeconds != 0)) return;

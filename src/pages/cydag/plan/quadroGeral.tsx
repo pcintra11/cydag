@@ -316,6 +316,7 @@ export default function PageQuadroGeral() {
     valoresPlanejados.forEach((valores) => {
       //  valoresPlanejados.filter((x) => x.idDetalhe != null).forEach((valores) => {
       const classeCustoDef = BinSearchItem(classeCustoArray, valores.classeCusto, 'classeCusto');
+      if (classeCustoDef == null) throw new Error(`Classe de custo ${valores.classeCusto} não definida`);
       if (classeCustoDef.origem == OrigemClasseCusto.totalImputada || classeCustoDef.origem == OrigemClasseCusto.totalCalculada) {
         const editable = canEdit && allowClasseCustoRestrita(valores.classeCusto);
         const descrNodesUpp = classeCustoDef.descr; // `Fator de Custo ${classeCustoDef?.fatorCusto} - Conta ${valores.classeCusto}`;
@@ -349,6 +350,7 @@ export default function PageQuadroGeral() {
         let nodeType: string;
         let keys: any[];
         const classeCustoDef = BinSearchItem(classeCustoArray, valores.classeCusto, 'classeCusto');
+        if (classeCustoDef == null) throw new Error(`Classe de custo ${valores.classeCusto} não definida`);
         //csd(valores.classeCusto, { classeCustoDef });
         if (classeCustoDef.origem == OrigemClasseCusto.totalImputada || classeCustoDef.origem == OrigemClasseCusto.totalCalculada) {
           nodeType = NodeType.detClasseCusto;

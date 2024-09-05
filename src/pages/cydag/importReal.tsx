@@ -94,7 +94,7 @@ export default function PageImportReal() {
         setMainStatesCache({ phase: Phase.ready, ctrlInterfaceMd });
       })
       .catch((error) => {
-        setMainStatesCache({ ctrlInterfaceMd: null });
+        setMainStatesCache({ phase: Phase.ready, ctrlInterfaceMd: null });
         LogErrorUnmanaged(error, `${pageSelf.pagePath}-initialization`);
         PopupMsg.error(error);
       });

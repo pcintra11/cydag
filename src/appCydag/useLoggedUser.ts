@@ -1,10 +1,8 @@
-import React from 'react';
-
 import { csd, dbgError } from '../libCommon/dbg';
-const useMsal = () => ({ accounts: [], inProgress: Math.random() > 0.5 ? 'none' : '' });
+//const useMsal = () => ({ accounts: [], inProgress: Math.random() > 0.5 ? 'none' : '' });
 //import { useMsal } from '@azure/msal-react';
 // import { clientId } from '../msal';
-const clientId = '';
+//const clientId = '';
 
 import { EnvDeployConfig } from '../app_base/envs';
 
@@ -14,8 +12,8 @@ import { useGlobalState } from '../hooks/useGlobalState';
 import { LoggedUser } from './loggedUser';
 
 import { GetLoggedUserFromHttpCookieASync } from './getLoggedUserFromHttpCookieASync';
-import { UserSignInASync } from './userResourcesCli';
-import { pswSignInAzure } from '../pages/api/appCydag/user/types';
+// import { UserSignInASync } from './userResourcesCli';
+// import { pswSignInAzure } from '../pages/api/appCydag/user/types';
 
 // export function UseAzureUserInfo() {
 //   const { instance, accounts } = useMsal();
