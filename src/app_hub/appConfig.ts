@@ -3,7 +3,7 @@ export const configApp = {
 
   appName: 'Cydag',
   friendlyErrorMessage: 'Ocorreu um erro inesperado',
-  support: { email: 'pcintra1@gmail.com', phone: '11916078600' },
+  support: { email: 'pcintra1@gmail.com', phone: '11999110101' },
 
   forceWaitMinimumMs: 500,
   maximumSearchResult: 200,
