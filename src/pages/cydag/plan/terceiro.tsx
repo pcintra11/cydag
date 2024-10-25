@@ -303,12 +303,15 @@ export default function PageTerceiroCrud() {
 
     const propsColorsHdr = propsColorHeader();
     const HeaderComp = () => {
+      const permiteNovos = dataStructure.processoOrcamentarioCentroCusto.permiteNovosClb && dataStructure.canEdit;
       return (
         <>
           <GridCell sticky textAlign='center' {...propsColorsHdr}>
-            <Stack direction='row' alignItems='center' spacing={1} justifyContent='center'>
-              <IconButtonAppCrud icon='create' colorSx={propsColorsHdr.color} onClick={() => newLine()} />
-            </Stack>
+            {permiteNovos &&
+              <Stack direction='row' alignItems='center' spacing={1} justifyContent='center'>
+                <IconButtonAppCrud icon='create' colorSx={propsColorsHdr.color} onClick={() => newLine()} />
+              </Stack>
+            }
           </GridCell>
           <GridCell sticky textAlign='left' {...propsColorsHdr}><TxGridHdr>Refer</TxGridHdr></GridCell>
           <GridCell sticky textAlign='left' {...propsColorsHdr}><TxGridHdr>Nome</TxGridHdr></GridCell>
