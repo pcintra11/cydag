@@ -102,7 +102,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
           let lastReferSeq = 0;
           if (changedLines.find((x) => x.lineState == LineState.inserted) != null) {
-            if (!processoOrcamentarioCentroCusto.permiteNovosClb)
+            if (!processoOrcamentarioCentroCusto.permiteNovosTerc)
               throw new ErrorPlus('Centro de Custo esta bloqueado para inclusão de novos colaboradores');
             const lastRefer = await TerceiroModel.aggregate([
               { $match: { ano, revisao, centroCusto } },

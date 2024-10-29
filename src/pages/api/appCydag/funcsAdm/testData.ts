@@ -312,6 +312,7 @@ export const DataTestCydag = async (cmd: CmdApi_FuncAdm) => {
           emailResponsavel: accountDeveloper,
           planejamentoEmAberto: true,
           permiteNovosClb: true,
+          permiteNovosTerc: true,
           created: agora,
           lastUpdated: agora,
         }, { upsert: true });
@@ -320,6 +321,7 @@ export const DataTestCydag = async (cmd: CmdApi_FuncAdm) => {
           emailResponsavel: accountDeveloper,
           planejamentoEmAberto: true,
           permiteNovosClb: true,
+          permiteNovosTerc: true,
           created: agora,
           lastUpdated: agora,
         }, { upsert: true });

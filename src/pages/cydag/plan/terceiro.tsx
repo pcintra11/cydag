@@ -5,7 +5,7 @@ import Box from '@mui/material/Box';
 import { Stack } from '@mui/material';
 
 import { BinSearchProp, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../../libCommon/util';
-import { csd } from '../../../libCommon/dbg';
+//import { csd, csl, dbg } from '../../../libCommon/dbg';
 import { IGenericObject } from '../../../libCommon/types';
 import { PageDef } from '../../../libCommon/endPoints';
 import { CalcExecTime } from '../../../libCommon/calcExectime';
@@ -303,7 +303,7 @@ export default function PageTerceiroCrud() {
 
     const propsColorsHdr = propsColorHeader();
     const HeaderComp = () => {
-      const permiteNovos = dataStructure.processoOrcamentarioCentroCusto.permiteNovosClb && dataStructure.canEdit;
+      const permiteNovos = dataStructure.processoOrcamentarioCentroCusto.permiteNovosTerc && dataStructure.canEdit;
       return (
         <>
           <GridCell sticky textAlign='center' {...propsColorsHdr}>

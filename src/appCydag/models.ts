@@ -63,6 +63,7 @@ export const ProcessoOrcamentarioCentroCustoModel = (() => {
     centroCusto: { type: String, required: true },
     planejamentoEmAberto: { type: Boolean, required: true },
     permiteNovosClb: { type: Boolean, required: true },
+    permiteNovosTerc: { type: Boolean, required: true },
     emailResponsavel: { type: String, required: false },
     emailPlanejador: { type: String, required: false },
     emailConsulta: { type: [String], required: false },
