@@ -587,7 +587,7 @@ export const compareForBinSearch = (value1: SearchValue, value2: SearchValue) =>
   else if (typeof value1 === 'number' && typeof value2 === 'number')
     result = value1 > value2 ? +1 : value1 === value2 ? 0 : -1;
   else
-    throw new Error(`compareForSort: tipos diferentes (${value1}) (${value2})`);
+    throw new Error(`compareForBinSearch: tipos diferentes (${value1}, ${typeof value1}) (${value2}, ${typeof value2})`);
   //debug && csd(`val1 '${value1}', val2 '${value2}', comp ${result}`);
   return result;
 };

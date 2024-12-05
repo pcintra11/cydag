@@ -134,6 +134,8 @@ export default function PageFuncionarioCrud() {
         userCanWrite) {
         if (processoOrcamentarioCentroCusto.planejamentoEmAberto != true)
           headerInfo = 'Centro de Custo está bloqueado para planejamento.';
+        else if (!processoOrcamentarioCentroCusto.permiteNovosClb)
+          headerInfo = 'Centro de Custo está bloqueado para ajustes na equipe.';
         else
           canEdit = true;
       }

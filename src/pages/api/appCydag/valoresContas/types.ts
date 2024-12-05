@@ -8,6 +8,7 @@ enum CmdApi_ValoresContas {
 
   importRealizadoStart = 'importRealizadoStart',
   importRealizadoCheck = 'importRealizadoCheck',
+  importRealizadoDireto = 'importRealizadoDireto', // apenas carrega da tabela de interface, sem interagir com a API do datalake nem limpar a interface
 
   exportPlanejValoresGet = 'exportPlanejValoresGet',
   exportRealPlanValoresGet = 'exportRealPlanValoresGet',

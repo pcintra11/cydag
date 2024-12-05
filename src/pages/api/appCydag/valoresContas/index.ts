@@ -310,9 +310,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           const interfaceSapRealizado = EnvSvrInterfaceSapRealizadoConfig();
           const apiReturn = await CallApiSvrASync(interfaceSapRealizado.url, ctrlApiExec.ctrlContext, null, { params: [ctrlInterfaceMd.dag_run_id] }, { method: 'getParams', auth: { username: interfaceSapRealizado.auth.user, password: interfaceSapRealizado.auth.pass } });
           const info: any = { resultSap: apiReturn };
-          const errosImport = [];
-          let inseridos = 0;
           if (apiReturn.state === InterfaceSapStatus.success) {
+            const errosImport = [];
+            let inseridos = 0;
             const valsInterface = await ValoresRealizadosInterfaceSapModel.find({}).lean().sort({ ano: 1, centroCusto: 1, classeCusto: 1 });
             if (valsInterface.length !== 0) {
               const ano = valsInterface[0].ano;
@@ -383,6 +383,80 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         else
           ctrlInterfaceMd = await CtrlInterfaceModel.findOne().lean().sort({ started: -1 }).limit(1);
         resumoApi.jsonData({ value: { ctrlInterfaceMd } });
+        deleteIfOk = true;
+      }
+
+      else if (parm.cmd == CmdApi.importRealizadoDireto) {
+
+        const info: any = { };
+        const errosImport = [];
+        let inseridos = 0;
+        {
+          const valsInterface = await ValoresRealizadosInterfaceSapModel.find({}).lean().sort({ ano: 1, centroCusto: 1, classeCusto: 1 });
+          if (valsInterface.length !== 0) {
+            const ano = valsInterface[0].ano;
+            info.ano = ano;
+            const centroCustoConfigArray = await ProcessoOrcamentarioCentroCustoModel.find({ ano }, { _id: 0, centroCusto: 1 }).lean().sort({ centroCusto: 1 });
+            const classeCustoArray = await ClasseCustoModel.find({ ano }, { _id: 0, classeCusto: 1 }).lean().sort({ classeCusto: 1 });
+            const centroCustoNotFoundArray = [];
+            const classeCustoNotFoundArray = [];
+            const valsOk: ValoresRealizadosInterfaceSap[] = [];
+            let lastCentroCusto: string = null; let lastCentroCustoOk = false;
+            for (let index = 0; index < valsInterface.length; index++) {
+              const item = valsInterface[index];
+              item.classeCusto = item.classeCusto.toString();
+              // console.log('item', item);
+              if (item.ano != ano) {
+                errosImport.push(`foram encontrados dois anos no fluxo de carga: ${ano} e ${item.ano}`);
+                break;
+              }
+              if (item.centroCusto != lastCentroCusto) {
+                if (!BinSearchIndex(centroCustoConfigArray, item.centroCusto, 'centroCusto').found) {
+                  centroCustoNotFoundArray.push(item.centroCusto);
+                  lastCentroCustoOk = false;
+                }
+                else
+                  lastCentroCustoOk = true;
+                lastCentroCusto = item.centroCusto;
+              }
+              let tudoOk = lastCentroCustoOk;
+              if (!BinSearchIndex(classeCustoArray, item.classeCusto, 'classeCusto').found) {
+                if (!classeCustoNotFoundArray.includes(item.classeCusto))
+                  classeCustoNotFoundArray.push(item.classeCusto);
+                tudoOk = false;
+              }
+              if (tudoOk)
+                valsOk.push(item);
+            }
+            if (centroCustoNotFoundArray.length > 0)
+              errosImport.push(`Centros de Custo não configurados para o Processo Orçamentário de ${ano}: ${centroCustoNotFoundArray.join(', ')}`);
+            if (classeCustoNotFoundArray.length > 0) {
+              classeCustoNotFoundArray.sort((x, y) => compareForBinSearch(x, y));
+              errosImport.push(`Classes de Custo não cadastradas: ${classeCustoNotFoundArray.join(', ')}`);
+            }
+            if (valsOk.length !== 0) {
+              //if (errosImport.length == 0) {
+              const resultDel = await ValoresRealizadosModel.deleteMany(ValoresRealizados.fill({ ano }));
+              //resultProc.push(`Valores anteriores removidos: ${resultDel.deletedCount}`);
+              const resultIncl = await ValoresRealizadosModel.insertMany(valsOk.map((x) => ({
+                ..._.pick(x, ['ano', 'centroCusto', 'classeCusto']),
+                valMeses: [
+                  roundInterface(x.m01), roundInterface(x.m02), roundInterface(x.m03), roundInterface(x.m04),
+                  roundInterface(x.m05), roundInterface(x.m06), roundInterface(x.m07), roundInterface(x.m08),
+                  roundInterface(x.m09), roundInterface(x.m10), roundInterface(x.m11), roundInterface(x.m12)]
+              })));
+              inseridos = resultIncl.length;
+              //await ValoresRealizadosInterfaceSapModel.deleteMany({});
+            }
+          }
+          else
+            errosImport.push('Nenhum registro SAP');
+          info.registrosSap = valsInterface.length;
+          info.inseridos = inseridos;
+          info.errosImport = errosImport;
+        }
+        //console.log('info', info);
+        resumoApi.jsonData({ value: { info } });
         deleteIfOk = true;
       }
 
