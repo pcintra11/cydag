@@ -3,7 +3,7 @@ import { ObjectId } from 'mongodb';
 
 import { ConnectDbASync, CloseDbASync } from '../../../../libServer/dbMongo';
 
-import { ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
+import { ErrorPlus, OnlyPropsInClass, SleepMsDevRandom } from '../../../../libCommon/util';
 import { csd } from '../../../../libCommon/dbg';
 //import { CheckRoleAllowed } from '../../../../libCommon/endPoints';
 
@@ -26,7 +26,7 @@ import { ProcessoOrcamentarioCentroCustoModel, ProcessoOrcamentarioModel, Viagem
 import { ccsAuthArray, CheckProcCentroCustosAuth, IAuthCC, procsCentroCustosConfigAuthAllYears } from '../../../../appCydag/utilServer';
 import { amountParseApp } from '../../../../appCydag/util';
 
-import { CmdApi_Viagem as CmdApi, IChangedLine, LineState } from './types';
+import { CmdApi_Viagem as CmdApi, IChangedLine, LineState, ViagemClient } from './types';
 import { configCydag } from '../../../../appCydag/configCydag';
 
 const apiSelf = apisApp.viagem;
@@ -62,7 +62,27 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
       const authCC: IAuthCC = { incluiPlanejadorCC: true, incluiConsultaCC: true, incluiPerfilGestorContr: true, incluiPerfilOperContr: true, incluiPerfilConsTodosCCs: true };
 
-      if (parm.cmd == CmdApi.crudInitialization) {
+      if (parm.cmd == CmdApi.exportInitialization) {
+        const procsCentrosCustoConfigAllYears = await procsCentroCustosConfigAuthAllYears(loggedUserReq, authCC);
+        resumoApi.jsonData({ value: { procsCentrosCustoConfigAllYears } });
+        deleteIfOk = true;
+      }
+
+      else if (parm.cmd == CmdApi.export) {
+        const { ano } = parm.filter || {};
+        const processoOrcamentario = await ProcessoOrcamentarioModel.findOne({ ano }).lean();
+        if (processoOrcamentario == null) throw new ErrorPlus(`Processo Orçamentário para ${ano} não encontrado`);
+
+        const filterDb: any = { ano, revisao: RevisaoValor.atual };
+        const viagens = await ViagemModel.find(filterDb).lean().sort({ centroCusto: 1, tipoPlanejViagem: 1, localidadeDestino: 1, funcId: 1 });
+
+        const viagensClient = viagens.map((x) => ViagemClient.fill(OnlyPropsInClass(x, ViagemClient.new())));
+
+        resumoApi.jsonData({ value: { viagensClient } });
+        deleteIfOk = true;
+      }
+
+      else if (parm.cmd == CmdApi.crudInitialization) {
         const procsCentrosCustoConfigAllYears = await procsCentroCustosConfigAuthAllYears(loggedUserReq, authCC);
         const centroCustoArray = await ccsAuthArray(procsCentrosCustoConfigAllYears);
         resumoApi.jsonData({ value: { procsCentrosCustoConfigAllYears, centroCustoArray } });

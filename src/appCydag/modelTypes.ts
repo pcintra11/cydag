@@ -1284,13 +1284,11 @@ export class Viagem {
   valor?: number;
   created?: Date;
   lastUpdated?: Date;
-  // static get F() {
-  //   return {
-  //     ano: 'ano' as 'ano',
-  //     revisao: 'revisao' as 'revisao',
-  //     centroCusto: 'centroCusto' as 'centroCusto',
-  //   };
-  // }
+  static get F() {
+    return {
+      ano: 'ano' as 'ano',
+    };
+  }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static new(init?: boolean) { return new Viagem(); }
   static fill(values: Viagem, init = false) { return CutUndef(FillClassProps(Viagem.new(init), values)); }

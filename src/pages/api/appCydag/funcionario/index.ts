@@ -282,7 +282,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                 throw new Error(errosThisLine.join(', '));
 
               const documentInsert = Funcionario.fill({
-                ...OnlyPropsInClass(documentCsvDb,Funcionario.new()),
+                ...OnlyPropsInClass(documentCsvDb, Funcionario.new()),
                 ano,
                 origem: OrigemFunc.legado,
                 revisaoAtual: {
