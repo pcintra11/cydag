@@ -303,7 +303,8 @@ export default function PageTerceiroCrud() {
 
     const propsColorsHdr = propsColorHeader();
     const HeaderComp = () => {
-      const permiteNovos = dataStructure.processoOrcamentarioCentroCusto.permiteNovosTerc && dataStructure.canEdit;
+      //const permiteNovos = dataStructure.processoOrcamentarioCentroCusto.permiteNovosTerc && dataStructure.canEdit;
+      const permiteNovos = dataStructure.canEdit;
       return (
         <>
           <GridCell sticky textAlign='center' {...propsColorsHdr}>

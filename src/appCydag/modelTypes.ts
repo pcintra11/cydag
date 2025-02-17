@@ -109,7 +109,7 @@ export class ProcessoOrcamentarioCentroCusto {
       'localidade',
       'planejamentoEmAberto',
       'permiteNovosClb',
-      'permiteNovosTerc',
+      //'permiteNovosTerc',
     ];
   }
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -136,7 +136,7 @@ export class ProcessoOrcamentarioCentroCusto {
       new FldCsvDef('emailConsulta', { down: (data: ProcessoOrcamentarioCentroCusto) => data.emailConsulta.join(','), up: (data: IGenericObject) => data.emailConsulta.split(',').map((x) => x.trim().toLowerCase()) }),
       new FldCsvDef('planejamentoEmAberto', { fldDisp: 'planejamentoEmAberto(s/n)', down: (data: ProcessoOrcamentarioCentroCusto) => BooleanToSN(data.planejamentoEmAberto), up: (data: IGenericObject) => SNToBoolean(data['planejamentoEmAberto(s/n)'].trim().toLowerCase()) }),
       new FldCsvDef('permiteNovosClb', { fldDisp: 'permiteNovosClb(s/n)', down: (data: ProcessoOrcamentarioCentroCusto) => BooleanToSN(data.permiteNovosClb), up: (data: IGenericObject) => SNToBoolean(data['permiteNovosClb(s/n)'].trim().toLowerCase()) }),
-      new FldCsvDef('permiteNovosTerc', { fldDisp: 'permiteNovosTerc(s/n)', down: (data: ProcessoOrcamentarioCentroCusto) => BooleanToSN(data.permiteNovosTerc), up: (data: IGenericObject) => SNToBoolean(data['permiteNovosTerc(s/n)'].trim().toLowerCase()) }),
+      //new FldCsvDef('permiteNovosTerc', { fldDisp: 'permiteNovosTerc(s/n)', down: (data: ProcessoOrcamentarioCentroCusto) => BooleanToSN(data.permiteNovosTerc), up: (data: IGenericObject) => SNToBoolean(data['permiteNovosTerc(s/n)'].trim().toLowerCase()) }),
       new FldCsvDef('agrupPremissas', { up: (data: IGenericObject) => data.agrupPremissas.toUpperCase() }),
       new FldCsvDef('localidade', { up: (data: IGenericObject) => data.localidade.toUpperCase() }),
       new FldCsvDef('unidadeNegocio', { up: (data: IGenericObject) => data.unidadeNegocio.toUpperCase() }),

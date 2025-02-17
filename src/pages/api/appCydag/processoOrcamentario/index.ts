@@ -157,7 +157,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
               centroCusto: true,
               planejamentoEmAberto: true,
               permiteNovosClb: true,
-              permiteNovosTerc: true,
+              //permiteNovosTerc: true,
               emailResponsavel: true,
               emailPlanejador: true,
               emailConsulta: true,
