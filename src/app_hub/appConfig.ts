@@ -1,5 +1,5 @@
 export const configApp = {
-  appVersion: 'v1.3.2',
+  appVersion: 'v1.3.3',
 
   appName: 'Cydag',
   friendlyErrorMessage: 'Ocorreu um erro inesperado',

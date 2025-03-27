@@ -639,10 +639,12 @@ export const ImgResponsive = ({ src, objectFit, objectPosition, maxHeight, borde
     setImgCircle(nextImg);
   };
 
+  const mudaImg = false; // isLocalHost();
+
   // https://www.w3schools.com/howto/tryit.asp?filename=tryhow_css_image_text   (text over image)
   return (
     <>
-      {!isLocalHost()
+      {!mudaImg
         ? <img src={imgSrc} style={styleImgUse} />
         :
         <div style={{ position: 'relative' }}>

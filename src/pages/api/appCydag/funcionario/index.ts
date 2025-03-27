@@ -110,7 +110,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         else if (parm.cmd == CmdApi.itensSet) {
           if (revisao != RevisaoValor.atual) throw new ErrorPlus('Essa revisão não pode ser alterada');
           ProcessoOrcamentarioStatusMd.checkOperAllowed(OperInProcessoOrcamentario.altValoresPlanejados, processoOrcamentario.status);
-          if (processoOrcamentarioCentroCusto.planejamentoEmAberto != true) throw new ErrorPlus('Centro de Custo não está aberto para lançamentos');
+          //if (processoOrcamentarioCentroCusto.planejamentoEmAberto != true) throw new ErrorPlus('Centro de Custo não está aberto para lançamentos');
           if (!UserCanWrite(processoOrcamentarioCentroCusto)) throw new ErrorPlus('Sem autorização para gravação');
 
           const changedLines = parm.data.changedLines as IChangedLine[];

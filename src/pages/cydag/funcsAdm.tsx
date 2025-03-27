@@ -55,9 +55,10 @@ const collectionsMdConfig = {
 };
 
 const collectionsOthersConfig = {
+  valoresRealizados: { name: 'ValoresRealizados', entity: ValoresRealizados, entityStructure: ValoresRealizados.new(), fldsCsvDefUpload: ValoresRealizados.fldsCsvDefUpload } as ICollectionConfig<ValoresRealizados>,
+
   user: { name: 'User', entity: User, entityStructure: User.new(), fldsCsvDefUpload: User.fldsCsvDefUpload } as ICollectionConfig<User>,
 
-  valoresRealizados: { name: 'ValoresRealizados', entity: ValoresRealizados, entityStructure: ValoresRealizados.new(), fldsCsvDefUpload: ValoresRealizados.fldsCsvDefUpload } as ICollectionConfig<ValoresRealizados>,
   valoresImputados: { name: 'ValoresImputados', entity: ValoresImputados, entityStructure: ValoresImputados.new(), fldsCsvDefUpload: ValoresImputados.fldsCsvDefUpload } as ICollectionConfig<ValoresImputados>,
   valoresPlanejadosHistorico: { name: 'valoresPlanejadosHistorico', entity: ValoresPlanejadosHistorico, entityStructure: ValoresPlanejadosHistorico.new(), fldsCsvDefUpload: ValoresPlanejadosHistorico.fldsCsvDefUpload } as ICollectionConfig<ValoresPlanejadosHistorico>,
 

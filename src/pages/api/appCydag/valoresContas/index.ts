@@ -318,7 +318,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
               const ano = valsInterface[0].ano;
               info.ano = ano;
               const centroCustoConfigArray = await ProcessoOrcamentarioCentroCustoModel.find({ ano }, { _id: 0, centroCusto: 1 }).lean().sort({ centroCusto: 1 });
-              const classeCustoArray = await ClasseCustoModel.find({ ano }, { _id: 0, classeCusto: 1 }).lean().sort({ classeCusto: 1 });
+              const classeCustoArray = await ClasseCustoModel.find({}, { _id: 0, classeCusto: 1 }).lean().sort({ classeCusto: 1 });
               const centroCustoNotFoundArray = [];
               const classeCustoNotFoundArray = [];
               const valsOk: ValoresRealizadosInterfaceSap[] = [];
@@ -386,7 +386,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         deleteIfOk = true;
       }
 
-      else if (parm.cmd == CmdApi.importRealizadoDireto) {
+      else if (parm.cmd == CmdApi.importRealizadoDireto) { // busca direto na tabela de interface, sem acionar aAPI do datalake
 
         const info: any = { };
         const errosImport = [];
@@ -397,7 +397,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             const ano = valsInterface[0].ano;
             info.ano = ano;
             const centroCustoConfigArray = await ProcessoOrcamentarioCentroCustoModel.find({ ano }, { _id: 0, centroCusto: 1 }).lean().sort({ centroCusto: 1 });
-            const classeCustoArray = await ClasseCustoModel.find({ ano }, { _id: 0, classeCusto: 1 }).lean().sort({ classeCusto: 1 });
+            const classeCustoArray = await ClasseCustoModel.find({}, { _id: 0, classeCusto: 1 }).lean().sort({ classeCusto: 1 });
             const centroCustoNotFoundArray = [];
             const classeCustoNotFoundArray = [];
             const valsOk: ValoresRealizadosInterfaceSap[] = [];

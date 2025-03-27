@@ -132,9 +132,10 @@ export default function PageFuncionarioCrud() {
       if (filter.revisao === RevisaoValor.atual &&
         ProcessoOrcamentarioStatusMd.blockOper(OperInProcessoOrcamentario.altValoresPlanejados, processoOrcamentario.status) == null &&
         userCanWrite) {
-        if (processoOrcamentarioCentroCusto.planejamentoEmAberto != true)
-          headerInfo = 'Centro de Custo está bloqueado para planejamento.';
-        else if (!processoOrcamentarioCentroCusto.permiteNovosClb)
+        // if (processoOrcamentarioCentroCusto.planejamentoEmAberto != true)
+        //   headerInfo = 'Centro de Custo está bloqueado para planejamento.';
+        // else 
+        if (!processoOrcamentarioCentroCusto.permiteNovosClb)
           headerInfo = 'Centro de Custo está bloqueado para ajustes na equipe.';
         else
           canEdit = true;
