@@ -40,8 +40,8 @@ const rolesControladoria = [rolesApp.gestorContr, rolesApp.operContr];
 export const pagesApp = {
   processoOrcamentario: new PageDef(`${pathPages}/processoOrcamentario`, { pageTitle: 'Controle do Processo Orçamentário', onlyAuthenticated: true, roles: rolesControladoria }),
   cargaFuncionario: new PageDef(`${pathPages}/cargaFuncionario`, { pageTitle: 'Carga de Funcionários', onlyAuthenticated: true, roles: [rolesApp.cargaFunc] }),
-  importReal: new PageDef(`${pathPages}/importReal`, { pageTitle: 'Importação do Realizado', onlyAuthenticated: true, roles: rolesControladoria }),
-  importRealDireto: new PageDef(`${pathPages}/importRealDireto`, { pageTitle: 'Importação do Realizado (direto)', onlyAuthenticated: true, roles: [rolesDev.dev] }),
+  importReal: new PageDef(`${pathPages}/importReal`, { pageTitle: 'Importação do Realizado (por controle dagrun)', onlyAuthenticated: true, roles: rolesControladoria }),
+  importRealDireto: new PageDef(`${pathPages}/importRealDireto`, { pageTitle: 'Importação do Realizado', onlyAuthenticated: true, roles: [rolesDev.dev] }),
 
   user: new PageDef(`${pathPages}/md/user`, { pageTitle: 'Usuários', onlyAuthenticated: true, roles: rolesControladoria }),
 

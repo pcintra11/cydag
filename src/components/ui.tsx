@@ -24,7 +24,7 @@ import { IGenericObject } from '../libCommon/types';
 import { csd } from '../libCommon/dbg';
 import { InputVariantType } from '../styles/themeTools';
 
-import { isLocalHost } from '../app_base/envs';
+//import { isLocalHost } from '../app_base/envs';
 import { imgGabaritoArray } from '../app_suporte/imgsTest';
 
 export type ThemeColors = 'primary' | 'secondary' | 'success' | 'error';
@@ -498,15 +498,17 @@ interface IFakeLinkProps {
   bgcolor?: string;
   children: string;
   visibilityHidden?: boolean;
+  noWrap?: boolean;
   sx?: SxProps
 }
 /**
  * É inline, tem que estar sempre em um Box 
  */
-export function FakeLink({ onClick, disabled, visibilityHidden, color, bgcolor, sx, children }: IFakeLinkProps) {
+export function FakeLink({ onClick, disabled, visibilityHidden, noWrap, color, bgcolor, sx, children }: IFakeLinkProps) {
   const commomProps = {
     color,
     bgcolor,
+    noWrap,
   };
   let sxUse: SxProps = sx || {};
   if (visibilityHidden) sxUse = { ...sxUse, visibility: 'hidden' };

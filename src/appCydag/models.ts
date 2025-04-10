@@ -5,7 +5,7 @@ import { MongooseSlot, AddIndex, ICollectionDef } from '../libServer/dbMongo';
 
 import { csd } from '../libCommon/dbg';
 
-import { AgrupPremissas, Diretoria, CentroCusto, ClasseCusto, ClasseCustoRestrita, Empresa, FatorCusto, Funcionario, Gerencia, Localidade, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto, UnidadeNegocio, User, ValoresImputados, ValoresRealizadosInterfaceSap, Premissa, ValoresPremissa, Terceiro, FuncaoTerceiro, Viagem, ValoresLocalidade, ValoresTransfer, ValoresRealizados, ValoresPlanejadosCalc, CtrlInterface, ValoresPlanejadosHistorico } from './modelTypes';
+import { AgrupPremissas, Diretoria, CentroCusto, ClasseCusto, ClasseCustoRestrita, Empresa, FatorCusto, Funcionario, Gerencia, Localidade, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto, UnidadeNegocio, User, ValoresImputados, ValoresRealizadosInterfaceSap, Premissa, ValoresPremissa, Terceiro, FuncaoTerceiro, Viagem, ValoresLocalidade, ValoresTransfer, ValoresRealizados, ValoresPlanejadosCalc, CtrlInterface, ValoresPlanejadosHistorico, ValoresRealizadosInterfaceSap_CentroCustoDespr, ValoresRealizadosInterfaceSap_ClasseCustoDespr } from './modelTypes';
 import { CategRegional, InterfaceSapStatus, InterfaceSapCateg, OrigemClasseCusto, OrigemFunc, ProcessoOrcamentarioStatus, RevisaoValor, TipoColaborador, TipoPlanejViagem, TipoSegmCentroCusto } from './types';
 
 //const dbgContext = 'models';
@@ -771,6 +771,42 @@ export const ValoresRealizadosInterfaceSapModel = (() => {
   });
   AddIndex(collectionsDef, modelName, schema);
   return mongoose.model<ValoresRealizadosInterfaceSapMd>(modelName, schema);
+})();
+
+const modelNameValoresRealizadosInterfaceSap_CentroCustoDespr = 'interface_sap_valores_realizados_centro_custo_desprs';
+collectionsDef.push({
+  name: modelNameValoresRealizadosInterfaceSap_CentroCustoDespr,
+  indexes: [
+    { fields: { centroCusto: 1 }, options: { name: 'primaryKey', unique: true } },
+  ],
+});
+interface ValoresRealizadosInterfaceSap_CentroCustoDesprMd extends mongoose.Document<ObjectId, any, ValoresRealizadosInterfaceSap_CentroCustoDespr>, ValoresRealizadosInterfaceSap_CentroCustoDespr { }
+export const ValoresRealizadosInterfaceSap_CentroCustoDesprModel = (() => {
+  const modelName = modelNameValoresRealizadosInterfaceSap_CentroCustoDespr;
+  const mongoose = MongooseSlot().mongoose;
+  const schema = new mongoose.Schema({
+    centroCusto: { type: String, required: true },
+  });
+  AddIndex(collectionsDef, modelName, schema);
+  return mongoose.model<ValoresRealizadosInterfaceSap_CentroCustoDesprMd>(modelName, schema);
+})();
+
+const modelNameValoresRealizadosInterfaceSap_ClasseCustoDespr = 'interface_sap_valores_realizados_classe_custo_desprs';
+collectionsDef.push({
+  name: modelNameValoresRealizadosInterfaceSap_ClasseCustoDespr,
+  indexes: [
+    { fields: { classeCusto: 1 }, options: { name: 'primaryKey', unique: true } },
+  ],
+});
+interface ValoresRealizadosInterfaceSap_ClasseCustoDesprMd extends mongoose.Document<ObjectId, any, ValoresRealizadosInterfaceSap_ClasseCustoDespr>, ValoresRealizadosInterfaceSap_ClasseCustoDespr { }
+export const ValoresRealizadosInterfaceSap_ClasseCustoDesprModel = (() => {
+  const modelName = modelNameValoresRealizadosInterfaceSap_ClasseCustoDespr;
+  const mongoose = MongooseSlot().mongoose;
+  const schema = new mongoose.Schema({
+    classeCusto: { type: String, required: true },
+  });
+  AddIndex(collectionsDef, modelName, schema);
+  return mongoose.model<ValoresRealizadosInterfaceSap_ClasseCustoDesprMd>(modelName, schema);
 })();
 //#endregion
 //#endregion

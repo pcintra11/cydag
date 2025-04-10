@@ -1412,6 +1412,18 @@ export class ValoresRealizadosInterfaceSap {
   m11?: number;
   m12?: number;
 }
+export class ValoresRealizadosInterfaceSap_CentroCustoDespr {
+  _id?: ObjectId;
+  centroCusto?: string;
+  static new() { return new ValoresRealizadosInterfaceSap_CentroCustoDespr(); }
+  static fill(values: ValoresRealizadosInterfaceSap_CentroCustoDespr) { return CutUndef(FillClassProps(ValoresRealizadosInterfaceSap_CentroCustoDespr.new(), values)); }
+}
+export class ValoresRealizadosInterfaceSap_ClasseCustoDespr {
+  _id?: ObjectId;
+  classeCusto?: string;
+  static new() { return new ValoresRealizadosInterfaceSap_ClasseCustoDespr(); }
+  static fill(values: ValoresRealizadosInterfaceSap_ClasseCustoDespr) { return CutUndef(FillClassProps(ValoresRealizadosInterfaceSap_ClasseCustoDespr.new(), values)); }
+}
 
 //#endregion
 

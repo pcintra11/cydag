@@ -1,10 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
+import mongoose from 'mongoose';
 import _ from 'underscore';
 
 import { ConnectDbASync, CloseDbASync } from '../../../../libServer/dbMongo';
 import { NotifyAdmASync } from '../../../../libServer/notifyAdm';
 
 import { BinSearchIndex, BinSearchItem, BinSearchProp, compareForBinSearch, compareForBinSearchArray, CtrlCollect, DateDisp, ErrorPlus, OnlyPropsInClass, SleepMsDevRandom } from '../../../../libCommon/util';
+import { IUploadMessage, MessageLevelUpload } from '../../../../libCommon/uploadCsv';
 import { csd, dbgError } from '../../../../libCommon/dbg';
 import { CallApiSvrASync } from '../../../../fetcher/fetcherSvr';
 
@@ -20,8 +22,8 @@ import { ApiLogFinish, ApiLogStart } from '../../../../libServer/apiLog';
 import { EnvSvrInterfaceSapRealizadoConfig } from '../../../../appCydag/envs';
 import { apisApp, quadroPage, rolesApp } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
-import { ViagemModel, TerceiroModel, UserModel, ValoresLocalidadeModel, ValoresTransferModel, UnidadeNegocioModel, ValoresRealizadosInterfaceSapModel, DiretoriaModel, CtrlInterfaceModel, ValoresPlanejadosHistoricoModel, GerenciaModel, databaseInterfaceSap } from '../../../../appCydag/models';
-import { agrupPremissasCoringa, empresaCoringa, Premissa, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto, ValoresRealizados, ValoresPremissa, UnidadeNegocio, CtrlInterface, ValoresRealizadosInterfaceSap } from '../../../../appCydag/modelTypes';
+import { ViagemModel, TerceiroModel, UserModel, ValoresLocalidadeModel, ValoresTransferModel, UnidadeNegocioModel, ValoresRealizadosInterfaceSapModel, DiretoriaModel, CtrlInterfaceModel, ValoresPlanejadosHistoricoModel, GerenciaModel, databaseInterfaceSap, ValoresRealizadosInterfaceSap_CentroCustoDesprModel, ValoresRealizadosInterfaceSap_ClasseCustoDesprModel } from '../../../../appCydag/models';
+import { agrupPremissasCoringa, empresaCoringa, Premissa, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto, ValoresRealizados, ValoresPremissa, UnidadeNegocio, CtrlInterface, ValoresRealizadosInterfaceSap, ValoresRealizadosInterfaceSap_CentroCustoDespr, ValoresRealizadosInterfaceSap_ClasseCustoDespr } from '../../../../appCydag/modelTypes';
 import { InterfaceSapStatus, InterfaceSapCateg, OperInProcessoOrcamentario, OrigemClasseCusto, ProcessoOrcamentarioStatus, ProcessoOrcamentarioStatusMd, RevisaoValor, TipoSegmCentroCusto, ValoresAnaliseAnual, ValoresComparativoAnual, ValoresPlanejadosDetalhes, ValoresTotCentroCustoClasseCusto, ValoresAnaliseRealPlan } from '../../../../appCydag/types';
 
 import { ClasseCustoModel, ClasseCustoRestritaModel, FatorCustoModel, FuncionarioModel, PremissaModel, ProcessoOrcamentarioCentroCustoModel, ProcessoOrcamentarioModel, ValoresImputadosModel, ValoresPlanejadosCalcModel, ValoresPremissaModel, ValoresRealizadosModel } from '../../../../appCydag/models';
@@ -29,9 +31,14 @@ import { ValoresImputados } from '../../../../appCydag/modelTypes';
 import { anoAdd, mesesFld, roundInterface, sumValMeses } from '../../../../appCydag/util';
 import { accessAllCCs, ccsAuthArray, CheckProcCentroCustosAuth, IAuthCC, procsCentroCustosConfigAuthAllYears } from '../../../../appCydag/utilServer';
 
-import { CmdApi_ValoresContas as CmdApi, IChangedLine } from './types';
+import { CmdApi_ValoresContas as CmdApi, colUploadCmd, IChangedLine } from './types';
 import { calcContaDespCorr, contasCalc, FuncionariosForCalc, premissaCod, PremissaValores, ValsContaCalc } from './calcsCydag';
 import { isAmbNone } from '../../../../app_base/envs';
+
+enum UploadCsvCmd {
+  add = 'incluir',
+  del = 'excluir',
+}
 
 const apiSelf = apisApp.valoresContas;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
@@ -386,11 +393,21 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         deleteIfOk = true;
       }
 
-      else if (parm.cmd == CmdApi.importRealizadoDireto) { // busca direto na tabela de interface, sem acionar aAPI do datalake
+      else if (parm.cmd == CmdApi.importRealizadoDireto) { // busca direto na tabela de interface, sem acionar a API do datalake
 
-        const info: any = { };
-        const errosImport = [];
-        let inseridos = 0;
+        const info: any = {
+          ano: 0,
+          registrosSap: 0,
+          inseridos: 0,
+          ignorados: 0, // sem notificação, são desprezíveis
+          erros: 0, // tentou carregar, mas falta cadastro (cc ou conta)
+          mensagens: [],
+        };
+        const centroCustoSemCadastroArray: string[] = [];
+        const classeCustoSemCadastroArray: string[] = [];
+
+        //const errosImport = [];
+        //let inseridos = 0;
         {
           const valsInterface = await ValoresRealizadosInterfaceSapModel.find({}).lean().sort({ ano: 1, centroCusto: 1, classeCusto: 1 });
           if (valsInterface.length !== 0) {
@@ -398,42 +415,65 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             info.ano = ano;
             const centroCustoConfigArray = await ProcessoOrcamentarioCentroCustoModel.find({ ano }, { _id: 0, centroCusto: 1 }).lean().sort({ centroCusto: 1 });
             const classeCustoArray = await ClasseCustoModel.find({}, { _id: 0, classeCusto: 1 }).lean().sort({ classeCusto: 1 });
-            const centroCustoNotFoundArray = [];
-            const classeCustoNotFoundArray = [];
+            const centroCustoDesprArray = await ValoresRealizadosInterfaceSap_CentroCustoDesprModel.find({}, { _id: 0, centroCusto: 1 }).lean().sort({ centroCusto: 1 });
+            const classeCustoDesprArray = await ValoresRealizadosInterfaceSap_ClasseCustoDesprModel.find({}, { _id: 0, classeCusto: 1 }).lean().sort({ classeCusto: 1 });
             const valsOk: ValoresRealizadosInterfaceSap[] = [];
-            let lastCentroCusto: string = null; let lastCentroCustoOk = false;
+            let lastCentroCusto: string = null; let lastCentroCustoComCadastro = false; let lastCentroCustoIgnore = false;
             for (let index = 0; index < valsInterface.length; index++) {
               const item = valsInterface[index];
               item.classeCusto = item.classeCusto.toString();
               // console.log('item', item);
               if (item.ano != ano) {
-                errosImport.push(`foram encontrados dois anos no fluxo de carga: ${ano} e ${item.ano}`);
+                info.mensagens.push(`Carga cancelada, foram encontrados dois anos nos dados vindos do SAP: ${ano} e ${item.ano}.`);
+                info.ano = 0;
                 break;
               }
               if (item.centroCusto != lastCentroCusto) {
-                if (!BinSearchIndex(centroCustoConfigArray, item.centroCusto, 'centroCusto').found) {
-                  centroCustoNotFoundArray.push(item.centroCusto);
-                  lastCentroCustoOk = false;
+                if (BinSearchIndex(centroCustoConfigArray, item.centroCusto, 'centroCusto').found) {
+                  lastCentroCustoComCadastro = true;
+                  lastCentroCustoIgnore = false;
                 }
-                else
-                  lastCentroCustoOk = true;
+                else {
+                  lastCentroCustoComCadastro = false;
+                  if (BinSearchIndex(centroCustoDesprArray, item.centroCusto, 'centroCusto').found)
+                    lastCentroCustoIgnore = true;
+                  else {
+                    lastCentroCustoIgnore = false;
+                    centroCustoSemCadastroArray.push(item.centroCusto);
+                  }
+                }
                 lastCentroCusto = item.centroCusto;
               }
-              let tudoOk = lastCentroCustoOk;
-              if (!BinSearchIndex(classeCustoArray, item.classeCusto, 'classeCusto').found) {
-                if (!classeCustoNotFoundArray.includes(item.classeCusto))
-                  classeCustoNotFoundArray.push(item.classeCusto);
-                tudoOk = false;
+              let classeCustoComCadastro: boolean; let classeCustoIgnore: boolean;
+              if (BinSearchIndex(classeCustoArray, item.classeCusto, 'classeCusto').found) {
+                classeCustoComCadastro = true;
+                classeCustoIgnore = false;
               }
-              if (tudoOk)
+              else {
+                classeCustoComCadastro = false;
+                if (BinSearchIndex(classeCustoDesprArray, item.classeCusto, 'classeCusto').found)
+                  classeCustoIgnore = true;
+                else {
+                  classeCustoIgnore = false;
+                  if (!classeCustoSemCadastroArray.includes(item.classeCusto))
+                    classeCustoSemCadastroArray.push(item.classeCusto);
+                }
+              }
+              //console.log({ cc: item.centroCusto, cl: item.classeCusto, lastCentroCustoComCadastro, lastCentroCustoIgnore, classeCustoComCadastro, classeCustoIgnore });
+              if (lastCentroCustoComCadastro && classeCustoComCadastro)
                 valsOk.push(item);
+              else if (lastCentroCustoIgnore || classeCustoIgnore)
+                info.ignorados++;
+              else
+                info.erros++;
             }
-            if (centroCustoNotFoundArray.length > 0)
-              errosImport.push(`Centros de Custo não configurados para o Processo Orçamentário de ${ano}: ${centroCustoNotFoundArray.join(', ')}`);
-            if (classeCustoNotFoundArray.length > 0) {
-              classeCustoNotFoundArray.sort((x, y) => compareForBinSearch(x, y));
-              errosImport.push(`Classes de Custo não cadastradas: ${classeCustoNotFoundArray.join(', ')}`);
+            if (centroCustoSemCadastroArray.length > 0)
+              info.mensagens.push(`Centros de Custo sem cadastrado: ${centroCustoSemCadastroArray.length}`);
+            if (classeCustoSemCadastroArray.length > 0) {
+              classeCustoSemCadastroArray.sort((x, y) => compareForBinSearch(x, y));
+              info.mensagens.push(`Classes de Custo sem cadastrado: ${classeCustoSemCadastroArray.length}`);
             }
+            info.registrosSap = valsInterface.length;
             if (valsOk.length !== 0) {
               //if (errosImport.length == 0) {
               const resultDel = await ValoresRealizadosModel.deleteMany(ValoresRealizados.fill({ ano }));
@@ -445,19 +485,94 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
                   roundInterface(x.m05), roundInterface(x.m06), roundInterface(x.m07), roundInterface(x.m08),
                   roundInterface(x.m09), roundInterface(x.m10), roundInterface(x.m11), roundInterface(x.m12)]
               })));
-              inseridos = resultIncl.length;
               //await ValoresRealizadosInterfaceSapModel.deleteMany({});
+              info.inseridos = resultIncl.length;
             }
           }
           else
-            errosImport.push('Nenhum registro SAP');
-          info.registrosSap = valsInterface.length;
-          info.inseridos = inseridos;
-          info.errosImport = errosImport;
+            info.mensagens.push('Nenhum registro SAP');
         }
         //console.log('info', info);
-        resumoApi.jsonData({ value: { info } });
+        resumoApi.jsonData({
+          value: { info, centroCustoSemCadastroArray, classeCustoSemCadastroArray }
+        });
         deleteIfOk = true;
+      }
+
+      else if (parm.cmd == CmdApi.entityDesprDownload) {
+        if (parm.entity == 'centroCusto') {
+          const documentArray = await ValoresRealizadosInterfaceSap_CentroCustoDesprModel.find().lean().sort({ centroCusto: 1 });
+          resumoApi.jsonData({ value: { documentArray: documentArray.map((x) => x.centroCusto) } });
+        }
+        else if (parm.entity == 'classeCusto') {
+          const documentArray = await ValoresRealizadosInterfaceSap_ClasseCustoDesprModel.find().lean().sort({ classeCusto: 1 });
+          resumoApi.jsonData({ value: { documentArray: documentArray.map((x) => x.classeCusto) } });
+        }
+        else
+          throw new Error(`Entity '${parm.entity}' inválida.`);
+      }
+      else if (parm.cmd == CmdApi.entityDesprUpload) {
+        const uploadData = parm.data;
+        const messages: IUploadMessage[] = [];
+        const headerCsv = [...uploadData[0]].map((x) => x.trim());
+
+        let model: mongoose.Model<any> = null;
+        let colKey = '';
+        let fill: (values: any) => any = null;
+
+        if (parm.entity === 'centroCusto') {
+          model = ValoresRealizadosInterfaceSap_CentroCustoDesprModel;
+          colKey = 'centroCusto';
+          fill = ValoresRealizadosInterfaceSap_CentroCustoDespr.fill;
+        }
+        else if (parm.entity === 'classeCusto') {
+          model = ValoresRealizadosInterfaceSap_ClasseCustoDesprModel;
+          colKey = 'classeCusto';
+          fill = ValoresRealizadosInterfaceSap_ClasseCustoDespr.fill;
+        }
+        else
+          throw new Error(`Entidade '${parm.entity}' desconhecida`);
+
+        if (!headerCsv.includes(colUploadCmd))
+          messages.push({ level: MessageLevelUpload.error, message: `Coluna obrigatória não informada: '${colUploadCmd}'` });
+
+        if (!headerCsv.includes(colKey))
+          messages.push({ level: MessageLevelUpload.error, message: `Coluna obrigatória não informada: '${colKey}'` });
+
+        let linesProcOk = 0;
+
+        if (messages.length == 0) {
+          for (let line = 1; line < uploadData.length; line++) {
+            const uploadColumArray = uploadData[line] as string[];
+            const documentCsv: any = {};
+            {
+              const allFlds = uploadColumArray.reduce((prev, curr) => prev + curr, '');
+              if (allFlds.trim() === '')
+                continue;
+
+              headerCsv.forEach((prop, index) => documentCsv[prop] = uploadColumArray[index]); // monta o objeto com base no header
+
+              const colUploadCmdVal = documentCsv[colUploadCmd];
+              const keyVal = documentCsv[colKey];
+
+              try {
+                if (colUploadCmdVal == UploadCsvCmd.add) {
+                  const documentInsert = fill({ [colKey]: keyVal });
+                  const resultIns = await model.insertMany([documentInsert]);
+                  //console.log('ins', resultIns);
+                  linesProcOk++;
+                }
+                else if (colUploadCmdVal == UploadCsvCmd.del) {
+                  const resultDel = await model.deleteOne({ [colKey]: keyVal });
+                  //console.log('del', resultDel);
+                  if (resultDel.deletedCount > 0) linesProcOk++;
+                }
+              } catch (error: any) { }
+            }
+          }
+        }
+
+        resumoApi.jsonData({ value: { messages, linesProcOk } });
       }
 
       else if (parm.cmd == CmdApi.analiseAnualCentroCustoInitialization) {

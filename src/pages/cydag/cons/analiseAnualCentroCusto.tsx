@@ -311,7 +311,7 @@ export default function PageAnaliseAnualCentroCusto() {
                 multiple limitTags={1}
                 options={centroCustoOptions} name={CentroCusto.Name} withCod width='550px' />
               {/* disableClearable={!mainStatesFilter.permiteTodosCCs}  */}
-              <FakeLink onClick={() => frmFilter.setValue(ValoresAnaliseAnual.F.centroCustoArray, mainStatesFilter.centroCustoOptions.map((x) => x.cod))}>(Sel. Todos)</FakeLink>
+              <FakeLink noWrap onClick={() => frmFilter.setValue(ValoresAnaliseAnual.F.centroCustoArray, mainStatesFilter.centroCustoOptions.map((x) => x.cod))}>(Sel. Todos)</FakeLink>
             </>
           }
           <SelMes value={mes} onChange={(newValue) => frmFilter.setValue(ValoresAnaliseAnual.F.mes, newValue || 0)} />

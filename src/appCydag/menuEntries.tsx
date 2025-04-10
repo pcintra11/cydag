@@ -35,7 +35,7 @@ const menuTotal: IMenuEntry[] = [ // aqui todas as transações, serão filtrada
     new SubMenu('Configuração', [
       pagesApp.classeCustoRestrita,
     ]),
-    pagesApp.importReal,
+    pagesApp.importRealDireto,
   ]),
   pagesApp.cargaFuncionario,
 
