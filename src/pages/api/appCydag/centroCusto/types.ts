@@ -9,8 +9,6 @@ enum CmdApi_CentroCusto {
   update = 'update',
   delete = 'delete',
   upload = 'upload',
-  download = 'download',
-  reset = 'reset',
 }
 export {
   CmdApi_CentroCusto,

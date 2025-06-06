@@ -378,6 +378,12 @@ export class CentroCusto {
       new FldCsvDef('lastUpdated', { down: (data: CentroCusto) => DateToStrISO(data.lastUpdated), up: (data: IGenericObject) => DateFromStrISO(data.lastUpdated) || agora, def: () => new Date() }),
     ]);
   }
+  static get fldsCsvDefUploadUser() {
+    return [
+      new FldCsvDef('cod', { mandatoryValue: true, up: (data: IGenericObject) => data.cod.toUpperCase() }),
+      new FldCsvDef('descr', { mandatoryValue: true }),
+    ];
+  }
 }
 export class Diretoria {
   _id?: ObjectId;

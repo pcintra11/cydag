@@ -38,6 +38,7 @@ const menuTotal: IMenuEntry[] = [ // aqui todas as transações, serão filtrada
     pagesApp.importRealDireto,
   ]),
   pagesApp.cargaFuncionario,
+  pagesApp.cargaCentroCusto,
 
   new SubMenu('Cadastros', [
     pagesApp.user,

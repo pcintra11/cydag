@@ -4,7 +4,7 @@ import { ObjectId } from 'mongodb';
 
 import { ConnectDbASync, CloseDbASync } from '../../../../libServer/dbMongo';
 
-import { ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
+import { BinSearchItem, ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ReqNoParm, ResumoApi, SearchTermsForFindPtBr, ValidateObjectFirstError } from '../../../../libServer/util';
@@ -22,6 +22,8 @@ import { apisApp } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 import { UserModel } from '../../../../appCydag/models';
 import { CentroCustoModel as Model_Crud } from '../../../../appCydag/models';
+import { FromCsvUpload, IUploadMessage, MessageLevelUpload } from '../../../../libCommon/uploadCsv';
+import { CentroCusto } from '../../../../appCydag/modelTypes';
 
 import { Entity_Crud, CmdApi_Crud as CmdApi, crudValidations } from './types';
 
@@ -105,6 +107,105 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         await Model_Crud.deleteOne({ _id: parm._id });
         resumoApi.jsonData({});
       }
+
+      else if (parm.cmd == CmdApi.upload) {
+        const uploadData: string[][] = parm.data;
+
+        const documentsCentroCusto = await Model_Crud.find({}).lean().sort({ cod: 1 });
+
+        const messages: IUploadMessage[] = [];
+        let linesError = 0, linesOk = 0;
+        const headerCsv = [...uploadData[0]].map((x) => x.trim());
+
+        //let lastKey = null;
+
+        const fldsCsvDef = CentroCusto.fldsCsvDefUploadUser;
+        const fldsMissing = fldsCsvDef.filter((x) => !x.suppressColumn && x.mandatoryValue).reduce((prev, curr) => headerCsv.findIndex((x) => x == curr.fldDisp) == -1 ? [...prev, curr] : prev, []);
+        const fldsIgnored = headerCsv.reduce((prev, curr) => {
+          const fldCsvDef = fldsCsvDef.find((x) => x.fldDisp == curr);
+          if (fldCsvDef == null || fldCsvDef.suppressColumn) return [...prev, curr];
+          else return prev;
+        }, []);
+
+        if (fldsIgnored.length > 0)
+          messages.push({ level: MessageLevelUpload.warn, message: `Colunas não previstas ignoradas: ${fldsIgnored.map(x => `"${x}"`).join(', ')} (atenção para maiúsculas e minúsculas)` });
+
+        if (fldsMissing.length > 0)
+          messages.push({ level: MessageLevelUpload.error, message: `Colunas obrigatórias não informadas: ${fldsMissing.map(x => `"${x.fldDisp}"`).join(', ')}` });
+        else {
+
+          // tratamento das linhas
+          const documentsInsert: CentroCusto[] = [];
+          for (let line = 1; line < uploadData.length; line++) {
+            const uploadColumArray = uploadData[line] as string[];
+            const documentCsv: any = {};
+            try {
+              const allFlds = uploadColumArray.reduce((prev, curr) => prev + curr, '');
+              if (allFlds.trim() === '')
+                continue;
+
+              headerCsv.forEach((prop, index) => documentCsv[prop] = uploadColumArray[index]); // monta o objeto com base no header
+              const errosThisLine: string[] = [];
+
+              const { documentCsvDb, allErrorsMessages } = FromCsvUpload(documentCsv, fldsCsvDef, configApp.csvStrForNull);
+              if (allErrorsMessages.length > 0)
+                errosThisLine.push(allErrorsMessages.join(', '));
+
+              // if (documentCsvDb.cod != null) {
+              //   const key = `${documentCsvDb.cod}`;
+              //   if (lastKey != null &&
+              //     key <= lastKey)
+              //     errosThisLine.push('centroCusto fora de ordem');
+              //   else
+              //     lastKey = key;
+              // }
+
+              if (BinSearchItem(documentsCentroCusto, documentCsvDb.cod, 'cod') != null)
+                errosThisLine.push(`centroCusto '${documentCsvDb.cod}' já cadastrado`);
+
+              if (errosThisLine.length != 0)
+                throw new Error(errosThisLine.join(', '));
+
+              const documentInsert = CentroCusto.fill({
+                ...documentCsvDb,
+                created: agora,
+                lastUpdated: agora,
+                searchTerms: Entity_Crud.SearchTermsGen(documentCsvDb),
+              }, true);
+
+              documentsInsert.push(documentInsert);
+              messages.push({ level: MessageLevelUpload.ok, message: `Linha ${line} - ${documentCsvDb.cod} inclusão pré-validada` });
+              linesOk++;
+
+            } catch (error) {
+              messages.push({ level: MessageLevelUpload.error, message: `Linha ${line} com erro - ${error.message}` });
+              linesError++;
+            }
+          }
+          if (documentsInsert.length > 0) {
+            try {
+              const result = await Model_Crud.insertMany(documentsInsert, { ordered: false });
+              if (result.length != documentsInsert.length) {
+                const keysOk = result.map((x) => `${x.cod}`);
+                const keysNotOk = documentsInsert.filter((x) => !keysOk.includes(`${x.cod}`));
+                linesOk -= keysNotOk.length;
+                linesError += keysNotOk.length;
+                keysNotOk.forEach((x) => messages.push({ level: MessageLevelUpload.error, message: `Houve erro na efetivação da inclusão para: ${x.cod}` }));
+              }
+              else
+                messages.push({ level: MessageLevelUpload.ok, message: 'As inclusões pré-validadas foram efetivadas com sucesso' });
+            } catch (error) {
+              error.writeErrors.forEach((x) => messages.push({ level: MessageLevelUpload.error, message: `Erro ao inserir em lote: ${x.err.errmsg}` }));
+            }
+          }
+          else
+            messages.push({ level: MessageLevelUpload.error, message: 'Nada a carregar' });
+        }
+
+        resumoApi.jsonData({ value: { messages, linesOk, linesError } });
+        deleteIfOk = true;
+      }
+
       else
         throw new Error(`Cmd '${parm.cmd}' inválido.`);
 
