@@ -85,7 +85,7 @@ export const pagesApp = {
   exportaPlanej: new PageDef(`${pathPages}/exportaPlanej`, { pageTitle: 'Exportação do Orçamento', onlyAuthenticated: true, roles: rolesQuadro }),
   exportaRealPlanej: new PageDef(`${pathPages}/exportaRealPlanej`, { pageTitle: 'Exportação do Real / Orçado', onlyAuthenticated: true, roles: rolesQuadro }),
   exportaFuncionario: new PageDef(`${pathPages}/exportaFuncionario`, { pageTitle: 'Exportação de Funcionários', onlyAuthenticated: true, roles: [rolesApp.gestorContr] }),
-  exportaViagem: new PageDef(`${pathPages}/exportaViagem`, { pageTitle: 'Exportação de Viagens', onlyAuthenticated: true, roles: [rolesApp.gestorContr] }),
+  exportaViagem: new PageDef(`${pathPages}/exportaViagem`, { pageTitle: 'Exportação de Viagens', onlyAuthenticated: true, roles: [rolesApp.gestorContr, rolesApp.operContr] }),
 
   // consTotHier: new PageDef(pageDummy.pagePath, 'Totais Orçados pela Hierarquia', null, { onlyAuthenticated: true, roles: [roleGestorContr], variant: `var-${++seqVariante}` }),
   // consDespsEquipe: new PageDef(pageDummy.pagePath, 'Despesas da Equipe', null, { onlyAuthenticated: true, roles: [rolePlanejDynCC], variant: `var-${++seqVariante}` }),
