@@ -28,10 +28,10 @@ export default function PageHome() {
 
   const folderManuais = '/appCydag/manuais'; // em public
   const files = {
-    manualOrcam: 'Manual_Orçamento_2025.pdf',
-    classesMateriais: 'Lista_de_Classes_x_Materiais_CYDAG_2025.pdf',
-    formProjetos: 'Formulário_para_preenchimento_(Projetos)_2025.xlsx',
-    manualConsulta: 'Manual_CYDAG_Consulta.pdf',
+    manualOrcam: 'Manual_Orçamento_2026.pdf',
+    classesMateriais: 'Lista_de_Classes_x_Materiais_CYDAG_2026.pdf',
+    formProjetos: 'Formulário_para_preenchimento_(Projetos)_2026.xlsx',
+    //manualConsulta: 'Manual_CYDAG_Consulta.pdf',
   };
 
   try {
@@ -65,20 +65,20 @@ export default function PageHome() {
             </Tx>
 
             <a href={`${folderManuais}/${files.manualOrcam}`} target='_blank' rel='noreferrer'>
-              <Tx>Manual de Orçamento 2025</Tx>
+              <Tx>Manual de Orçamento 2026</Tx>
             </a>
 
             <a href={`${folderManuais}/${files.classesMateriais}`} target='_blank' rel='noreferrer'>
-              <Tx>Lista de Classes x Materiais 2025</Tx>
+              <Tx>Lista de Classes x Materiais 2026</Tx>
             </a>
 
             <a href={`${folderManuais}/${files.formProjetos}`} target='_blank' rel='noreferrer'>
-              <Tx>Formulário para preenchimento (Projetos) 2025</Tx>
+              <Tx>Formulário para preenchimento (Projetos) 2026</Tx>
             </a>
 
-            <a href={`${folderManuais}/${files.manualConsulta}`} target='_blank' rel='noreferrer'>
+            {/* <a href={`${folderManuais}/${files.manualConsulta}`} target='_blank' rel='noreferrer'>
               <Tx>Manual de Consulta</Tx>
-            </a>
+            </a> */}
           </Box>
 
           <Stack direction='row' spacing={1} justifyContent='end' mt={1}>
