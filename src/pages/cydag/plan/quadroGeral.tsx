@@ -298,7 +298,7 @@ export default function PageQuadroGeral() {
     const allowClasseCustoRestrita = (classeCusto: string) => {
       const classeCustoRestrita = BinSearchItem(mainStates.classeCustoRestritaArray, classeCusto, 'classeCusto');
       if (classeCustoRestrita != null &&
-        !classeCustoRestrita.centroCustoArray.includes(filter.centroCustoArray[0]))
+        !classeCustoRestrita.centroCustoArray.includes(filter.centroCusto))
         return false;
       else
         return true;
