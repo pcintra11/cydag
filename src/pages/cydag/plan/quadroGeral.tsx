@@ -620,6 +620,10 @@ export default function PageQuadroGeral() {
       );
     };
 
+    const isDescrInvalid = (val) => {
+      return val.trim().length < 5;
+    };
+
     const ValoresNodeComp = ({ node, level }: { node: HierNode<NodeContent>, level: number }) => {
       //if (node.stateOpen == null) node.stateOpen = true;
 
@@ -655,7 +659,7 @@ export default function PageQuadroGeral() {
             globalCtrl.logTouchedCells(node.id, node.nodeContent.descrAcum, valMesFld(sxMes), true);
           }
           if (node.nodeType == 'detClasseCusto')
-            chgDescr();
+            chgDescrCtrl();
           //csl('chg', { sxMes, newValStr, newVal}, fldsTouch[fldTouch] );
           node.nodeContent.valMesesStr[sxMes] = valStr;
           forceRefresh({});
@@ -672,14 +676,13 @@ export default function PageQuadroGeral() {
           }
         };
 
-        const isDescrInvalid = (val) => {
-          return val.trim().length < 5;
-        };
         const changeDescr = (val) => {
-          globalCtrl.logTouchedCells(node.id, node.nodeContent.descrAcum, 'descr', isDescrInvalid(val));
+          globalCtrl.logTouchedCells(node.id, node.nodeContent.descrAcum, 'descr', false); //  isDescrInvalid(val)
           node.nodeContent.descr = val;
           forceRefresh({});
-          chgDescr();
+          chgDescrCtrl();
+          if (node.nodeType == 'detClasseCusto')
+            chgValsCtrl();
           //globalCtrl.setChangedLineVals(node.nodeContent.key, node.nodeContent.valMeses);
         };
 
@@ -765,8 +768,11 @@ export default function PageQuadroGeral() {
           }
         };
 
-        const chgDescr = () => {
+        const chgDescrCtrl = () => {
           globalCtrl.setChangedLineDescr(node.id, node.nodeContent.keyDb, node.nodeContent.descr);
+        };
+        const chgValsCtrl = () => {
+          globalCtrl.setChangedLineVals(node.id, node.nodeContent.keyDb, node.nodeContent.valMeses);
         };
 
         const handleKeyDownInput = (id, sxMes, ev) => {
@@ -836,7 +842,7 @@ export default function PageQuadroGeral() {
         const newDetClasseCusto = () => {
           const nodeDetIns = nodeDetalheClasseCusto(node.nodeContent.descr, node.nodeContent.keyDb.classeCusto, FormatDate(new Date(), 'yyyyMMdd-HHmmssS'), '', true);
           //csl({ nodeDetIns });
-          globalCtrl.logTouchedCells(nodeDetIns.id, node.nodeContent.descrAcum, 'descr', true);
+          globalCtrl.logTouchedCells(nodeDetIns.id, node.nodeContent.descrAcum, 'descr', false);
           node.nodesFilho.push(nodeDetIns);
           setStateOpen(true);
           forceRefreshUpp({});
@@ -900,16 +906,28 @@ export default function PageQuadroGeral() {
       const cellError = globalCtrl.touchedCells.find((x) => x.valueError);
       if (cellError != null)
         return PopupMsg.error(`Favor corrigir os campos sinalizados com erro: linha ${cellError.descrLine}`);
+
       //csl({ globalCtrl, camposInválidos });
       // if (mainStates.filter.ano != frmFilter.getValues('ano') ||
       //   mainStates.filter.centroCusto != frmFilter.getValues(ValoresPlanejados.F.centroCusto)) {
       //   PopupMsg.error(`Os dados apresentados (${mainStates.filter.ano}/${mainStates.filter.centroCusto}) não se referem ao filtro atual`);
       //   return;
       // }
+      for (let index = 0; index < globalCtrl.changedLinesCtrl.length; index++) {
+        const item = globalCtrl.changedLinesCtrl[index];
+        if (item.changedLine.descr != null) { // para classes de custo sem detalhes será sempre null
+          if (isDescrInvalid(item.changedLine.descr)) {
+            if (item.changedLine.valMeses.find((x) => x != null))
+              return PopupMsg.error(`Descrição não informada ou muito curta para classe de custo ${item.changedLine.key.classeCusto}`);
+          }
+        }
+      }
+
       const changedLinesToSend = globalCtrl.changedLinesCtrl
         .map((x) => x.changedLine);
       if (changedLinesToSend.length == 0)
         return PopupMsg.error('Nada a salvar.');
+
       //csl(globalCtrl.changedLines);
       setItens(mainStatesData1.filterApplied, changedLinesToSend);
     };
