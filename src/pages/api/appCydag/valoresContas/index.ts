@@ -948,7 +948,8 @@ export const ValoresPlanejadosCalc = async (processoOrcamentario: ProcessoOrcame
         memoriaCalc.push({ inicioCalc: '***********************', cc: _.pick(processoOrcamentarioCentroCusto, ['centroCusto', 'agrupPremissas', 'localidade']) });
 
       const showCalcFunc = showCalcGlobal;
-      const premissa_dissidio_vals = getValPremissa(premissaCod.dissidio, premissas, valoresPremissas, processoOrcamentarioCentroCusto);
+      const premissaDissidioUse = processoOrcamentario.ano >= '2026' ? premissaCod.dissidioTpClb : premissaCod.dissidio;
+      const premissa_dissidio_vals = getValPremissa(premissaDissidioUse, premissas, valoresPremissas, processoOrcamentarioCentroCusto);
       const funcionariosForCalc = FuncionariosForCalc(processoOrcamentarioCentroCusto.centroCusto, premissa_dissidio_vals, funcionarios, revisao);
       if (funcionariosForCalc.length > 0) {
         //csd('funcionariosForCalc', JSON.stringify(funcionariosForCalc, null, 2));

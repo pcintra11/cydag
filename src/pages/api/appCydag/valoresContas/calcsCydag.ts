@@ -14,6 +14,7 @@ const attrProcOrc = { mesIni: 1, mesFim: 12 };
 
 export const premissaCod = {
   dissidio: 'dissidio',
+  dissidioTpClb: 'dissidioTpClb',
   inss: 'inssEmpr',
   fgts: 'fgts',
   provFerias: 'provFerias',
