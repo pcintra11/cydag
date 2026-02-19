@@ -22,7 +22,7 @@ import { ApiLogFinish, ApiLogStart } from '../../../../libServer/apiLog';
 import { EnvSvrInterfaceSapRealizadoConfig } from '../../../../appCydag/envs';
 import { apisApp, quadroPage, rolesApp } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
-import { ViagemModel, TerceiroModel, UserModel, ValoresLocalidadeModel, ValoresTransferModel, UnidadeNegocioModel, ValoresRealizadosInterfaceSapModel, DiretoriaModel, CtrlInterfaceModel, ValoresPlanejadosHistoricoModel, GerenciaModel, databaseInterfaceSap, ValoresRealizadosInterfaceSap_CentroCustoDesprModel, ValoresRealizadosInterfaceSap_ClasseCustoDesprModel } from '../../../../appCydag/models';
+import { ViagemModel, TerceiroModel, UserModel, ValoresLocalidadeModel, ValoresTransferModel, UnidadeNegocioModel, ValoresRealizadosInterfaceSapModel, DiretoriaModel, CtrlInterfaceModel, ValoresPlanejadosHistoricoModel, GerenciaModel, databaseInterfaceSap, ValoresRealizadosInterfaceSap_CentroCustoDesprModel, ValoresRealizadosInterfaceSap_ClasseCustoDesprModel, UserMd } from '../../../../appCydag/models';
 import { agrupPremissasCoringa, empresaCoringa, Premissa, ProcessoOrcamentario, ProcessoOrcamentarioCentroCusto, ValoresRealizados, ValoresPremissa, UnidadeNegocio, CtrlInterface, ValoresRealizadosInterfaceSap, ValoresRealizadosInterfaceSap_CentroCustoDespr, ValoresRealizadosInterfaceSap_ClasseCustoDespr } from '../../../../appCydag/modelTypes';
 import { InterfaceSapStatus, InterfaceSapCateg, OperInProcessoOrcamentario, OrigemClasseCusto, ProcessoOrcamentarioStatus, ProcessoOrcamentarioStatusMd, RevisaoValor, TipoSegmCentroCusto, ValoresAnaliseAnual, ValoresComparativoAnual, ValoresPlanejadosDetalhes, ValoresTotCentroCustoClasseCusto, ValoresAnaliseRealPlan } from '../../../../appCydag/types';
 
@@ -62,7 +62,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
+
+      //@!!!!!!!!!!26
       CheckApiAuthorized(apiSelf, await UserModel.findOne({ email: loggedUserReq?.email }).lean(), loggedUserReq?.email);
+      // const userDb = await UserModel.findOne({ email: loggedUserReq?.email }).lean() as UserMd;
+      // CheckApiAuthorized(apiSelf, userDb, loggedUserReq?.email);
 
       const classeCustoRestritaArrayGet = async () => {
         const documentsDb = await ClasseCustoRestritaModel.find().lean().sort({ classeCusto: 1 });
@@ -948,8 +952,12 @@ export const ValoresPlanejadosCalc = async (processoOrcamentario: ProcessoOrcame
         memoriaCalc.push({ inicioCalc: '***********************', cc: _.pick(processoOrcamentarioCentroCusto, ['centroCusto', 'agrupPremissas', 'localidade']) });
 
       const showCalcFunc = showCalcGlobal;
-      const premissaDissidioUse = processoOrcamentario.ano >= '2026' ? premissaCod.dissidioTpClb : premissaCod.dissidio;
-      const premissa_dissidio_vals = getValPremissa(premissaDissidioUse, premissas, valoresPremissas, processoOrcamentarioCentroCusto);
+
+      //@!!!!!!!!!!!!!!!26
+      const premissa_dissidio_vals = getValPremissa(premissaCod.dissidio, premissas, valoresPremissas, processoOrcamentarioCentroCusto);
+      // const premissaDissidioUse = processoOrcamentario.ano >= '2026' ? premissaCod.dissidioTpClb : premissaCod.dissidio;
+      // const premissa_dissidio_vals = getValPremissa(premissaDissidioUse, premissas, valoresPremissas, processoOrcamentarioCentroCusto);
+
       const funcionariosForCalc = FuncionariosForCalc(processoOrcamentarioCentroCusto.centroCusto, premissa_dissidio_vals, funcionarios, revisao);
       if (funcionariosForCalc.length > 0) {
         //csd('funcionariosForCalc', JSON.stringify(funcionariosForCalc, null, 2));
