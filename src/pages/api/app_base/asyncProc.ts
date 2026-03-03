@@ -17,7 +17,7 @@ import { AsyncProcTypes } from '../../../libServer/asyncProcsCalls';
 
 import { AsyncProcCustom } from '../../../app_hub/asyncApiCustomProc';
 import { SentMessageLogASync } from '../../../app_base/SentMessageLog';
-import { ApiAsyncLogMd, ApiAsyncLogModel } from '../../../app_base/model';
+import { ApiAsyncLogModel } from '../../../app_base/model';
 import { ApiAsyncLog } from '../../../app_base/modelTypes';
 import { apisBase } from '../../../app_base/endPoints';
 import { EnvApiTimeout, isAmbNone } from '../../../app_base/envs';
@@ -64,7 +64,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       //csl('apiAsyncProc parm', parm);
 
-      const asyncProc = await ApiAsyncLogModel.findOne({ _id: new ObjectId(parm.idStr) }).lean() as ApiAsyncLogMd;
+      const asyncProc = await ApiAsyncLogModel.findOne({ _id: new ObjectId(parm.idStr) }).lean();
       if (asyncProc == null)
         throw new Error(`id '${parm.idStr}' não encontrado (${parm.info}).`);
       if (asyncProc.type != parm.type)

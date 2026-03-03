@@ -370,12 +370,12 @@ export function MongoIncrVersion(query) {
 }
 
 const modelJunk = 'base_lixos';
-interface LixoMd extends mongoose.Document<ObjectId, any> { }
+//interface LixoMd extends mongoose.Document<ObjectId, any> { }
 export const LixoModel = (() => {
   const modelName = modelJunk;
   const mongoose = MongooseSlot().mongoose;
-  const schema = new mongoose.Schema({
+  const schema = new mongoose.Schema<any>({
     lixo: { type: String, required: false },
   });
-  return mongoose.model<LixoMd>(modelName, schema);
+  return mongoose.model(modelName, schema);
 })();
