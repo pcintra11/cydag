@@ -1,14 +1,16 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 //import { NextRequest, NextResponse, userAgent } from 'next/server'; //@!!!!!!!!!
+import { ResponseCookie } from 'next/dist/compiled/@edge-runtime/cookies';
+import { serialize } from 'cookie';
 import RequestIp from 'request-ip';
 import { ipVersion } from 'is-ip';
 import URLParse from 'url-parse';
 import * as yup from 'yup';
 import jwtThen from 'jwt-then';
 import { v1 as uuidv1 } from 'uuid';
-import _ from 'underscore';
+import _, { omit } from 'underscore';
 
-import { AddToDate, CompareDates, CutUndef, DateFromStrISO, DateToStrISO, ErrorPlus, FillClassProps, FilterRelevantWordsForSearch, LanguageSearch, SleepMs, StrLeft } from '../libCommon/util';
+import { AddToDate, CompareDates, CutUndef, DateAdd, DateFromStrISO, DateToStrISO, ErrorPlus, FillClassProps, FilterRelevantWordsForSearch, LanguageSearch, SleepMs, StrLeft } from '../libCommon/util';
 import { colorsMsg, csd, dbg, dbgError, dbgWarn, ScopeDbg } from '../libCommon/dbg';
 import { HttpStatusCode, IdByTime, DispAbrev } from '../libCommon/util';
 import { IGenericObject } from '../libCommon/types';
@@ -67,6 +69,18 @@ export class CtrlApiExec {
   //     csl(this.apiPath, point, `elapsed tot ${elapsedTot}ms, gap ${gap}ms ${gap > 1000 ? '- **********' : ''}`);
   //   this.lastElapsed = elapsedTot;
   // }
+
+  cookies: ResponseCookie[] = [];
+  cookiesRemove: string[] = [];
+
+  setCookie(cookie: ResponseCookie) {
+    const copia = { ...cookie };
+    copia.value = cookie.value; // encodeURI(cookie.value);
+    this.cookies.push(copia);
+  }
+  removeCookie(cookieName: string) {
+    this.cookiesRemove.push(cookieName);
+  }
 }
 
 let seqApi = 0;
@@ -331,6 +345,17 @@ export class ResumoApi { // @@@@!!!! nome!
     //this.#_data = { aa: new Date(), bb: true, cc: 123, dd: 'abcd', ee: { e1: 12, e2: 'abcd' } };
     // if (!isSerializable(this.#_data))
     //   csl('json data not serializable', this.#_data);
+
+    const agora = new Date();
+    const cookiesArray: string[] = [];
+    //console.log('jjjhhhgg0', this.#_ctrlApiExec.cookies);
+    for (const cookieName of this.#_ctrlApiExec.cookiesRemove)
+      cookiesArray.push(serialize(cookieName, '', { path: '/', maxAge: 0, expires: new Date(0) }));
+    for (const cookie of this.#_ctrlApiExec.cookies)
+      cookiesArray.push(serialize(cookie.name, cookie.value, { ...omit(cookie, ['name', 'value']), expires: DateAdd(agora, { seconds: cookie.expires as number }) }));
+    //console.log('jjjhhhgg1', { cookiesArray });
+    this.#_ctrlApiExec.res.setHeader('Set-Cookie', cookiesArray);
+
     this.#_ctrlApiExec.res.status(statusCodeUse).json(this.#_data);
     elapsedMs = this.#_ctrlApiExec.ctrlContext.calcExecTime?.elapsedMs();
     dbgA(2, '==> json', `${elapsedMs}ms`, `status(${statusCodeUse}).json(${DispAbrev(JSON.stringify(this.#_data), 500)})`);

@@ -96,6 +96,10 @@ const mainStatesReset = new MainStates();
 let mount = false; let mainStatesCache: MainStates = null;
 
 const apis = {
+  removeValRealizado: async (ano: string) => {
+    const apiReturn = await CallApiCliASync<{ value: { msgsProc: string[] } }>(apisApp.funcsAdm.apiPath, { cmd: CmdApi_FuncAdm.removeAlRealizado, ano });
+    return { ...apiReturn.value };
+  },
   adm: async (parm: IGenericObject) => {
     const apiReturn = await CallApiCliASync<{ value: { msgsProc: string[] } }>(apisApp.funcsAdm.apiPath, parm);
     return { ...apiReturn.value };
@@ -273,6 +277,38 @@ export default function PageFuncsAdm() {
   if (mainStates.error != null) return <AbortProc error={mainStates.error} tela={pageSelf.pagePath} />;
 
   //#region funções
+  const RemoveValRealizado = async (ano: string) => {
+    const remove = async (ano: string) => {
+      const idProc = idProcGen();
+      const calcExecTime = new CalcExecTime();
+      appendResults(`${idProc}-ini (removeRealizado - ${ano})`);
+      try {
+        const { msgsProc } = await apis.removeValRealizado(ano);
+        if (!mount) return;
+        appendResults(`${idProc}-fim ${calcExecTime.elapsedMs()}ms`, msgsProc);
+      } catch (error) {
+        appendResults(`${idProc}-fim (error) ${calcExecTime.elapsedMs()}ms`, [error.message]);
+      }
+    }
+    DialogMy({
+      body:
+        <DialogContent>
+          <DialogContentText>
+            Os valores reais serão removidos.
+          </DialogContentText>
+        </DialogContent>,
+      dialogInputs: [
+        { label: `Digite REMOVER para confirmar o procedimento` },
+      ],
+      buttons: [
+        {
+          text: 'Efetivar',
+          fnCheck: (inputResponses: string[]) => inputResponses[0].trim().toUpperCase() !== 'REMOVER' ? 'Resposta inválida' : null,
+          onClick: () => remove(ano),
+        },
+      ]
+    });
+  };
   const CmdNoParm = async (cmd: string, extraParm: IGenericObject = {}) => {
     const idProc = idProcGen();
     const calcExecTime = new CalcExecTime();
@@ -415,6 +451,12 @@ export default function PageFuncsAdm() {
                 )}
               </Box>
             </VisualBlock>
+
+            <Box>
+              <Fkl onClick={() => router.push('https://www.maxai.co/file-tools/split-csv')}>Para dividir o csv em partes</Fkl>
+              <Fkl onClick={() => RemoveValRealizado('2026')}>Remover valores realizados de 2026</Fkl>
+              <Fkl onClick={() => RemoveValRealizado('2027')}>Remover valores realizados de 2027</Fkl>
+            </Box>
 
             <Stack direction='row' alignItems='center' spacing={1}>
               <FrmCheckbox value={mainStates.downloadAmostra} label='Download amostra' onChange={(ev) => setMainStatesCache({ downloadAmostra: ev.target.checked })} />

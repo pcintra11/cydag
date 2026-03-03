@@ -1,32 +1,26 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 //import _ from 'underscore';
 
-import { CookieUserConfig } from '../../../../libCommon/loggedUserSvr';
+//import { CookieUserConfig } from '../../../../libCommon/loggedUserSvr';
 import { ConnectDbASync, CloseDbASync } from '../../../../libServer/dbMongo';
 
-import { ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
-import { csd } from '../../../../libCommon/dbg';
-import { EnvDeployConfig, isAmbNone } from '../../../../app_base/envs';
+import { ErrorPlus, SleepMsDevRandom, UrlForPage } from '../../../../libCommon/util';
+import { isAmbNone } from '../../../../app_base/envs';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ReqNoParm, ResumoApi } from '../../../../libServer/util';
-import { CheckBlockAsync } from '../../../../libServer/checkBlockAsync';
 import { ApiStatusDataByErrorASync } from '../../../../libServer/apiStatusDataByError';
 import { CorsMiddlewareAsync } from '../../../../libServer/cors';
 import { AlertTimeExecApiASync } from '../../../../libServer/alertTimeExecApi';
 //import { SystemMsgSvrASync } from '../../../../libServer/systemMsgSvr';
 import { ApiLogFinish, ApiLogStart } from '../../../../libServer/apiLog';
-import { HttpCriptoCookieCmdASync } from '../../../../libServer/httpCryptoCookie';
 
-import { apisApp } from '../../../../appCydag/endPoints';
+import { apisApp, pagesApp } from '../../../../appCydag/endPoints';
 import { LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
-import { ProcessoOrcamentarioCentroCustoModel, UserModel } from '../../../../appCydag/models';
-import { User } from '../../../../appCydag/modelTypes';
+import { UserModel } from '../../../../appCydag/models';
 import { CmdApi_UserOthers as CmdApi } from './types';
+import { auth } from '../../../../lib/auth';
 //import { LoggedUser } from '../../../../appCydag/loggedUser';
-import { Crypt } from '../../../../libServer/crypt';
-import { TokenResetPswDecodeASync, TokenResetPswEncodeASync } from '../../../../appCydag/token';
-import { SendLink_resetPswASync } from '../../../../appCydag/emailMessages';
 
 const saltRounds = 10;
 
@@ -55,74 +49,88 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
     try {
 
-      const cookieUserConfig = CookieUserConfig();
+      //const cookieUserConfig = CookieUserConfig();
 
-      if (parm.cmd == CmdApi.resetPsw) {
-        //const data = parm.data;
-        let tokenDecode = null;
-        try {
-          tokenDecode = await TokenResetPswDecodeASync(parm.token);
-          if (tokenDecode.expired)
-            throw new Error('expirado');
-        } catch (error) {
-          throw new ErrorPlus(`Link inválido: ${error.message}.`);
-        }
-        const { payLoad } = tokenDecode;
-        if (parm.email != payLoad.email)
-          throw new ErrorPlus('Email incorreto.', { data: { fldName: User.F.email } });
-        const email = payLoad.email;
+      // if (parm.cmd == CmdApi.resetPsw) {
+      //   //const data = parm.data;
+      //   let tokenDecode = null;
+      //   try {
+      //     tokenDecode = await TokenResetPswDecodeASync(parm.token);
+      //     if (tokenDecode.expired)
+      //       throw new Error('expirado');
+      //   } catch (error) {
+      //     throw new ErrorPlus(`Link inválido: ${error.message}.`);
+      //   }
+      //   const { payLoad } = tokenDecode;
+      //   if (parm.email != payLoad.email)
+      //     throw new ErrorPlus('Email incorreto.', { data: { fldName: User.F.email } });
+      //   const email = payLoad.email;
 
-        // const fldError = ValidateObjectFirstError({ ...data }, userSchema.resetPsw);
-        // if (fldError != null)
-        //   throw new ErrorPlus(fldError.msg, { data: { fldName: fldError.fldName } });
-        if (parmPswConfirm != parmPsw)
-          throw new ErrorPlus('Senha não confere.', { data: { fldName: 'pswConfirm' } });
+      //   // const fldError = ValidateObjectFirstError({ ...data }, userSchema.resetPsw);
+      //   // if (fldError != null)
+      //   //   throw new ErrorPlus(fldError.msg, { data: { fldName: fldError.fldName } });
+      //   if (parmPswConfirm != parmPsw)
+      //     throw new ErrorPlus('Senha não confere.', { data: { fldName: 'pswConfirm' } });
 
-        const userDb = await UserModel.findOne({ email: email }).lean();
-        if (userDb == null) throw new ErrorPlus('Email não encontrado!');
-        if (userDb.tokenResetPsw != parm.token) throw new ErrorPlus('O link utilizado já está defasado.');
+      //   const userDb = await UserModel.findOne({ email: email }).lean() as UserMd;
+      //   if (userDb == null) throw new ErrorPlus('Email não encontrado!');
+      //   if (userDb.tokenResetPsw != parm.token) throw new ErrorPlus('O link utilizado já está defasado.');
 
-        let psw = null;
-        try {
-          psw = Crypt.hashSync(parmPsw, saltRounds);
-        } catch (error) {
-          throw new Error(`Erro na geração da senha criptografada. ${error.message}`);
-        }
-        await UserModel.updateOne({ _id: userDb._id }, {
-          psw,
-          tokenResetPsw: null,
-          lastUpdated: agora,
-          //$push: { updates: { date: agora, reason: `user-${parm.cmd}` } as UpdateReason },
-        });
+      //   let psw = null;
+      //   try {
+      //     psw = Crypt.hashSync(parmPsw, saltRounds);
+      //   } catch (error) {
+      //     throw new Error(`Erro na geração da senha criptografada. ${error.message}`);
+      //   }
+      //   await UserModel.updateOne({ _id: userDb._id }, {
+      //     psw,
+      //     tokenResetPsw: null,
+      //     lastUpdated: agora,
+      //     //$push: { updates: { date: agora, reason: `user-${parm.cmd}` } as UpdateReason },
+      //   });
 
-        const hasSomeCCResponsavel = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailResponsavel: userDb.email })) != null;
-        const hasSomeCCPlanejador = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailPlanejador: userDb.email })) != null;
-        const hasSomeCCConsulta = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailConsulta: userDb.email })) != null;
-        const loggedUserNow = User.loggedUser(userDb, parm.email, agora, agora, agora, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta); // , cookieUserConfig.TTLSeconds
-        await CheckBlockAsync(loggedUserNow);
+      //   const hasSomeCCResponsavel = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailResponsavel: userDb.email })) != null;
+      //   const hasSomeCCPlanejador = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailPlanejador: userDb.email })) != null;
+      //   const hasSomeCCConsulta = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailConsulta: userDb.email })) != null;
+      //   const loggedUserNow = User.loggedUser(userDb, parm.email, agora, agora, agora, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta); // , cookieUserConfig.TTLSeconds
+      //   await CheckBlockAsync(loggedUserNow);
 
-        await HttpCriptoCookieCmdASync(req, res, `user:${parm.cmd}`, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, loggedUserNow);
-        resumoApi.jsonData({ value: loggedUserNow });
-      }
+      //   //await HttpCriptoCookieCmdASync(req, res, `user:${parm.cmd}`, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, loggedUserNow);
+      //   ctrlApiExec.setCookie(CookieHttpMake(cookiesSys.loggedUser, JSON.stringify(loggedUserNow), { httpOnly: true }));
+      //   resumoApi.jsonData({ value: loggedUserNow });
+      // }
 
-      else if (parm.cmd == CmdApi.emailLink) {
+      // else if (parm.cmd == CmdApi.orderResetPsw) {
+      //   const userDb = await UserModel.findOne({ email: parm.email }).lean();
+      //   if (userDb == null)
+      //     throw new ErrorPlus('Conta não encontrada!', { data: { fldName: 'email' } });
+
+      //   //await UserLogWriteASync(userDb._id, userDb.email, `${parm.cmd}-${parm.linkType}`, ctrlApiExec);
+
+      //   const { token, expireIn } = await TokenResetPswEncodeASync(parm.email);
+      //   await UserModel.updateOne({ _id: userDb._id }, {
+      //     tokenResetPsw: token,
+      //     lastUpdated: agora,
+      //     //$push: { updates: { date: agora, reason: `user-${parm.cmd}-${parm.linkType}` } as UpdateReason },
+      //   });
+      //   const { sentSync } = await SendLink_resetPswASync(ctrlApiExec.ctrlContext, userDb._id, userDb.email, userDb.nome, { token }, expireIn);
+      //   if (sentSync)
+      //     resumoApi.jsonData({ value: { message: 'O link para reset de senha foi enviado' } });
+      //   else
+      //     resumoApi.jsonData({ value: { message: 'O link para reset de senha será enviado em breve. Aguarde por favor para continuar o processo' } });
+      // }
+
+      if (parm.cmd == CmdApi.requestPasswordReset) {
         const userDb = await UserModel.findOne({ email: parm.email }).lean();
-        if (userDb == null)
-          throw new ErrorPlus('Conta não encontrada!', { data: { fldName: 'email' } });
-
-        //await UserLogWriteASync(userDb._id, userDb.email, `${parm.cmd}-${parm.linkType}`, ctrlApiExec);
-
-        const { token, expireIn } = await TokenResetPswEncodeASync(parm.email);
-        await UserModel.updateOne({ _id: userDb._id }, {
-          tokenResetPsw: token,
-          lastUpdated: agora,
-          //$push: { updates: { date: agora, reason: `user-${parm.cmd}-${parm.linkType}` } as UpdateReason },
+        if (userDb == null) throw new ErrorPlus('Conta não encontrada!');
+        await auth.api.requestPasswordReset({
+          body: {
+            email: parm.email,
+            redirectTo: UrlForPage(pagesApp.resetPsw.pagePath),
+          },
         });
-        const { sentSync } = await SendLink_resetPswASync(ctrlApiExec.ctrlContext, userDb._id, userDb.email, userDb.nome, { token }, expireIn);
-        if (sentSync)
-          resumoApi.jsonData({ value: { message: 'O link para reset de senha foi enviado' } });
-        else
-          resumoApi.jsonData({ value: { message: 'O link para reset de senha será enviado em breve. Aguarde por favor para continuar o processo' } });
+        const message = 'O link para redefinição de senha foi enviado para o seu email.';
+        resumoApi.jsonData({ value: { message } });
       }
 
       else

@@ -20,7 +20,7 @@ import { configApp } from '../../../../app_hub/appConfig';
 
 import { apisApp } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
-import { UserModel } from '../../../../appCydag/models';
+import { UserMd, UserModel } from '../../../../appCydag/models';
 import { CentroCustoModel as Model_Crud } from '../../../../appCydag/models';
 import { FromCsvUpload, IUploadMessage, MessageLevelUpload } from '../../../../libCommon/uploadCsv';
 import { CentroCusto } from '../../../../appCydag/modelTypes';
@@ -48,7 +48,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      CheckApiAuthorized(apiSelf, await UserModel.findOne({ email: loggedUserReq?.email }).lean(), loggedUserReq?.email);
+      const userDb = await UserModel.findOne({ email: loggedUserReq?.email }).lean() as UserMd;
+      CheckApiAuthorized(apiSelf, userDb, loggedUserReq?.email);
 
       if (parm.cmd == CmdApi.list) {
         const { searchTerms } = parm.filter || {};

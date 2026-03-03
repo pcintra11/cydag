@@ -154,7 +154,8 @@ export enum Plataform {
 
 type EnvNameSvr =
   'googleClientKey' |
-  'keyScrambleApp';
+  'keyScrambleApp' |
+  'betterAuthSecret';
 /**
  * Variáveis string (não objeto)
  */
@@ -168,6 +169,7 @@ export function EnvSvr(envName: EnvNameSvr) {
     if (OnClient()) throw new Error('Variável server requisitada no client');
     if (envName == 'googleClientKey') value = process.env.SITE_GOOGLE_CLIENT_KEY;
     else if (envName == 'keyScrambleApp') value = process.env.SITE_KEY_SCRAMBLEAPP;
+    else if (envName == 'betterAuthSecret') value = process.env.BETTER_AUTH_SECRET;
     else throw new Error('Variável não prevista');
     if (value == null) throw new Error('Variável obrigatória');
   } catch (error) {
@@ -263,28 +265,28 @@ export function EnvDeployConfig() {
   return value;
 }
 
-class MSalConfig {
-  client_id?: string;
-  authority?: string;
-  static new() { return new MSalConfig(); }
-  static fill(values: MSalConfig) { return CutUndef(FillClassProps(MSalConfig.new(), values)); }
-}
-export function EnvMSalConfig() {
-  if (isAmbNone()) return MSalConfig.new();
-  const envName = 'NEXT_PUBLIC_MSAL_CONFIG';
-  const valueAux = nullOrObj(process.env.NEXT_PUBLIC_MSAL_CONFIG);
-  if (valueAux == null) throw new Error(`Env ${envName} não configurada ou inválida`);
-  const errorProp = CheckProps(valueAux, [
-    { name: 'client_id', type: PrimitivesType.string },
-    { name: 'authority', type: PrimitivesType.string },
-  ]);
-  if (errorProp != null) throw new Error(`Env ${envName} - ${errorProp}`);
-  const value = MSalConfig.fill({
-    client_id: valueAux.client_id.trim(),
-    authority: valueAux.authority.trim(),
-  });
-  return value;
-}
+// class MSalConfig {
+//   client_id?: string;
+//   authority?: string;
+//   static new() { return new MSalConfig(); }
+//   static fill(values: MSalConfig) { return CutUndef(FillClassProps(MSalConfig.new(), values)); }
+// }
+// export function EnvMSalConfig() {
+//   if (isAmbNone()) return MSalConfig.new();
+//   const envName = 'NEXT_PUBLIC_MSAL_CONFIG';
+//   const valueAux = nullOrObj(process.env.NEXT_PUBLIC_MSAL_CONFIG);
+//   if (valueAux == null) throw new Error(`Env ${envName} não configurada ou inválida`);
+//   const errorProp = CheckProps(valueAux, [
+//     { name: 'client_id', type: PrimitivesType.string },
+//     { name: 'authority', type: PrimitivesType.string },
+//   ]);
+//   if (errorProp != null) throw new Error(`Env ${envName} - ${errorProp}`);
+//   const value = MSalConfig.fill({
+//     client_id: valueAux.client_id.trim(),
+//     authority: valueAux.authority.trim(),
+//   });
+//   return value;
+// }
 
 class ApiTimeout {
   exec?: number;
@@ -319,26 +321,6 @@ export function EnvApiTimeout() {
   return ApiTimeout.fill(valueAux);
 }
 
-class Cloudinary {
-  cloudName?: string;
-  folder?: string;
-  subFolder?: string;
-  static new() { return new Cloudinary(); }
-  static fill(values: Cloudinary) { return CutUndef(FillClassProps(Cloudinary.new(), values)); }
-}
-export function EnvCloudinary() {
-  if (isAmbNone()) return Cloudinary.new();
-  const envName = 'NEXT_PUBLIC_CLOUDINARY';
-  const valueAux = nullOrObj(process.env.NEXT_PUBLIC_CLOUDINARY);
-  if (valueAux == null) throw new Error(`Env ${envName} não configurada ou inválida`);
-  const errorProp = CheckProps(valueAux, [
-    { name: 'cloudName', type: PrimitivesType.string },
-    { name: 'folder', type: PrimitivesType.string },
-    { name: 'subFolder', type: PrimitivesType.string },
-  ]);
-  if (errorProp != null) throw new Error(`Env ${envName} - ${errorProp}`);
-  return Cloudinary.fill(valueAux);
-}
 //#endregion
 
 
@@ -405,62 +387,22 @@ export function EnvSvrEmailConfig() {
   return EmailConfig.fill(valueAux);
 }
 
-class CloudinaryAccount {
-  key?: string;
-  secret?: string;
-  static new() { return new CloudinaryAccount(); }
-  static fill(values: CloudinaryAccount) { return CutUndef(FillClassProps(CloudinaryAccount.new(), values)); }
-}
-export function EnvSvrCloudinaryAccount() {
-  if (isAmbNone()) return CloudinaryAccount.new();
-  const envName = 'SITE_CLOUDINARY_APIACCOUNT';
-  if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
-  const valueAux = nullOrObj(process.env.SITE_CLOUDINARY_APIACCOUNT);
-  if (valueAux == null) throw new Error(`Env ${envName} não configurada ou inválida`);
-  const errorProp = CheckProps(valueAux, [
-    { name: 'key', type: PrimitivesType.string },
-    { name: 'secret', type: PrimitivesType.string },
-  ]);
-  if (errorProp != null) throw new Error(`Env ${envName} - ${errorProp}`);
-  return CloudinaryAccount.fill(valueAux);
-}
-
-class Mobizon {
-  domain?: string;
-  api_key?: string;
-  static new() { return new Mobizon(); }
-  static fill(values: Mobizon) { return CutUndef(FillClassProps(Mobizon.new(), values)); }
-}
-export function EnvSvrMobizon() {
-  if (isAmbNone()) return Mobizon.new();
-  const envName = 'SITE_MOBIZON';
-  if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
-  const valueAux = nullOrObj(process.env.SITE_MOBIZON);
-  if (valueAux == null) throw new Error(`Env ${envName} não configurada ou inválida`);
-  const errorProp = CheckProps(valueAux, [
-    { name: 'domain', type: PrimitivesType.string },
-    { name: 'api_key', type: PrimitivesType.string },
-  ]);
-  if (errorProp != null) throw new Error(`Env ${envName} - ${errorProp}`);
-  return Mobizon.fill(valueAux);
-}
-
-class SessionUser {
-  psw?: string;
-  ttl_minutes?: number;
-  static new() { return new SessionUser(); }
-  static fill(values: SessionUser) { return CutUndef(FillClassProps(SessionUser.new(), values)); }
-}
-export function EnvSvrSessionUser() {
-  const envName = 'SITE_SESSION_USER';
-  if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
-  const valueAux = nullOrObj(process.env.SITE_SESSION_USER);
-  if (valueAux == null) return SessionUser.new();
-  const errorProp = CheckProps(valueAux, [
-    { name: 'psw', type: PrimitivesType.string },
-    { name: 'ttl_minutes', type: PrimitivesType.number, optional: true },
-  ]);
-  if (errorProp != null) throw new Error(`Env ${envName} - ${errorProp}`);
-  return SessionUser.fill(valueAux);
-}
+// class SessionUser {
+//   psw?: string;
+//   ttl_minutes?: number;
+//   static new() { return new SessionUser(); }
+//   static fill(values: SessionUser) { return CutUndef(FillClassProps(SessionUser.new(), values)); }
+// }
+// export function EnvSvrSessionUser() {
+//   const envName = 'SITE_SESSION_USER';
+//   if (OnClient()) throw new Error(`EnvSvr (${envName}) requisitada no client`);
+//   const valueAux = nullOrObj(process.env.SITE_SESSION_USER);
+//   if (valueAux == null) return SessionUser.new();
+//   const errorProp = CheckProps(valueAux, [
+//     { name: 'psw', type: PrimitivesType.string },
+//     { name: 'ttl_minutes', type: PrimitivesType.number, optional: true },
+//   ]);
+//   if (errorProp != null) throw new Error(`Env ${envName} - ${errorProp}`);
+//   return SessionUser.fill(valueAux);
+// }
 //#endregion

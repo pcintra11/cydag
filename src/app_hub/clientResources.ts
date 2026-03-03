@@ -11,8 +11,8 @@ export const imgAppHub = '/appCydag/logo.png';
 export const DisclaimerHub = DisclaimerApp;
 export const themeSchemesHub = themeSchemesApp;
 export const pagesHub = {
-  signIn: pagesApp.signIn,
-  signOut: pagesApp.signOut,
+  signIn: pagesApp.signInMs,
+  //signOut: pagesApp.signOut,
 };
 export const MenuEntriesHub = (loggedUser: LoggedUser, isLoadingUser: boolean) => MenuEntriesApp(loggedUser, isLoadingUser);
 

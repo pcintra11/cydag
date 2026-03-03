@@ -1,11 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 //import _ from 'underscore';
 
-import { CookieUserConfig } from '../../../../libCommon/loggedUserSvr';
+//import { CookieUserConfig } from '../../../../libCommon/loggedUserSvr';
 import { ConnectDbASync, CloseDbASync } from '../../../../libServer/dbMongo';
 
 import { ErrorPlus, SleepMsDevRandom } from '../../../../libCommon/util';
-import { EnvDeployConfig, isAmbNone } from '../../../../app_base/envs';
+import { isAmbNone } from '../../../../app_base/envs';
 
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
 import { GetCtrlApiExec, ReqNoParm, ResumoApi } from '../../../../libServer/util';
@@ -14,12 +14,13 @@ import { ApiStatusDataByErrorASync } from '../../../../libServer/apiStatusDataBy
 import { CorsMiddlewareAsync } from '../../../../libServer/cors';
 import { AlertTimeExecApiASync } from '../../../../libServer/alertTimeExecApi';
 import { ApiLogFinish, ApiLogStart } from '../../../../libServer/apiLog';
-import { HttpCriptoCookieCmdASync } from '../../../../libServer/httpCryptoCookie';
 
 import { apisApp } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, CheckUserAllowed, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
-import { ProcessoOrcamentarioCentroCustoModel, UserModel } from '../../../../appCydag/models';
+import { ProcessoOrcamentarioCentroCustoModel, UserMd, UserModel } from '../../../../appCydag/models';
 import { User } from '../../../../appCydag/modelTypes';
+import { CookieHttpMake } from '../../../../libServer/cookieHttpMake';
+import { cookiesSys } from '../../../../libCommon/cookies_sys';
 
 const apiSelf = apisApp.userSimulate;
 export default async (req: NextApiRequest, res: NextApiResponse) => {
@@ -40,12 +41,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     const apiLogProc = await ApiLogStart(ctrlApiExec, loggedUserReq);
 
     try {
-      const cookieUserConfig = CookieUserConfig();
+      //const cookieUserConfig = CookieUserConfig();
 
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
       const subCmd = parm.email != null ? 'simulStart' : 'simulCancel';
-      const userDbSigned = await UserModel.findOne({ email: loggedUserReq.emailSigned }).lean();
+      const userDbSigned = await UserModel.findOne({ email: loggedUserReq.emailSigned }).lean() as UserMd;
       CheckApiAuthorized(apiSelf, userDbSigned, loggedUserReq.emailSigned);
       let emailSession, userDbSession;
       if (subCmd === 'simulCancel') {
@@ -63,7 +64,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       const hasSomeCCPlanejador = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailPlanejador: userDbSession.email })) != null;
       const hasSomeCCConsulta = (await ProcessoOrcamentarioCentroCustoModel.findOne({ emailConsulta: userDbSession.email })) != null;
       const loggedUserNow = User.loggedUser(userDbSession, loggedUserReq.emailSigned, agora, agora, agora, hasSomeCCResponsavel, hasSomeCCPlanejador, hasSomeCCConsulta); // , cookieUserConfig.TTLSeconds
-      await HttpCriptoCookieCmdASync(req, res, `main-${parm.cmd}-${subCmd}`, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, loggedUserNow); // , `user-${parm.cmd}`
+      //await HttpCriptoCookieCmdASync(req, res, `main-${parm.cmd}-${subCmd}`, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, loggedUserNow); // , `user-${parm.cmd}`
+      ctrlApiExec.setCookie(CookieHttpMake(cookiesSys.loggedUser, JSON.stringify(loggedUserNow), { httpOnly: true }));
+
       resumoApi.jsonData({ value: loggedUserNow });
 
     } catch (error) {

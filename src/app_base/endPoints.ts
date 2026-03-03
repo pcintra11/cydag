@@ -16,7 +16,7 @@ export const PagesBaseArray = () => {
 const pathApi = 'app_base';
 export const apisBase = {
   asyncProc: new ApiDef(`${pathApi}/asyncProc`), // apenas serverCall
-  httpCryptoCookie: new ApiDef(`${pathApi}/httpCryptoCookie`),
+  //httpCryptoCookie: new ApiDef(`${pathApi}/httpCryptoCookie`),
   logSystemMsgClient: new ApiDef(`${pathApi}/logSystemMsgClient`),
   cloudinarySignature: new ApiDef(`${pathApi}/cloudinarySignature`),
   others: new ApiDef(`${pathApi}/others`),

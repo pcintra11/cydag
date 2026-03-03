@@ -73,14 +73,24 @@ const bodyForLinks1 = (props: IBodyForLinks1Props) => {
   // </div>
 };
 
-export async function SendLink_resetPswASync(ctrlContext: CtrlContext, userId: ObjectId, email: string, name: string,
-  query: IGenericObject, expireIn: Date) {
-  return await SendLinkASync(ctrlContext, userId, email, pagesApp.userResetPsw.pagePath, query, expireIn, bodyForLinks1,
-    'Reset de senha',
-    `Olá ${name}.`,
-    null,
-    'Clique aqui para alterar sua senha');
-}
+// export async function SendLink_resetPswASync(ctrlContext: CtrlContext, userId: ObjectId, email: string, name: string,
+//   query: IGenericObject, expireIn: Date) {
+//   return await SendLinkASync(ctrlContext, userId, email, pagesApp.userResetPsw.pagePath, query, expireIn, bodyForLinks1,
+//     'Reset de senha',
+//     `Olá ${name}.`,
+//     null,
+//     'Clique aqui para alterar sua senha');
+// }
+
+// problema com ctrlContext null !!!!!!!!
+// export async function SendEmailLinkResetPswBetterAuth(ctrlContext: CtrlContext | null, userId: ObjectId, email: string, name: string, url: string,
+//   expireIn: Date) {
+//   return await SendLinkASync(ctrlContext, userId, email, url, {}, expireIn, bodyForLinks1,
+//     'Reset de senha',
+//     `Olá ${name}.`,
+//     null,
+//     'Clique aqui para alterar sua senha');
+// }
 
 // possíveis retornos
 // para erros graves throw error

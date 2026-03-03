@@ -29,7 +29,7 @@ export const ShareIcons = ({ url, text, emailSubject, loggedUserInfo, page }: Sh
   // facebook quote não funciona !!
 
   {/* <Box>
-    Como sugestão use esse texto abaixo para compartilhar, onde já tem o link para o Vizinet com uma breve descrição.
+    Como sugestão use esse texto abaixo para compartilhar, onde já tem o link para o app com uma breve descrição.
     Ao copiar/colar na sua rede social (WhatsApp, Facebook, etc.) aguarde alguns segundos para a imagem e texto aparecerem, assim ficará mais interessante a postagem.
   </Box> */}
 

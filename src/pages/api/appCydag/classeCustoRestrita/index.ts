@@ -19,7 +19,7 @@ import { isAmbNone } from '../../../../app_base/envs';
 
 import { apisApp } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
-import { CentroCustoMd, CentroCustoModel, ClasseCustoModel, UserModel } from '../../../../appCydag/models';
+import { CentroCustoMd, CentroCustoModel, ClasseCustoModel, UserMd, UserModel } from '../../../../appCydag/models';
 import { ClasseCustoRestritaModel as Model_Crud } from '../../../../appCydag/models';
 
 import { Entity_Crud, CmdApi_Crud as CmdApi } from './types';
@@ -45,12 +45,13 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      CheckApiAuthorized(apiSelf, await UserModel.findOne({ email: loggedUserReq?.email }).lean(), loggedUserReq?.email);
+      const userDb = await UserModel.findOne({ email: loggedUserReq?.email }).lean() as UserMd;
+      CheckApiAuthorized(apiSelf, userDb, loggedUserReq?.email);
 
       let documentsCentroCusto: CentroCustoMd[] = [];
       if (parm.cmd == CmdApi.insert ||
         parm.cmd == CmdApi.update)
-        documentsCentroCusto = await CentroCustoModel.find({}).lean().sort({ cod: 1 });
+        documentsCentroCusto = await CentroCustoModel.find({}).lean().sort({ cod: 1 }) as CentroCustoMd[];
 
       if (parm.cmd == CmdApi.list) {
         const { classeCusto } = parm.filter || {};

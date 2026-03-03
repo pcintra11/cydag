@@ -65,10 +65,12 @@ export const pagesApp = {
   home: new PageDef(`${pathPages}/home`, { pageTitle: 'Orientações para Uso do Sistema', txtDynamicMenu: 'Orientações', onlyAuthenticated: true }),
 
   //logRedir: new PageDef(`${pathPages}/logRedir`),
-  signIn: new PageDef(EnvDeployConfig().mode_auth == 'azure' ? `${pathPages}/signInAzure` : `${pathPages}/signIn`, { pageTitle: 'Login' }),
-  signOut: new PageDef(EnvDeployConfig().mode_auth == 'azure' ? `${pathPages}/signOutAzure` : `${pathPages}/signOut`, { pageTitle: 'Logout' }),
+  signIn: new PageDef(`${pathPages}/signIn`, { pageTitle: 'Login' }),
+  signInMs: new PageDef(`${pathPages}/signInMs`, { pageTitle: 'Login' }),
+  posLoginSSO: new PageDef(`${pathPages}/posLoginSSO`),
+  signOut: new PageDef(EnvDeployConfig().mode_auth == 'azure' ? `${pathPages}/signOutMs` : `${pathPages}/signOut`, { pageTitle: 'Logout' }),
   userSimulate: new PageDef(`${pathPages}/userSimulate`, { pageTitle: 'Simulação de Usuário', onlyAuthenticated: true, roles: [rolesApp.gestorContr, rolesDev.dev, roleDynamicSimulatingUser] }),
-  userResetPsw: new PageDef(`${pathPages}/resetPsw`, { pageTitle: 'Reset de Senha' }),
+  resetPsw: new PageDef(`${pathPages}/resetPsw`, { pageTitle: 'Reset de Senha' }),
 
   funcionario: new PageDef(`${pathPages}/plan/funcionario`, { pageTitle: 'Composição da Equipe', onlyAuthenticated: true, roles: [rolesApp.dyn_responsCC, rolesApp.gestorContr] }),
   terceiro: new PageDef(`${pathPages}/plan/terceiro`, { pageTitle: 'Terceirizados', onlyAuthenticated: true, roles: rolesQuadro }),
@@ -106,6 +108,7 @@ export const apisApp = {
   userAuth: new ApiDef(`${pathApi}/user/auth`),
   userOthers: new ApiDef(`${pathApi}/user/others`),
   userSimulate: new ApiDef(`${pathApi}/user/simulate`, [rolesApp.gestorContr, rolesDev.dev, roleDynamicSimulatingUser]),
+  setLoggedUserServer: new ApiDef(`${pathApi}/user/setLoggedUserServer`),
 
   processoOrcamentario: new ApiDef(`${pathApi}/processoOrcamentario`),
   funcionario: new ApiDef(`${pathApi}/funcionario`),

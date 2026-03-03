@@ -9,7 +9,7 @@ import { CtrlRecursion } from '../libCommon/ctrlRecursion';
 import { CutUndef, FillClassProps } from '../libCommon/util';
 
 import { configApp } from '../app_hub/appConfig';
-import { Env, EnvSvrEmailConfig, EmailConfig, isAmbPrd } from '../app_base/envs';
+import { Env, EnvSvrEmailConfig, EmailConfig, isAmbPrd, isAmbDev } from '../app_base/envs';
 
 import { LogSentMessagesFn } from './util';
 
@@ -131,7 +131,7 @@ async function _SendMailASync(sendEmailParams: SendEmailParams, ctrlContext: Ctr
     const mailOpt: SMTPTransport.Options = {
       host: emailConfigUse.host,
       port: emailConfigUse.port,
-      secure,
+      secure: isAmbDev() ? false : secure,
       auth: emailConfigUse.auth,
     };
 
@@ -175,7 +175,13 @@ async function _SendMailASync(sendEmailParams: SendEmailParams, ctrlContext: Ctr
       ...recipients,
       subject: subjectUseMail, // Subject line
       text: sendEmailParams.bodyText,
-      html: sendEmailParams.bodyHtml
+      html: sendEmailParams.bodyHtml,
+      // list: {
+      //   unsubscribe: {
+      //     url: `${EnvDeployConfig().app_url}/unsubscribe`,
+      //     comment: 'Unsubscribe from Daily Updates',
+      //   },
+      // },
     });
     // .then((x) => ResultOk({ response: x.response }))
     // .catch(ResultErr);

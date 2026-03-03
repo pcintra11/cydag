@@ -64,9 +64,9 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       await CheckBlockAsync(loggedUserReq);
 
       //@!!!!!!!!!!26
-      CheckApiAuthorized(apiSelf, await UserModel.findOne({ email: loggedUserReq?.email }).lean(), loggedUserReq?.email);
-      // const userDb = await UserModel.findOne({ email: loggedUserReq?.email }).lean() as UserMd;
-      // CheckApiAuthorized(apiSelf, userDb, loggedUserReq?.email);
+      //CheckApiAuthorized(apiSelf, await UserModel.findOne({ email: loggedUserReq?.email }).lean(), loggedUserReq?.email);
+      const userDb = await UserModel.findOne({ email: loggedUserReq?.email }).lean() as UserMd;
+      CheckApiAuthorized(apiSelf, userDb, loggedUserReq?.email);
 
       const classeCustoRestritaArrayGet = async () => {
         const documentsDb = await ClasseCustoRestritaModel.find().lean().sort({ classeCusto: 1 });
@@ -953,10 +953,10 @@ export const ValoresPlanejadosCalc = async (processoOrcamentario: ProcessoOrcame
 
       const showCalcFunc = showCalcGlobal;
 
-      //@!!!!!!!!!!!!!!!26
-      const premissa_dissidio_vals = getValPremissa(premissaCod.dissidio, premissas, valoresPremissas, processoOrcamentarioCentroCusto);
-      // const premissaDissidioUse = processoOrcamentario.ano >= '2026' ? premissaCod.dissidioTpClb : premissaCod.dissidio;
-      // const premissa_dissidio_vals = getValPremissa(premissaDissidioUse, premissas, valoresPremissas, processoOrcamentarioCentroCusto);
+      //@!!!!!!!!!!!!!!!26 dissidio  - ajustar validade no db premissas!!!
+      //const premissa_dissidio_vals = getValPremissa(premissaCod.dissidio, premissas, valoresPremissas, processoOrcamentarioCentroCusto);
+      const premissaDissidioUse = processoOrcamentario.ano >= '2026' ? premissaCod.dissidioTpClb : premissaCod.dissidio;
+      const premissa_dissidio_vals = getValPremissa(premissaDissidioUse, premissas, valoresPremissas, processoOrcamentarioCentroCusto);
 
       const funcionariosForCalc = FuncionariosForCalc(processoOrcamentarioCentroCusto.centroCusto, premissa_dissidio_vals, funcionarios, revisao);
       if (funcionariosForCalc.length > 0) {

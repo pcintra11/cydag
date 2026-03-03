@@ -20,7 +20,7 @@ import { configApp } from '../../../../app_hub/appConfig';
 
 import { apisApp, rolesApp, rolesAppOnlyGestorContr } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
-import { UserModel } from '../../../../appCydag/models';
+import { UserMd, UserModel } from '../../../../appCydag/models';
 import { User } from '../../../../appCydag/modelTypes';
 
 import { CmdApi_UserCrud as CmdApi, crudValidations } from './types';
@@ -47,7 +47,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      const userDbSigned = await UserModel.findOne({ email: loggedUserReq.emailSigned }).lean();
+      const userDbSigned = await UserModel.findOne({ email: loggedUserReq.emailSigned }).lean() as UserMd;
       CheckApiAuthorized(apiSelf, userDbSigned, loggedUserReq.emailSigned);
 
       if (parm.cmd == CmdApi.list) {

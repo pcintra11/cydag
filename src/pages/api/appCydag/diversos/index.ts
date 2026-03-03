@@ -18,7 +18,7 @@ import { isAmbNone } from '../../../../app_base/envs';
 
 import { apisApp } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
-import { UserModel } from '../../../../appCydag/models';
+import { UserMd, UserModel } from '../../../../appCydag/models';
 
 import { CmdApi_Diversos } from './types';
 import { FatorCustoModel } from '../../../../appCydag/models';
@@ -44,7 +44,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      CheckApiAuthorized(apiSelf, await UserModel.findOne({ email: loggedUserReq?.email }).lean(), loggedUserReq?.email);
+      const userDb = await UserModel.findOne({ email: loggedUserReq?.email }).lean() as UserMd;
+      CheckApiAuthorized(apiSelf, userDb, loggedUserReq?.email);
 
       if (parm.cmd == CmdApi_Diversos.listFatorCusto) {
         const documentsDb = await FatorCustoModel.find({},

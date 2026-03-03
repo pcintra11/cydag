@@ -87,7 +87,7 @@ export function UriDb(database?: string) {
 }
 
 const objCnnLock = { id: 'connDb' };
-interface IOpenCloseProps { ctrlContext: CtrlContext, database?: string }
+interface IOpenCloseProps { ctrlContext?: CtrlContext, database?: string }
 
 export async function ConnectDbASync({ ctrlContext, database }: IOpenCloseProps) {
   const databaseUse = database || databaseApp;
@@ -101,7 +101,8 @@ export async function ConnectDbASync({ ctrlContext, database }: IOpenCloseProps)
   dbgD(3, infoDb, 'ConnectDb', `cnnCount: ${mongooseSlot.cnnCount} ; whenConnected: ${DateToStrISO(mongooseSlot.whenConnected)}`); //@@!!!! acho que apos cancelamento por timeout fica com sujeira !
 
   await LockObjASync(objCnnLock, ctrlContext, 'ConnectDb'); // no vercel PODE causar um reaproveitamento
-  ctrlContext.checkElapsed('ConnectDbASync - LockObjASync');
+  if (ctrlContext != null)
+    ctrlContext.checkElapsed('ConnectDbASync - LockObjASync');
 
   try {
 
@@ -149,12 +150,13 @@ export async function ConnectDbASync({ ctrlContext, database }: IOpenCloseProps)
     }
 
     UnLockObj(objCnnLock, ctrlContext, 'ConnectDb');
-    ctrlContext.checkElapsed('ConnectDbASync - fim');
+    if (ctrlContext != null)
+      ctrlContext.checkElapsed('ConnectDbASync - fim');
 
   } catch (error) {
     mongooseSlot.status = StatusDb.error;
     mongooseSlot.cnnCount--;
-    dbgError('ConnectDb', ctrlContext.context, infoDb, error.message);
+    dbgError('ConnectDb', ctrlContext?.context, infoDb, error.message);
     UnLockObj(objCnnLock, ctrlContext, 'ConnectDb');
     throw error;
   }
@@ -267,12 +269,12 @@ export async function CloseDbASync({ ctrlContext, database }: IOpenCloseProps) {
       //SystemWarning('connectDb', 'ok');    
     } catch (error) {
       mongooseSlot.status = StatusDb.closed;
-      dbgError('CloseDb', ctrlContext.context, infoDb, 'disconn-Error', error.message);
+      dbgError('CloseDb', ctrlContext?.context, infoDb, 'disconn-Error', error.message);
       //SystemError('connectDb', 'erro ao connectar', { error: error.message });
     }
 
   } catch (error) {
-    dbgError('CloseDb', ctrlContext.context, infoDb, '**************** Close-Main-Error', error.message);
+    dbgError('CloseDb', ctrlContext?.context, infoDb, '**************** Close-Main-Error', error.message);
   }
 
   UnLockObj(objCnnLock, ctrlContext, 'CloseDb');

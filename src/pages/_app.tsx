@@ -51,9 +51,9 @@ import { useLoggedUser } from '../appCydag/useLoggedUser';
 import { PagesAppArray } from '../appCydag/endPoints';
 import { menuTypeApp } from '../appCydag/themes';
 
-// partes específicas - autenticação pelo Azure (MSAL) --------------------
-import { msalInstance } from '../msal';
-import { MsalProvider } from '@azure/msal-react';
+// // partes específicas - autenticação pelo Azure (MSAL) --------------------
+// import { msalInstance } from '../msal';
+// import { MsalProvider } from '@azure/msal-react';
 
 const themeVariants: IThemeVariants = {}; // defaultThemeVariants(themeSchemesHub);
 
@@ -354,7 +354,7 @@ export default function _app({ Component, pageProps }: AppProps) {
   const loginAndRoute = () => {
     router.push({
       pathname: pagesHub.signIn.pagePath,
-      query: { pageNeedAuthentication: pageDef.pagePath, ...router.query }
+      //query: { pageNeedAuthentication: pageDef.pagePath, ...router.query }
     });
   };
   //#endregion
@@ -435,56 +435,56 @@ export default function _app({ Component, pageProps }: AppProps) {
           <link rel='icon' href='/favicon.ico' />
         </Head>
         <Box height='100%' >
-          <MsalProvider instance={msalInstance}>
-            {/* <chgUserAndRouteContext.Provider value={{ chgUserAndRouteStart, chgUserAndRouteFinish }}> */}
-            <ThemeProvider_mui theme={themePlus}>
-              {msgInitiatingArray.length > 0
-                ? <Stack spacing={1} pl='1.5rem' pr='1rem' pt='1rem' pb='0.5rem'>
-                  <WaitingObs text={msgInitiatingArray.join(', ')} />
-                </Stack>
-                : <>
-                  {(blockByUser != null) &&
-                    <Stack spacing={1} pl='1.5rem' pr='1rem' pt='1rem' pb='0.5rem'>
-                      <Tx>{blockByUser}</Tx>
-                      <BtnLine left>
-                        <Btn onClick={() => loginAndRoute()}>Ir para o login</Btn>
-                      </BtnLine>
+          {/* <MsalProvider instance={msalInstance}> */}
+          {/* <chgUserAndRouteContext.Provider value={{ chgUserAndRouteStart, chgUserAndRouteFinish }}> */}
+          <ThemeProvider_mui theme={themePlus}>
+            {msgInitiatingArray.length > 0
+              ? <Stack spacing={1} pl='1.5rem' pr='1rem' pt='1rem' pb='0.5rem'>
+                <WaitingObs text={msgInitiatingArray.join(', ')} />
+              </Stack>
+              : <>
+                {(blockByUser != null) &&
+                  <Stack spacing={1} pl='1.5rem' pr='1rem' pt='1rem' pb='0.5rem'>
+                    <Tx>{blockByUser}</Tx>
+                    <BtnLine left>
+                      <Btn onClick={() => loginAndRoute()}>Ir para o login</Btn>
+                    </BtnLine>
+                  </Stack>
+                }
+                {(blockByControlledAccess != null) &&
+                  <Stack spacing={1} pl='1.5rem' pr='1rem' pt='1rem' pb='0.5rem'>
+                    <Tx>{blockByControlledAccess}</Tx>
+                    <FakeLink onClick={() => retryAccessControlled()}>Se você já falou com o responsável clique aqui para tentar novamente o acesso.</FakeLink>
+                  </Stack>
+                }
+                {(blockByUser == null && blockByControlledAccess == null) &&
+                  <DevConfigBarContext.Provider value={{ _appMainStates: mainStates, themeVariants: mainStates.themeVariants, themeSchemes: themeSchemesHub, changeMenuType, changeThemeVariants, changeCtrlLog }}>
+                    <Stack spacing={0} height='100%' pb={mainStates.reserveFooterMobile ? '43px' : null}>
+                      <Box flex={1} overflow='hidden'>
+                        <preserveStateContext.Provider value={{ preserveStateSet, preserveStateGet, preserveStateResetAll }}>
+                          <Layout
+                            menuEntriesForMenuTypes={menuEntriesForMenuTypes}
+                            menuType={pageDef?.options?.hideMenu ? null : menuType}
+                            Component={Component}
+                            pageProps={pageProps}
+                            pageDefCurr={pageDef}
+                            imgApp={imgAppHub}
+                          />
+                        </preserveStateContext.Provider>
+                      </Box>
+                      {/* <DisclaimerCookie pageTermsPath={pageTerms.pagePath} pagePrivacyPath={pagePrivacy.pagePath} /> */}
+                      {mainStates.showDevConfigBar && <DevBarLine />}
+                      {DisclaimerHub != null && <DisclaimerHub />}
                     </Stack>
-                  }
-                  {(blockByControlledAccess != null) &&
-                    <Stack spacing={1} pl='1.5rem' pr='1rem' pt='1rem' pb='0.5rem'>
-                      <Tx>{blockByControlledAccess}</Tx>
-                      <FakeLink onClick={() => retryAccessControlled()}>Se você já falou com o responsável clique aqui para tentar novamente o acesso.</FakeLink>
-                    </Stack>
-                  }
-                  {(blockByUser == null && blockByControlledAccess == null) &&
-                    <DevConfigBarContext.Provider value={{ _appMainStates: mainStates, themeVariants: mainStates.themeVariants, themeSchemes: themeSchemesHub, changeMenuType, changeThemeVariants, changeCtrlLog }}>
-                      <Stack spacing={0} height='100%' pb={mainStates.reserveFooterMobile ? '43px' : null}>
-                        <Box flex={1} overflow='hidden'>
-                          <preserveStateContext.Provider value={{ preserveStateSet, preserveStateGet, preserveStateResetAll }}>
-                            <Layout
-                              menuEntriesForMenuTypes={menuEntriesForMenuTypes}
-                              menuType={pageDef?.options?.hideMenu ? null : menuType}
-                              Component={Component}
-                              pageProps={pageProps}
-                              pageDefCurr={pageDef}
-                              imgApp={imgAppHub}
-                            />
-                          </preserveStateContext.Provider>
-                        </Box>
-                        {/* <DisclaimerCookie pageTermsPath={pageTerms.pagePath} pagePrivacyPath={pagePrivacy.pagePath} /> */}
-                        {mainStates.showDevConfigBar && <DevBarLine />}
-                        {DisclaimerHub != null && <DisclaimerHub />}
-                      </Stack>
-                    </DevConfigBarContext.Provider>
-                  }
-                </>
-              }
-              <DialogContainer />
-              <SnackBarContainer />
-            </ThemeProvider_mui >
-            {globalStyle()}
-          </MsalProvider>
+                  </DevConfigBarContext.Provider>
+                }
+              </>
+            }
+            <DialogContainer />
+            <SnackBarContainer />
+          </ThemeProvider_mui >
+          {globalStyle()}
+          {/* </MsalProvider> */}
           {/* </ThemeProviderSC > */}
           {/* </chgUserAndRouteContext.Provider> */}
           {/* <GlobalStyleSC theme={themePlus} /> */}

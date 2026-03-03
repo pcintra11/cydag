@@ -1,23 +1,36 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-import { CookieUserConfig } from '../libCommon/loggedUserSvr';
+import { getBetterAuthSession } from '../lib/betterAuthSesion';
 
-import { EnvDeployConfig } from '../app_base/envs';
+//import { CookieUserConfig } from '../libCommon/loggedUserSvr';
+
+//import { EnvDeployConfig } from '../app_base/envs';
 import { ConcatArrays, ErrorPlus, HttpStatusCode } from '../libCommon/util';
 import { ApiDef, CheckRoleAllowed } from '../libCommon/endPoints';
-import { csd } from '../libCommon/dbg';
+import { cookiesSys } from '../libCommon/cookies_sys';
 
-import { HttpCriptoCookieCmdASync } from '../libServer/httpCryptoCookie';
+import cookiesHttp from '../libServer/cookiesHttp';
 
 import { UserMd } from './models';
 import { LoggedUser } from './loggedUser';
 import { User } from './modelTypes';
 
 export const LoggedUserReqASync = async (req: NextApiRequest, res: NextApiResponse, extendCookieExpiration = false) => {
-  const cookieUserConfig = CookieUserConfig();
-  const loggedUserStringfy = await HttpCriptoCookieCmdASync(req, res, 'LoggedUserReqASync', cookieUserConfig, 'get', { domain: EnvDeployConfig().domain, extendExpiration: extendCookieExpiration });
-  const loggedUserReq = loggedUserStringfy != null ? LoggedUser.deserialize(loggedUserStringfy) : null;
-  return loggedUserReq;
+  //const cookieUserConfig = CookieUserConfig();
+  // const loggedUserStringfy = await HttpCriptoCookieCmdASync(req, res, 'LoggedUserReqASync', cookieUserConfig, 'get', { domain: EnvDeployConfig().domain, extendExpiration: extendCookieExpiration });
+  const loggedUserStringfyJson = cookiesHttp.get(req, cookiesSys.loggedUser);
+  const loggedUserStringfy = loggedUserStringfyJson != '' && loggedUserStringfyJson != null ? JSON.parse(loggedUserStringfyJson) : null;
+  let loggedUser = loggedUserStringfy != null ? LoggedUser.deserialize(loggedUserStringfy) : null;
+  const betterAuthSession = await getBetterAuthSession(req, res);
+  //console.log('LoggedUserReqASync', { betterAuthSession, loggedUser });
+  //if (acceptConflict) return { loggedUser, betterAuthSession };
+  if (betterAuthSession == null) return null;
+  if (betterAuthSession != null && loggedUser != null) {
+    if (loggedUser.emailSigned != betterAuthSession.user.email)
+      console.log('betterAuthSession.user.email', betterAuthSession.user.email, 'loggedUser.accountSigned', loggedUser.emailSigned);
+      loggedUser = null;
+  }
+  return loggedUser;
 };
 
 export const CheckApiAuthorized = (apiDef: ApiDef, userDb: UserMd, email: string) => {

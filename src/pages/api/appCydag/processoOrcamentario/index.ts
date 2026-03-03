@@ -23,7 +23,7 @@ import { ProcessoOrcamentarioCentroCusto } from '../../../../appCydag/modelTypes
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatus, ProcessoOrcamentarioStatusMd, RevisaoValor } from '../../../../appCydag/types';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 import { apisApp, rolesApp } from '../../../../appCydag/endPoints'; // @!!!!! agrupar num index !
-import { FuncionarioModel, TerceiroModel, UserModel, ValoresImputadosModel, ValoresLocalidadeModel, ValoresPlanejadosCalcModel, ValoresPlanejadosHistoricoModel, ValoresPremissaModel, ValoresTransferModel, ViagemModel } from '../../../../appCydag/models';
+import { FuncionarioModel, TerceiroModel, UserMd, UserModel, ValoresImputadosModel, ValoresLocalidadeModel, ValoresPlanejadosCalcModel, ValoresPlanejadosHistoricoModel, ValoresPremissaModel, ValoresTransferModel, ViagemModel } from '../../../../appCydag/models';
 import { AgrupPremissasModel, DiretoriaModel, GerenciaModel, LocalidadeModel, UnidadeNegocioModel, CentroCustoModel, ProcessoOrcamentarioCentroCustoModel, ProcessoOrcamentarioModel as EntityModel } from '../../../../appCydag/models';
 import { ProcessoOrcamentario as Entity } from '../../../../appCydag/modelTypes';
 
@@ -74,7 +74,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      CheckApiAuthorized(apiSelf, await UserModel.findOne({ email: loggedUserReq?.email }).lean(), loggedUserReq?.email);
+      const userDb = await UserModel.findOne({ email: loggedUserReq?.email }).lean() as UserMd;
+      CheckApiAuthorized(apiSelf, userDb, loggedUserReq?.email);
       ctrlApiExec.ctrlContext.checkElapsed(`pre ${parm.cmd}`);
 
       if (parm.cmd == CmdApi.list) {

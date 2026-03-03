@@ -312,6 +312,11 @@ export function DateDifHours(date1: Date, date2: Date) {
 export function DateDifDays(date1: Date, date2: Date) {
   return differenceInDays_dtfns(date1, date2);
 }
+export function DateAdd(date: Date, duration: Duration_dtfns) {
+  // AddToDate(DateFromStrISO(payLoad.ctrl.hora), { seconds: payLoad.ctrl.expirationSecs });
+  return add_dtfns(date, duration);
+}
+
 export function CompareDates(date1: Date, date2: Date) { // >0 => data1 > data2
   return compareAsc_dtfns(date1, date2);
 }

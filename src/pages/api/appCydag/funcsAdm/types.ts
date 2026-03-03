@@ -1,4 +1,5 @@
 enum CmdApi {
+  removeAlRealizado = 'removeAlRealizado',
   ensureIndexes = 'ensureIndexes',
   checkIndexes = 'checkIndexes',
   clearLogsToDelete = 'clearLogsToDelete',

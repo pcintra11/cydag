@@ -5,10 +5,9 @@ import { Box, Stack } from '@mui/material';
 
 //import { chgUserAndRouteContext } from '../_appResources';
 
-import { ErrorPlus, IsErrorManaged, ObjUpdAllProps } from '../../libCommon/util';
-import { csd } from '../../libCommon/dbg';
+import { ErrorPlus, IsErrorManaged, ObjUpdAllProps, UrlForPage } from '../../libCommon/util';
 
-import { FakeLink, PopupMsg } from '../../components';
+import { FakeLink } from '../../components';
 import { Btn, BtnLine, WaitingObs } from '../../components';
 import { AbortProc, LogErrorUnmanaged } from '../../components';
 //import { LinkHelpEmail } from '../../components';
@@ -16,9 +15,10 @@ import { FrmError, FrmInput, FrmSetError } from '../../components';
 import { FrmDefaultValues, NormalizePropsString, useFrm } from '../../hooks/useMyForm';
 
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
-import { UserEmailLinkASync, UserResetPswASync } from '../../appCydag/userResourcesCli';
+//import { UserEmailLinkASync, UserResetPswASync } from '../../appCydag/userResourcesCli';
 import { pagesApp } from '../../appCydag/endPoints';
 import { resetPswValidations, UserLinkType } from '../api/appCydag/user/types';
+import { authClient } from '../../libClient/betterAuth';
 
 enum Phase {
   initiating = 'initiating',
@@ -37,7 +37,16 @@ class FrmResetPsw {
   });
 }
 let mount; let mainStatesCache;
-const pageSelf = pagesApp.userResetPsw;
+const pageSelf = pagesApp.resetPsw;
+const apis = {
+  efetiva: async (token: string, psw: string) => {
+    const { data, error } = await authClient.resetPassword({
+      newPassword: psw,
+      token,
+    });
+    if (data == null) throw new ErrorPlus('Erro no reset - Use o último email enviado e apenas por uma vez');
+  },
+}
 export default function PageResetPsw() {
   const frmResetPsw = useFrm<FrmResetPsw>({ defaultValues: FrmDefaultValues(new FrmResetPsw()), schema: resetPswValidations });
   interface MainStates {
@@ -92,15 +101,17 @@ export default function PageResetPsw() {
       if (data.pswConfirm != data.psw)
         //return FrmSetError('Senhas não conferem', null, frm);
         return FrmSetError(frmResetPsw, FrmResetPsw.f.pswConfirm, 'Senha não confere');
-      const loggedUserNow = await UserResetPswASync(router.query.token as string, data.email, data.psw, data.pswConfirm);
-      //csd({ loggedUserNow });
-      // //csl({ loggedUserNow });
-      // //dbg(3, 'resetPsw ok', { loggedUserNow });
-      // //SnackBar.success('Senha alterada com sucesso!');
-      // setNextPageChangedUser(pagesApp.welcome.pagePath);
-      //chgUserAndRouteStart({ loggedUser: loggedUserNow, pagePath: pagesApp.home.pagePath });
-      setUser(loggedUserNow, pageSelf.pagePath);
-      router.push({ pathname: pagesApp.home.pagePath });
+      // const loggedUserNow = await UserResetPswASync(router.query.token as string, data.email, data.psw, data.pswConfirm);
+      // //csd({ loggedUserNow });
+      // // //csl({ loggedUserNow });
+      // // //dbg(3, 'resetPsw ok', { loggedUserNow });
+      // // //SnackBar.success('Senha alterada com sucesso!');
+      // // setNextPageChangedUser(pagesApp.welcome.pagePath);
+      // //chgUserAndRouteStart({ loggedUser: loggedUserNow, pagePath: pagesApp.home.pagePath });
+      // setUser(loggedUserNow, pageSelf.pagePath);
+      // router.push({ pathname: pagesApp.home.pagePath });
+      await apis.efetiva(router.query.token as string, data.psw!);
+      router.push(UrlForPage(pagesApp.signIn.pagePath));
     } catch (error) {
       LogErrorUnmanaged(error, `${pageSelf.pagePath}-onSubmit`);
       if (!IsErrorManaged(error)) {
@@ -111,19 +122,19 @@ export default function PageResetPsw() {
       setMainStatesCache({ showHelp: true });
     }
   };
-  const sendResetPswLink = async (dataForm: FrmResetPsw) => {
-    try {
-      const message = await UserEmailLinkASync(dataForm.email, UserLinkType.resetPsw);
-      PopupMsg.success(message);
-    } catch (error) {
-      LogErrorUnmanaged(error, `${pageSelf.pagePath}-sendResetPswLink`);
-      if (!IsErrorManaged(error)) {
-        setMainStatesCache({ error });
-        return;
-      }
-      FrmError(frmResetPsw, error);
-    }
-  };
+  // const sendResetPswLink = async (dataForm: FrmResetPsw) => {
+  //   try {
+  //     const message = await UserEmailLinkASync(dataForm.email, UserLinkType.resetPsw);
+  //     PopupMsg.success(message);
+  //   } catch (error) {
+  //     LogErrorUnmanaged(error, `${pageSelf.pagePath}-sendResetPswLink`);
+  //     if (!IsErrorManaged(error)) {
+  //       setMainStatesCache({ error });
+  //       return;
+  //     }
+  //     FrmError(frmResetPsw, error);
+  //   }
+  // };
 
   //#endregion
 
@@ -148,9 +159,9 @@ export default function PageResetPsw() {
             </BtnLine>
             {mainStates.showHelp &&
               <Stack spacing={1}>
-                <Box>
+                {/* <Box>
                   <FakeLink onClick={frmResetPsw.handleSubmit(sendResetPswLink)}>Enviar novo link de reset</FakeLink>
-                </Box>
+                </Box> */}
                 <Box>
                   <FakeLink onClick={() => router.push(pagesApp.signIn.pagePath)}>Ir para tela de login</FakeLink>
                 </Box>

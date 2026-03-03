@@ -19,7 +19,7 @@ import { isAmbNone } from '../../../../app_base/envs';
 
 import { apisApp } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
-import { LocalidadeModel, ProcessoOrcamentarioModel, UserModel, ValoresTransferModel } from '../../../../appCydag/models';
+import { LocalidadeModel, ProcessoOrcamentarioModel, UserMd, UserModel, ValoresTransferModel } from '../../../../appCydag/models';
 import { ValoresTransfer } from '../../../../appCydag/modelTypes';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatusMd, RevisaoValor } from '../../../../appCydag/types';
 import { amountParseApp } from '../../../../appCydag/util';
@@ -48,7 +48,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      const userDb = await UserModel.findOne({ email: loggedUserReq?.email }).lean();
+      const userDb = await UserModel.findOne({ email: loggedUserReq?.email }).lean() as UserMd;
       CheckApiAuthorized(apiSelf, userDb, loggedUserReq?.email);
 
       if (parm.cmd == CmdApi.initialization) {

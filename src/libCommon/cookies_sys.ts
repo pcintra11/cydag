@@ -3,5 +3,6 @@ export const cookiesSys = { // todas apps usam, podendo ser restrito o nome para
   ctrlLog: 'ctrlLog' as 'ctrlLog',
   browserId: 'browserId' as 'browserId',
   cookieDevContext: 'cookieDevContext' as 'cookieDevContext',
+  loggedUser: 'loggedUser' as 'loggedUser',
   //canChangeThemeCookieStr: 'canChangeThemeStr' as 'canChangeThemeStr',
 };

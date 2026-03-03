@@ -14,13 +14,14 @@ import { AbortProc, LogErrorUnmanaged } from '../../components';
 import { FrmError, FrmInput } from '../../components';
 import { FrmDefaultValues, NormalizePropsString, useFrm } from '../../hooks/useMyForm';
 
-import { pagesApp } from '../../appCydag/endPoints';
+import { apisApp, pagesApp } from '../../appCydag/endPoints';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 //import { userSchema } from '../../appCydag/types_user_db'; //@@!!!!!
-import { UserEmailLinkASync, UserSignInASync } from '../../appCydag/userResourcesCli';
+import { UserSignInEmailASync } from '../../appCydag/userResourcesCli';
 import { User } from '../../appCydag/modelTypes';
-import { signInValidations, UserLinkType } from '../api/appCydag/user/types';
+import { CmdApi_UserOthers, signInValidations } from '../api/appCydag/user/types';
 import { ctrlContextFromGlobals } from '../../libClient/clientGlobals';
+import { CallApiCliASync } from '../../fetcher/fetcherCli';
 
 enum Phase {
   initiating = 'initiating',
@@ -34,6 +35,16 @@ class FrmDataSignIn {
 
 let mount; let mainStatesCache;
 const pageSelf = pagesApp.signIn;
+
+const apis = {
+  orderResetPsw: async (email: string) => {
+    const apiReturn = await CallApiCliASync<{ value: { message: string } }>(apisApp.userOthers.apiPath,
+      { cmd: CmdApi_UserOthers.requestPasswordReset, email, _destaq: ['cmd'] });
+    return {
+      message: apiReturn.value.message,
+    };
+  },
+};
 export default function PageSignIn() {
   const frmSignIn = useFrm<FrmDataSignIn>({ defaultValues: FrmDefaultValues(new FrmDataSignIn()), schema: signInValidations });
   interface MainStates {
@@ -89,7 +100,7 @@ export default function PageSignIn() {
     const data = NormalizePropsString(dataForm);
     try {
       if (data.psw == null) return FrmSetError(frmSignIn, User.F.psw, 'Informe a senha');
-      const loggedUserNow = await UserSignInASync(data.email, data.psw);
+      const loggedUserNow = await UserSignInEmailASync(data.email, data.psw);
       let nextPagePathName = pagesApp.home.pagePath;
       let nextPageQuery: any = undefined;
       if (router.query?.pageNeedAuthentication != null) {
@@ -111,7 +122,8 @@ export default function PageSignIn() {
   const sendResetPswLink = async (dataForm: FrmDataSignIn) => {
     const data = NormalizePropsString(dataForm);
     try {
-      const message = await UserEmailLinkASync(data.email, UserLinkType.resetPsw);
+      //const message = await UserEmailLinkASync(data.email, UserLinkType.resetPsw);
+      const { message } = await apis.orderResetPsw(data.email);
       PopupMsg.success(message);
     } catch (error) {
       LogErrorUnmanaged(error, `${pageSelf.pagePath}-sendResetPswLink`);

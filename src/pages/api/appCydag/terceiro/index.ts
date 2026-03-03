@@ -20,7 +20,7 @@ import { Terceiro } from '../../../../appCydag/modelTypes';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatusMd, RevisaoValor } from '../../../../appCydag/types';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 import { apisApp, rolesApp } from '../../../../appCydag/endPoints';
-import { FuncaoTerceiroModel, UserModel } from '../../../../appCydag/models';
+import { FuncaoTerceiroModel, UserMd, UserModel } from '../../../../appCydag/models';
 import { ProcessoOrcamentarioCentroCustoModel, ProcessoOrcamentarioModel, TerceiroModel } from '../../../../appCydag/models';
 import { ccsAuthArray, CheckProcCentroCustosAuth, IAuthCC, procsCentroCustosConfigAuthAllYears } from '../../../../appCydag/utilServer';
 import { amountParseApp } from '../../../../appCydag/util';
@@ -49,7 +49,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      const userDb = await UserModel.findOne({ email: loggedUserReq?.email }).lean();
+      const userDb = await UserModel.findOne({ email: loggedUserReq?.email }).lean() as UserMd;
       CheckApiAuthorized(apiSelf, userDb, loggedUserReq?.email);
 
       const UserCanWrite = (ccConfig: any) => (

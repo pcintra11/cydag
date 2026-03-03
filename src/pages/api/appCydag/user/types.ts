@@ -15,11 +15,12 @@ enum CmdApiCrud {
   reset = 'reset',
 }
 enum CmdApiOthers {
-  resetPsw = 'resetPsw',
-  emailLink = 'emailLink',
+  //resetPsw = 'resetPsw',
+  //orderResetPsw = 'orderResetPsw',
+  requestPasswordReset = 'requestPasswordReset'
 }
 enum CmdApiAuth {
-  signIn = 'signIn',
+  signInEmail = 'signInEmail',
   signOut = 'signOut',
   reSignIn = 'reSignIn',
   getLoggedUserCookie = 'getLoggedUserCookie',

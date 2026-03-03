@@ -15,7 +15,6 @@ import { ApiStatusDataByErrorASync } from '../../../../libServer/apiStatusDataBy
 import cookieHttp from '../../../../libServer/cookiesHttp';
 import { SendEmailParams, SendMailASync, SendMailOptionsASync, sysEmailSupport } from '../../../../libServer/sendMail';
 import { CorsMiddlewareAsync } from '../../../../libServer/cors';
-import { HttpCriptoCookieCmdASync, HttpCryptoCookieConfig } from '../../../../libServer/httpCryptoCookie';
 import { NewPromiseExecUntilCloseDb, NewPromiseExecUntilResponse, IPromiseCtrl } from '../../../../libServer/opersASync';
 import { SendEmailAsyncApi } from '../../../../libServer/asyncProcsCalls';
 import { SystemMsgSvrASync } from '../../../../libServer/systemMsgSvr';
@@ -112,62 +111,62 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
       if (useDatabaseTst && UriDb(databaseTst) == null)
         throw new Error(`database '${databaseTst}' não configurado`);
 
-      const dbTestModel = DbTestModelX(collection, useDatabaseTst ? databaseTst : undefined);
-
-      const recsToInsertInGroup: any[] = [];
       const msgsResult: string[] = [];
+      // const dbTestModel = DbTestModelX(collection, useDatabaseTst ? databaseTst : undefined);
 
-      for (let item = 1; item <= qtd; item++) {
-        const key = uniqKeys ? uuidv1() : RandomNumber(1, qtd * 2).toString();
-        const contentSizeUse = contentSizeVariable ? RandomNumber(0, contentSize) : contentSize;
-        let fld = `${DateDisp(agora, 'dmyhm')} `;
-        if (fld.length < contentSizeUse) fld = fld.padEnd(contentSizeUse, '*');
-        else if (fld.length > contentSizeUse) fld = fld.substring(0, contentSizeUse);
-        const dbTest: DbTest = { key: key.padEnd(100, '*'), fld };
-        if (insertInGroup)
-          recsToInsertInGroup.push(dbTest);
-        else {
-          try {
-            await dbTestModel.create(dbTest);
-          } catch (error) {
-            msgsResult.push(`erro no registro ${item}, key ${key}: ${error.message}`);
-          }
-        }
-      }
+      // const recsToInsertInGroup: any[] = [];
 
-      if (insertInGroup) {
-        try {
-          //csl({ recsToInsertInGroup });
-          const result = await dbTestModel.insertMany(recsToInsertInGroup, { ordered: false });
-          //csl({ result });
-        } catch (error) {
-          msgsResult.push(`erro no insertMany: ${error.message}`);
-          error.writeErrors.forEach((x) => msgsResult.push(`- registro ${x.err.index}, key ${x.err.op.key}: ${x.err.errmsg}`));
-          //error.writeErrors.forEach((x) => csl({x}));
-          //csl('error', JSON.stringify(error, null, 2));
-        }
-      }
+      // for (let item = 1; item <= qtd; item++) {
+      //   const key = uniqKeys ? uuidv1() : RandomNumber(1, qtd * 2).toString();
+      //   const contentSizeUse = contentSizeVariable ? RandomNumber(0, contentSize) : contentSize;
+      //   let fld = `${DateDisp(agora, 'dmyhm')} `;
+      //   if (fld.length < contentSizeUse) fld = fld.padEnd(contentSizeUse, '*');
+      //   else if (fld.length > contentSizeUse) fld = fld.substring(0, contentSizeUse);
+      //   const dbTest: DbTest = { key: key.padEnd(100, '*'), fld };
+      //   if (insertInGroup)
+      //     recsToInsertInGroup.push(dbTest);
+      //   else {
+      //     try {
+      //       await dbTestModel.create(dbTest);
+      //     } catch (error) {
+      //       msgsResult.push(`erro no registro ${item}, key ${key}: ${error.message}`);
+      //     }
+      //   }
+      // }
 
-      msgsResult.length == 0 && msgsResult.push('tudo ocorreu sem erros');
+      // if (insertInGroup) {
+      //   try {
+      //     //csl({ recsToInsertInGroup });
+      //     const result = await dbTestModel.insertMany(recsToInsertInGroup, { ordered: false });
+      //     //csl({ result });
+      //   } catch (error) {
+      //     msgsResult.push(`erro no insertMany: ${error.message}`);
+      //     error.writeErrors.forEach((x) => msgsResult.push(`- registro ${x.err.index}, key ${x.err.op.key}: ${x.err.errmsg}`));
+      //     //error.writeErrors.forEach((x) => csl({x}));
+      //     //csl('error', JSON.stringify(error, null, 2));
+      //   }
+      // }
+
+      // msgsResult.length == 0 && msgsResult.push('tudo ocorreu sem erros');
       msgsResult.push(`tempo para as operações no db: ${calcExecTime.elapsedMs()}ms`);
       resumoApi.jsonData({ value: msgsResult });
     }
-    else if (parm.cmd == CmdApi_Playg.testDbRead) {
-      const calcExecTime = new CalcExecTime();
-      const collection = parm.collection;
-      const useDatabaseTst = parm.useDatabaseTst;
-      if (useDatabaseTst && UriDb(databaseTst) == null)
-        throw new Error('database "other" não configurado');
+    // else if (parm.cmd == CmdApi_Playg.testDbRead) {
+    //   const calcExecTime = new CalcExecTime();
+    //   const collection = parm.collection;
+    //   const useDatabaseTst = parm.useDatabaseTst;
+    //   if (useDatabaseTst && UriDb(databaseTst) == null)
+    //     throw new Error('database "other" não configurado');
 
-      const dbTestModel = DbTestModelX(collection, useDatabaseTst ? databaseTst : undefined);
-      const msgsResult: string[] = [];
+    //   const dbTestModel = DbTestModelX(collection, useDatabaseTst ? databaseTst : undefined);
+    //   const msgsResult: string[] = [];
 
-      const regs = await dbTestModel.find({});
+    //   const regs = await dbTestModel.find({});
 
-      msgsResult.length == 0 && msgsResult.push(`ok: ${regs.length} documentos lidos`);
-      msgsResult.push(`tempo para as operações no db: ${calcExecTime.elapsedMs()}ms`);
-      resumoApi.jsonData({ value: msgsResult });
-    }
+    //   msgsResult.length == 0 && msgsResult.push(`ok: ${regs.length} documentos lidos`);
+    //   msgsResult.push(`tempo para as operações no db: ${calcExecTime.elapsedMs()}ms`);
+    //   resumoApi.jsonData({ value: msgsResult });
+    // }
 
     else if (parm.cmd == CmdApi_Playg.testDbReset) {
       const collection = parm.collection;
@@ -315,18 +314,18 @@ export default async function (req: NextApiRequest, res: NextApiResponse) {
       resumoApi.jsonData({ horaFim: HoraDebug(), parm, value: result });
     }
     else if (parm.cmd == CmdApi_Playg.cookieHttpCrypto) {
-      const httpCryptoCookieConfig = HttpCryptoCookieConfig.fill({
-        name: parm.name,
-        TTLSeconds: 30 * 24 * 60 * 60,
-        psw: parm.psw == '' ? '123456789012345678901234567890ab' : parm.psw, // mínimo de 32
-      });
+      // const httpCryptoCookieConfig = HttpCryptoCookieConfig.fill({
+      //   name: parm.name,
+      //   TTLSeconds: 30 * 24 * 60 * 60,
+      //   psw: parm.psw == '' ? '123456789012345678901234567890ab' : parm.psw, // mínimo de 32
+      // });
       const result: IGenericObject = {};
-      if (parm.cmdCookie == 'set')
-        await HttpCriptoCookieCmdASync(req, res, parm.cmdCookie, httpCryptoCookieConfig, 'set', { domain: EnvDeployConfig().domain }, parm.value);
-      else if (parm.cmdCookie == 'remove')
-        await HttpCriptoCookieCmdASync(req, res, parm.cmdCookie, httpCryptoCookieConfig, 'set', { domain: EnvDeployConfig().domain }, null);
-      else if (parm.cmdCookie == 'get')
-        result.value = await HttpCriptoCookieCmdASync(req, res, parm.cmdCookie, httpCryptoCookieConfig, 'get', { domain: EnvDeployConfig().domain });
+      // if (parm.cmdCookie == 'set')
+      //   await HttpCriptoCookieCmdASync(req, res, parm.cmdCookie, httpCryptoCookieConfig, 'set', { domain: EnvDeployConfig().domain }, parm.value);
+      // else if (parm.cmdCookie == 'remove')
+      //   await HttpCriptoCookieCmdASync(req, res, parm.cmdCookie, httpCryptoCookieConfig, 'set', { domain: EnvDeployConfig().domain }, null);
+      // else if (parm.cmdCookie == 'get')
+      //   result.value = await HttpCriptoCookieCmdASync(req, res, parm.cmdCookie, httpCryptoCookieConfig, 'get', { domain: EnvDeployConfig().domain });
       resumoApi.jsonData({ horaFim: HoraDebug(), parm, value: result });
     }
     else if (parm.cmd == CmdApi_Playg.envs) {

@@ -16,7 +16,7 @@ import { ApiLogFinish, ApiLogStart } from '../../../../libServer/apiLog';
 
 import { apisApp } from '../../../../appCydag/endPoints';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
-import { AgrupPremissasModel, EmpresaModel, PremissaModel, ProcessoOrcamentarioModel, UserModel, ValoresPremissaModel } from '../../../../appCydag/models';
+import { AgrupPremissasModel, EmpresaModel, PremissaModel, ProcessoOrcamentarioModel, UserMd, UserModel, ValoresPremissaModel } from '../../../../appCydag/models';
 import { ValoresPremissa } from '../../../../appCydag/modelTypes';
 import { OperInProcessoOrcamentario, ProcessoOrcamentarioStatusMd, RevisaoValor, TipoSegmCentroCusto } from '../../../../appCydag/types';
 
@@ -44,7 +44,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      CheckApiAuthorized(apiSelf, await UserModel.findOne({ email: loggedUserReq?.email }).lean(), loggedUserReq?.email);
+      const userDb = await UserModel.findOne({ email: loggedUserReq?.email }).lean() as UserMd;
+      CheckApiAuthorized(apiSelf, userDb, loggedUserReq?.email);
 
       const premissaArray = await PremissaModel.find().lean().sort({ cod: 1 });
 

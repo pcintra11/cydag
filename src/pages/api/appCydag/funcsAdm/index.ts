@@ -25,7 +25,8 @@ import {
   collectionsDef as collectionsDefApp, UserModel, CentroCustoModel, EmpresaModel, UnidadeNegocioModel, LocalidadeModel,
   ClasseCustoModel, FatorCustoModel, AgrupPremissasModel, DiretoriaModel, GerenciaModel, ValoresRealizadosModel, PremissaModel,
   ValoresPremissaModel, FuncaoTerceiroModel, ViagemModel, ValoresLocalidadeModel, ValoresTransferModel, TerceiroModel, ValoresImputadosModel,
-  ValoresRealizadosInterfaceSapModel, ValoresPlanejadosHistoricoModel, databaseInterfaceSap
+  ValoresRealizadosInterfaceSapModel, ValoresPlanejadosHistoricoModel, databaseInterfaceSap,
+  UserMd
 } from '../../../../appCydag/models';
 import { CheckApiAuthorized, LoggedUserReqASync } from '../../../../appCydag/loggedUserSvr';
 import { apisApp } from '../../../../appCydag/endPoints';
@@ -78,10 +79,15 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
     try {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
-      const userDb = await UserModel.findOne({ email: loggedUserReq.email }).lean();
+      const userDb = await UserModel.findOne({ email: loggedUserReq.email }).lean() as UserMd;
       CheckApiAuthorized(apiSelf, userDb, loggedUserReq.email);
 
-      if (parm.cmd == CmdApi_FuncAdm.ensureIndexes) {
+      if (parm.cmd == CmdApi_FuncAdm.removeAlRealizado) {
+        const resultDelete = await ValoresRealizadosModel.deleteMany({ ano: parm.ano });
+        resumoApi.jsonData({ value: { msgsProc: [`removidos: ${resultDelete.deletedCount}`] } });
+      }
+
+      else if (parm.cmd == CmdApi_FuncAdm.ensureIndexes) {
         const messagesIndexesApp = await EnsureModelsIndexesASync('main', collectionsDefApp);
         const messagesIndexesBase = await EnsureModelsIndexesASync('base', collectionsDefBase);
         resumoApi.jsonData({ value: { msgsProc: [...messagesIndexesApp.map((x) => `main: ${x}`), ...messagesIndexesBase.map((x) => `base: ${x}`)] } });

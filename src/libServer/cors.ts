@@ -1,7 +1,7 @@
 import Cors from 'cors';
 import { NextApiRequest, NextApiResponse } from 'next';
 import URLParse from 'url-parse';
-import psl from 'psl';
+import * as psl from 'psl';
 
 import { csd, csl, dbg, dbgError, dbgInfo, ScopeDbg } from '../libCommon/dbg';
 import { HttpStatusCode } from '../libCommon/util';

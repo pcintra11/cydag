@@ -1,50 +1,38 @@
-import React from 'react';
 import { useRouter } from 'next/router';
+import { useEffect } from 'react';
+import { Stack } from '@mui/material';
 
 import { AbortProc, BtnLine, LogErrorUnmanaged } from '../../components';
 import { Btn, Tx } from '../../components/ui';
 
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 import { pagesApp } from '../../appCydag/endPoints';
-import { useMsal } from '@azure/msal-react';
-import { Stack } from '@mui/material';
 import { UserSignOut } from '../../appCydag/userResourcesCli';
 
 const pageSelf = pagesApp.signOut;
-export default function PageSignOutAzure() {
+export default function PageSignOutMs() {
   const router = useRouter();
   const { loggedUser, isLoadingUser, setUser } = useLoggedUser({ id: pageSelf.pagePath });
-  const { instance, accounts } = useMsal();
 
-  const logoutPop = async () => {
-    try {
-      const result = await instance.logoutPopup();
+  useEffect(() => {
+    if (isLoadingUser) return;
+    if (loggedUser != null) {
       UserSignOut(pageSelf.pagePath);
       setUser(null, pageSelf.pagePath);
     }
-    catch (error) {
-      LogErrorUnmanaged(error, `${pageSelf.pagePath}-logoutPop`);
-    }
-  };
-
-  React.useEffect(() => {
-    if (accounts.length > 0)
-      logoutPop();
+    setTimeout(() => {
+      router.push(pagesApp.signInMs.pagePath);
+    }, 0);
   }, [isLoadingUser]);
 
   try {
     return (
       <Stack spacing={1} height='100%' overflow='auto'>
         <Stack spacing={1}>
-          {accounts.length === 0
-            ? <>
-              <Tx>Desconectado</Tx>
-              <BtnLine>
-                <Btn onClick={() => router.push(pagesApp.signIn.pagePath)}>Entrar novamente</Btn>
-              </BtnLine>
-            </>
-            : <Tx>Desconectando ...</Tx>
-          }
+          <Tx>Desconectado</Tx>
+          <BtnLine>
+            <Btn onClick={() => router.push(pagesApp.signInMs.pagePath)}>Entrar novamente</Btn>
+          </BtnLine>
         </Stack>
       </Stack>
     );

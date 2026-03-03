@@ -29,7 +29,7 @@ function get(req: NextApiRequest, name: string) {
 
 const infiniteAge = 60 * 60 * 24 * 1000; // 1000 dias
 
-function set(res: NextApiResponse, name: string, value: string, options: { sameSite?: 'none', secure?: boolean } = {}) {
+function set(res: NextApiResponse, name: string, value: string, options: { sameSite?: 'none' | 'lax', secure?: boolean } = {}) {
   // se houver algum do cliente será temporariamente sobroposto (até ser removido no server)
   AssertIsServer('cookiesHttp set', { name });
   if (value == null) {
@@ -49,7 +49,7 @@ function set(res: NextApiResponse, name: string, value: string, options: { sameS
 //   return value;
 // }
 
-function remove(res: NextApiResponse, name: string, options: { sameSite?: 'none', secure?: boolean } = {}) {
+function remove(res: NextApiResponse, name: string, options: { sameSite?: 'none' | 'lax', secure?: boolean } = {}) {
   set(res, name, '', options); //@!!!!!!!!! remover o cookie !!!!!
   // res.setHeader('Set-Cookie', cookie.serialize(name, '', {
   //   httpOnly: true,

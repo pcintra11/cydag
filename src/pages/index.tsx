@@ -13,7 +13,7 @@ export default function PageIndexDynam() {
   // return (<WaitingObs text='Redirecionando' />);
 
   return <PageIndexHub />;
-  // if (app === appName.vizinet)
+  // if (app === appName.xxx)
   //   return <PageIndex1 />;
   // else if (app === appName.cydag)
   //   return <PageIndex2 />;
