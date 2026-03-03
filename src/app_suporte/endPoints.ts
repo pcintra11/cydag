@@ -6,7 +6,7 @@ import { ApiDef, AppContainerType, PageDef, rolesDev } from '../libCommon/endPoi
 
 const pathPageSuporte = '/suporte';
 export const pagesSuporte = {
-  index: new PageDef('/'),
+  //index: new PageDef('/'),
   inspect: new PageDef(`${pathPageSuporte}/inspect`, { txtDynamicMenu: 'inspect' }),
   playg: new PageDef(`${pathPageSuporte}/playg`, { pageTitle: 'Playground', onlyAuthenticated: true, roles: [rolesDev.dev] }),
   testsDiv: new PageDef(`${pathPageSuporte}/testsDiv`, { pageTitle: 'Testes diversos', onlyAuthenticated: true, roles: [rolesDev.dev] }),

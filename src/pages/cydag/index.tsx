@@ -8,7 +8,7 @@ import { Btn, BtnLine, LogErrorUnmanaged, AbortProc } from '../../components';
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 //import { GetLoggedUserFromHttpCookieASync } from '../../appCydag/getLoggedUserFromHttpCookieASync';
 import { pagesApp } from '../../appCydag/endPoints';
-import { isAmbDev, isAmbPrd } from '../../app_base/envs';
+import { isAmbPrd } from '../../app_base/envs';
 import { authClient } from '../../libClient/betterAuth';
 import { UrlForPage } from '../../libCommon/util';
 

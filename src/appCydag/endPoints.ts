@@ -61,14 +61,14 @@ export const pagesApp = {
   valoresLocalidade: new PageDef(`${pathPages}/valoresLocalidade`, { pageTitle: 'Valores de Pernoites', txtDynamicMenu: 'Pernoites', onlyAuthenticated: true, roles: rolesControladoria }),
   valoresTransfer: new PageDef(`${pathPages}/valoresTransfer`, { pageTitle: 'Valores de Viagens', txtDynamicMenu: 'Viagens', onlyAuthenticated: true, roles: rolesControladoria }),
 
-  index: new PageDef(`${pathPages}/`, { pageTitle: 'Cydag' }),
+  index: new PageDef('/', { pageTitle: 'Cydag' }),
   home: new PageDef(`${pathPages}/home`, { pageTitle: 'Orientações para Uso do Sistema', txtDynamicMenu: 'Orientações', onlyAuthenticated: true }),
 
   //logRedir: new PageDef(`${pathPages}/logRedir`),
   signIn: new PageDef(`${pathPages}/signIn`, { pageTitle: 'Login' }),
   signInMs: new PageDef(`${pathPages}/signInMs`, { pageTitle: 'Login' }),
   posLoginSSO: new PageDef(`${pathPages}/posLoginSSO`),
-  signOut: new PageDef(EnvDeployConfig().mode_auth == 'azure' ? `${pathPages}/signOutMs` : `${pathPages}/signOut`, { pageTitle: 'Logout' }),
+  signOut: new PageDef(`${pathPages}/signOut`, { pageTitle: 'Logout' }),
   userSimulate: new PageDef(`${pathPages}/userSimulate`, { pageTitle: 'Simulação de Usuário', onlyAuthenticated: true, roles: [rolesApp.gestorContr, rolesDev.dev, roleDynamicSimulatingUser] }),
   resetPsw: new PageDef(`${pathPages}/resetPsw`, { pageTitle: 'Reset de Senha' }),
 

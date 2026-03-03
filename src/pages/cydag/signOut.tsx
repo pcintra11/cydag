@@ -1,7 +1,9 @@
-import React from 'react';
 import { useRouter } from 'next/router';
+import { useEffect } from 'react';
+import { Stack } from '@mui/material';
 
-import { AbortProc, LogErrorUnmanaged, Tx } from '../../components';
+import { AbortProc, BtnLine, LogErrorUnmanaged } from '../../components';
+import { Btn, Tx } from '../../components/ui';
 
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 import { pagesApp } from '../../appCydag/endPoints';
@@ -12,22 +14,27 @@ export default function PageSignOut() {
   const router = useRouter();
   const { loggedUser, isLoadingUser, setUser } = useLoggedUser({ id: pageSelf.pagePath });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isLoadingUser) return;
     if (loggedUser != null) {
       UserSignOut(pageSelf.pagePath);
       setUser(null, pageSelf.pagePath);
     }
     setTimeout(() => {
-      router.push(pagesApp.signIn.pagePath);
+      router.push(pagesApp.index.pagePath);
     }, 0);
   }, [isLoadingUser]);
 
   try {
     return (
-      <Tx>
-        Desconectado
-      </Tx>
+      <Stack spacing={1} height='100%' overflow='auto'>
+        <Stack spacing={1}>
+          <Tx>Desconectado</Tx>
+          <BtnLine>
+            <Btn onClick={() => router.push(pagesApp.index.pagePath)}>Entrar novamente</Btn>
+          </BtnLine>
+        </Stack>
+      </Stack>
     );
   } catch (error) {
     LogErrorUnmanaged(error, `${pageSelf.pagePath}-render`);

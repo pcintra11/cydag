@@ -76,7 +76,7 @@ export const auth = betterAuth({
       await SendPasswordResetHub(user.email, url, token, resetPasswordTokenExpiresInSeconds);
     },
     onPasswordReset: async ({ user }, request) => {
-      console.log(`Password for user ${user.email} has been reset.`);
+      //console.log(`Password for user ${user.email} has been reset.`);
     },
     resetPasswordTokenExpiresIn: resetPasswordTokenExpiresInSeconds,
   },  

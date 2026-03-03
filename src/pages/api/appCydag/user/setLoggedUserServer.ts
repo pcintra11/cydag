@@ -4,7 +4,7 @@ import { apisApp } from '../../../../appCydag/endPoints';
 import { CloseDbASync, ConnectDbASync } from '../../../../libServer/dbMongo';
 import { CorsMiddlewareAsync } from '../../../../libServer/cors';
 import { CorsWhitelist } from '../../../../libServer/corsWhiteList';
-import { EnvDeployConfig, isAmbNone } from '../../../../app_base/envs';
+import { isAmbNone } from '../../../../app_base/envs';
 import { GetCtrlApiExec, ReqNoParm, ResumoApi } from '../../../../libServer/util';
 import { getBetterAuthSession } from '../../../../lib/betterAuthSesion';
 import { ProcessoOrcamentarioCentroCustoModel, UserMd, UserModel } from '../../../../appCydag/models';
@@ -39,7 +39,17 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       //const cookieUserConfig = CookieUserConfig();
 
       if (betterAuthSession != null) {
-        const email = betterAuthSession.user.email;
+        let email = betterAuthSession.user.email;
+
+        //@!!!!!!!26
+        if (email === 'paulocintra@cyrela.onmicrosoft.com') { 
+          email = 'paulocintra@cyrela.com.br';
+          console.log('email retornado no BetterAuth "paulocintra@cyrela.onmicrosoft.com" foi trocado para "paulocintra@cyrela.com.br"');
+        }
+        if (email === 'bruna.aquino@cyrela.onmicrosoft.com') {
+          email = 'bruna.aquino@cyrela.com.br';
+          console.log('email retornado no BetterAuth "bruna.aquino@cyrela.onmicrosoft.com" foi trocado para "bruna.aquino@cyrela.com.br"');
+        }
 
         const userDb = await UserModel.findOne({ email }).lean() as UserMd;
         if (userDb == null) throw new ErrorPlus(`E-mail '${email}' não cadastrado para o Cydag`);
@@ -57,12 +67,12 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
         //await HttpCriptoCookieCmdASync(req, res, apiSelf.apiPath, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, loggedUserNow);
         ctrlApiExec.setCookie(CookieHttpMake(cookiesSys.loggedUser, JSON.stringify(loggedUserNow), { httpOnly: true }));
-        resumoApi.jsonData({ value: loggedUserNow });
+        resumoApi.jsonData({ value: { loggedUser: loggedUserNow, betterAuthUser: betterAuthSession.user.email } });
       }
       else {
         //await HttpCriptoCookieCmdASync(req, res, apiSelf.apiPath, cookieUserConfig, 'set', { domain: EnvDeployConfig().domain }, null);
         ctrlApiExec.removeCookie(cookiesSys.loggedUser);
-        resumoApi.jsonData({ value: { loggedUser: null } });
+        resumoApi.jsonData({ value: { loggedUser: null, betterAuthUser: betterAuthSession.user.email } });
       }
 
     } catch (error: any) {

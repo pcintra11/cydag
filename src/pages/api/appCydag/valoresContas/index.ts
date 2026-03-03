@@ -63,8 +63,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       if (loggedUserReq == null) throw new ErrorPlus('Usuário não está logado.');
       await CheckBlockAsync(loggedUserReq);
 
-      //@!!!!!!!!!!26
-      //CheckApiAuthorized(apiSelf, await UserModel.findOne({ email: loggedUserReq?.email }).lean(), loggedUserReq?.email);
       const userDb = await UserModel.findOne({ email: loggedUserReq?.email }).lean() as UserMd;
       CheckApiAuthorized(apiSelf, userDb, loggedUserReq?.email);
 

@@ -164,16 +164,16 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
           }
           else {
             try {
-              console.log('email não existe em betterAuth', parm.email);
+              //console.log('email não existe em betterAuth', parm.email);
               const signUpEmailResp = await auth.api.signUpEmail({
                 body: {
                   email: parm.email,
-                  password: parmPsw,
+                  password: parmPsw, // a senha informada será setada no signUp !
                   name: userDb.nome || parm.email,
                 },
                 headers: new Headers(req.headers as any),
               });
-              console.log('signUpEmail', signUpEmailResp);
+              //console.log('signUpEmail', signUpEmailResp);
             }
             catch (error: any) {
               throw new ErrorPlus('Erro na criação do usuário');

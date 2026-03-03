@@ -1,3 +1,5 @@
+import { isAmbDev } from "../app_base/envs";
+import { SendEmailLinkResetPswBetterAuth } from "../appCydag/emailMessages";
 import { UserMd, UserModel } from "../appCydag/models";
 import { CategMsgSystem } from "../libCommon/logSystemMsg_cliSvr";
 import { DateAdd } from "../libCommon/util";
@@ -11,12 +13,12 @@ export const SendPasswordResetHub = async (email: string, url: string, token: st
     try {
       const userDb = await UserModel.findOne({ email }).lean() as UserMd;
       if (userDb != null) {
-        //const expireIn = DateAdd(new Date(), { seconds: resetPasswordTokenExpiresInSeconds });
+        const expireIn = DateAdd(new Date(), { seconds: resetPasswordTokenExpiresInSeconds });
         console.log('url reset psw', url); //@!!!!!!!!26
-        // if (isAmbDev())
-        console.log('email para reset de psw não enviado ****', url); // é apenas SSO!
-        // else
-        // await SendEmailLinkResetPswBetterAuth(null, userDb._id, email, userDb.nome, url, expireIn);
+        if (isAmbDev())
+          console.log('email para reset de psw não enviado em DEV ****', url);
+        else
+          await SendEmailLinkResetPswBetterAuth(userDb._id, email, userDb.nome, url, expireIn);
       }
     } catch (error: any) {
       await SystemMsgSvrASync(CategMsgSystem.error, `${funcName}-throw 1`, error.message, null, { email, url, token });

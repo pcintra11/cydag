@@ -19,6 +19,7 @@ const apis = {
     const apiReturn = await CallApiCliASync<any>(apisApp.setLoggedUserServer.apiPath);
     return {
       loggedUser: LoggedUser.deserialize(apiReturn.value.loggedUser),
+      betterAuthUser: apiReturn.value.betterAuthUser,
     };
   },
 };
@@ -37,8 +38,8 @@ export default function PosLoginSSO() {
     mount = true;
     (async () => {
       try {
-        const { loggedUser } = await apis.setLoggedUserServer();
-        console.log('usuário logado via MS ==>', loggedUser.emailSigned);
+        const { loggedUser, betterAuthUser } = await apis.setLoggedUserServer();
+        console.log('Usuário betterAuth', betterAuthUser, ', considerado para o Cydag', loggedUser.emailSigned); //@!!!!!!26
         setUser(loggedUser, pageSelf.pagePath);
         router.push({ pathname: pagesApp.home.pagePath });
       } catch (error: any) {
