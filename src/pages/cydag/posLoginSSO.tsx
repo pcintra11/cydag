@@ -10,6 +10,7 @@ import { useLoggedUser } from '../../appCydag/useLoggedUser';
 
 import { ErrorPlus, ObjUpdAllProps } from '../../libCommon/util';
 import { AbortProc, LogErrorUnmanaged, Tx } from '../../components';
+import { isAmbPrd } from '../../app_base/envs';
 
 let mount; let mainStatesCache;
 const pageSelf = pagesApp.posLoginSSO;
@@ -39,7 +40,8 @@ export default function PosLoginSSO() {
     (async () => {
       try {
         const { loggedUser, betterAuthUser } = await apis.setLoggedUserServer();
-        console.log('Usuário betterAuth', betterAuthUser, ', considerado para o Cydag', loggedUser.emailSigned); //@!!!!!!26
+        if (!isAmbPrd()) //@!!!!!26
+          console.log('Usuário betterAuth', betterAuthUser, ', considerado para o Cydag', loggedUser.emailSigned);
         setUser(loggedUser, pageSelf.pagePath);
         router.push({ pathname: pagesApp.home.pagePath });
       } catch (error: any) {

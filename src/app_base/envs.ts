@@ -205,7 +205,7 @@ class DeployConfig {
   app_url?: string; // com protocol e porta
   api_url?: string;
   controlled_access?: boolean;
-  mode_auth?: string;
+  mode_auth?: string | null;
   static new() { return new DeployConfig(); }
   static fill(values: DeployConfig) { return CutUndef(FillClassProps(DeployConfig.new(), values)); }
 }
@@ -232,7 +232,7 @@ export function EnvDeployConfig() {
     app_url: valueAux.app_url.trim(),
     api_url: valueAux.api_url.trim(),
     controlled_access: valueAux.controlled_access || false,
-    mode_auth: valueAux.mode_auth,
+    mode_auth: valueAux.mode_auth || null,
   });
   if (value.domain == '')
     value.domain = undefined;

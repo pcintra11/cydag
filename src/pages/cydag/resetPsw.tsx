@@ -6,6 +6,10 @@ import { Box, Stack } from '@mui/material';
 //import { chgUserAndRouteContext } from '../_appResources';
 
 import { ErrorPlus, IsErrorManaged, ObjUpdAllProps, UrlForPage } from '../../libCommon/util';
+import { CategMsgSystem } from '../../libCommon/logSystemMsg_cliSvr';
+
+import { SystemMsgCli } from '../../libClient/systemMsgCli';
+import { authClient } from '../../libClient/betterAuth';
 
 import { FakeLink } from '../../components';
 import { Btn, BtnLine, WaitingObs } from '../../components';
@@ -17,8 +21,7 @@ import { FrmDefaultValues, NormalizePropsString, useFrm } from '../../hooks/useM
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
 //import { UserEmailLinkASync, UserResetPswASync } from '../../appCydag/userResourcesCli';
 import { pagesApp } from '../../appCydag/endPoints';
-import { resetPswValidations, UserLinkType } from '../api/appCydag/user/types';
-import { authClient } from '../../libClient/betterAuth';
+import { resetPswValidations } from '../api/appCydag/user/types';
 
 enum Phase {
   initiating = 'initiating',
@@ -44,7 +47,14 @@ const apis = {
       newPassword: psw,
       token,
     });
-    if (data == null) throw new ErrorPlus('Erro no reset - Use o último email enviado e apenas por uma vez');
+    if (error != null) {
+      if (error.code === 'PASSWORD_TOO_SHORT') throw new ErrorPlus('Senha muito curta');
+      if (error.code === 'PASSWORD_TOO_LONG') throw new ErrorPlus('Senha muito longa');
+      if (error.code === 'INVALID_TOKEN') throw new ErrorPlus('Use o último email enviado e apenas por uma vez');
+      SystemMsgCli(CategMsgSystem.alert, 'authClient.resetPassword', `código de erro não previsto: ${error.code}`, { token, error });
+      throw new ErrorPlus('Houve um erro no reset da senha');
+    }
+    // data = { status: true }
   },
 }
 export default function PageResetPsw() {

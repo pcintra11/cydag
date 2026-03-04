@@ -26,9 +26,10 @@ export const LoggedUserReqASync = async (req: NextApiRequest, res: NextApiRespon
   //if (acceptConflict) return { loggedUser, betterAuthSession };
   if (betterAuthSession == null) return null;
   if (betterAuthSession != null && loggedUser != null) {
-    if (loggedUser.emailSigned != betterAuthSession.user.email)
-      console.log('betterAuthSession.user.email', betterAuthSession.user.email, 'loggedUser.accountSigned', loggedUser.emailSigned); //@!!!!!!!26
+    if (loggedUser.emailSigned != betterAuthSession.user.email) {
+      console.log('betterAuthSession.user.email', betterAuthSession.user.email, 'loggedUser.accountSigned', loggedUser.emailSigned);
       loggedUser = null;
+    }
   }
   return loggedUser;
 };

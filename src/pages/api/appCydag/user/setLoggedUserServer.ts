@@ -41,15 +41,14 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       if (betterAuthSession != null) {
         let email = betterAuthSession.user.email;
 
-        //@!!!!!!!26
-        if (email === 'paulocintra@cyrela.onmicrosoft.com') { 
-          email = 'paulocintra@cyrela.com.br';
-          console.log('email retornado no BetterAuth "paulocintra@cyrela.onmicrosoft.com" foi trocado para "paulocintra@cyrela.com.br"');
-        }
-        if (email === 'bruna.aquino@cyrela.onmicrosoft.com') {
-          email = 'bruna.aquino@cyrela.com.br';
-          console.log('email retornado no BetterAuth "bruna.aquino@cyrela.onmicrosoft.com" foi trocado para "bruna.aquino@cyrela.com.br"');
-        }
+        // if (email === 'paulocintra@cyrela.onmicrosoft.com') { 
+        //   email = 'paulocintra@cyrela.com.br';
+        //   console.log('email retornado no BetterAuth "paulocintra@cyrela.onmicrosoft.com" foi trocado para "paulocintra@cyrela.com.br"');
+        // }
+        // if (email === 'bruna.aquino@cyrela.onmicrosoft.com') {
+        //   email = 'bruna.aquino@cyrela.com.br';
+        //   console.log('email retornado no BetterAuth "bruna.aquino@cyrela.onmicrosoft.com" foi trocado para "bruna.aquino@cyrela.com.br"');
+        // }
 
         const userDb = await UserModel.findOne({ email }).lean() as UserMd;
         if (userDb == null) throw new ErrorPlus(`E-mail '${email}' não cadastrado para o Cydag`);

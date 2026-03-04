@@ -35,7 +35,7 @@
     "js-file-download": "^0.4.12",
     "jwt-then": "^1.0.1",
     "mock-aws-s3": "^4.0.2",
-    "mongodb": "^6.20.0",
+    "mongodb": "^7.1.0",
     "mongodb-client-encryption": "^6.5.0",
     "mongoose": "^9.2.3",
     "next": "^16.1.6",

@@ -46,7 +46,7 @@ export const UploadStateClear = (dropZone: DropzoneState) => {
   //export const UploadStateClear = (acceptedFiles: File[], fileRejections: FileRejection[], inputRef: React.RefObject<HTMLInputElement>) => {
   //csl('removeAll...', acceptedFiles.length);
   
-  // dropZone.acceptedFiles.length = 0; //@!!!!!!!!!!26
+  // dropZone.acceptedFiles.length = 0;
   // dropZone.acceptedFiles.splice(0, dropZone.acceptedFiles.length);
   // dropZone.fileRejections.length = 0;
   // dropZone.fileRejections.splice(0, dropZone.acceptedFiles.length);

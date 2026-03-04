@@ -42,7 +42,7 @@ export default function PageIndex() {
           {loggedUser == null
             ? <BtnLine left>
               <Btn onClick={() => apis.signInSocial('microsoft')}>Entrar com login de rede</Btn>
-              {/* @!!!!!!!!!!26 */}
+              {/* !!!!!26 */}
               {!isAmbPrd() &&
                 <Btn onClick={() => router.push(pagesApp.signIn.pagePath)}>Entrar com email</Btn>
               }

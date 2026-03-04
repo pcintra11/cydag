@@ -20,7 +20,7 @@ import { LoggedUserBase } from '../../app_base/loggedUserBase';
 import { pagesSuporte } from '../../app_suporte/endPoints';
 
 import { useLoggedUser } from '../../appCydag/useLoggedUser';
-import { GetLoggedUserFromHttpCookieASync } from '../../appCydag/getLoggedUserFromHttpCookieASync';
+import { GetLoggedUserServer } from '../../appCydag/getLoggedUserFromHttpCookieASync';
 import { LoggedUser } from '../../appCydag/loggedUser';
 
 //import { useLoggedUser } from '../../../hooks/useLoggedUser';
@@ -103,7 +103,7 @@ export default function PageInspect(props: IPageProps) { //
           dbgTest();
           getIp('v4');
           getIp('v6');
-          const loggedUserCookieHttp = await GetLoggedUserFromHttpCookieASync('inspect');
+          const loggedUserCookieHttp = await GetLoggedUserServer('inspect');
           setMainStatesCache({ preparing: 'ready', loggedUserCookieHttp });
         }
       } catch (error) {

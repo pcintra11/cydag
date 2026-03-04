@@ -11,7 +11,7 @@ import { useGlobalState } from '../hooks/useGlobalState';
 
 import { LoggedUser } from './loggedUser';
 
-import { GetLoggedUserFromHttpCookieASync } from './getLoggedUserFromHttpCookieASync';
+import { GetLoggedUserServer } from './getLoggedUserFromHttpCookieASync';
 // import { UserSignInASync } from './userResourcesCli';
 // import { pswSignInAzure } from '../pages/api/appCydag/user/types';
 
@@ -75,11 +75,11 @@ export function useLoggedUser(parm: IParm = {}) {
     // if (OnServer()) // causa warning no client que a pagna do server e client são diferentes para isLoadingUser !
     //   return { loggedUser, isLoadingUser }; // , ...userFunctions
     if (globalUser == null) {
-      if (EnvDeployConfig().mode_auth == 'azure')
-        //globalUser = new GlobalState({ loadingStateWaitExternal: true, id: 'loggedUser', debug: false });
-        globalUser = new GlobalState({ id: 'loggedUser', debug: false });
-      else
-        globalUser = new GlobalState({ defaultValueAsyncFunction: () => GetLoggedUserFromHttpCookieASync(`useLoggedUser-${id}`), id: 'loggedUser', debug: false });
+      // if (EnvDeployConfig().mode_auth == 'azure')
+      //   //globalUser = new GlobalState({ loadingStateWaitExternal: true, id: 'loggedUser', debug: false });
+      //   globalUser = new GlobalState({ id: 'loggedUser', debug: false });
+      // else
+      globalUser = new GlobalState({ defaultValueAsyncFunction: () => GetLoggedUserServer(`useLoggedUser-${id}`), id: 'loggedUser', debug: false });
     }
 
     // o login NÂO SERÀ MAIS feito por aqui, apenas na pagina signInAzure

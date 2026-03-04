@@ -68,8 +68,8 @@ export const auth = betterAuth({
     enabled: true,
     disableSignUp: false,
     requireEmailVerification: false, // eu já faço isso
-    minPasswordLength: 6,
-    maxPasswordLength: 128,
+    minPasswordLength: 3,
+    maxPasswordLength: 20,
     autoSignIn: true,
     sendResetPassword: async ({ user, url, token }, request) => {
       // console.log('sendResetPassword', { user, url, token });

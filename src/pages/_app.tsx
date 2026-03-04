@@ -353,7 +353,7 @@ export default function _app({ Component, pageProps }: AppProps) {
 
   const loginAndRoute = () => {
     router.push({
-      pathname: pagesHub.signIn.pagePath,
+      pathname: pagesHub.index.pagePath,
       //query: { pageNeedAuthentication: pageDef.pagePath, ...router.query }
     });
   };
