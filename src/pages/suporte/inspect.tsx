@@ -1,11 +1,13 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import publicIp from 'public-ip';
 import { GetServerSidePropsResult } from 'next';
 import { useRouter } from 'next/router';
 import { isBrowser, isDesktop, isMobile, isTablet, isAndroid, isIOS, osVersion, osName, getUA, deviceType, isChrome, isFirefox } from 'react-device-detect';
 
-import dynamic from 'next/dynamic';
-const ReactJson = dynamic(() => import('react-json-view'), { ssr: false });
+// import dynamic from 'next/dynamic';
+// const ReactJson = dynamic(() => import('react-json-view'), { ssr: false });
+import { JsonView, collapseAllNested, defaultStyles } from 'react-json-view-lite';
+import 'react-json-view-lite/dist/index.css';
 
 import Box from '@mui/material/Box'; //@!!!!!!!
 import Stack from '@mui/material/Stack';
@@ -32,7 +34,7 @@ interface IPageProps {
 }
 
 // @@@@! por que não habilita o menu 'user'?
-class MainStates {
+class AllStates {
   forcePageRestart?: any;
   preparing?: 'initiating' | 'ready';
   error?: Error;
@@ -40,7 +42,7 @@ class MainStates {
   ipv6?: string;
   loggedUserCookieHttp?: LoggedUser;
   static new(init?: boolean) {
-    const obj = new MainStates();
+    const obj = new AllStates();
     if (init) {
       obj.forcePageRestart = new Object();
       obj.preparing = 'initiating';
@@ -48,11 +50,18 @@ class MainStates {
     return obj;
   }
 }
-let mount = false; const mainStatesCache = MainStates.new();
+let mount = false; const allStatesCache = AllStates.new();
+// const allStatesCache = new AllStates();
+// let mount = false;
+
 const pageSelf = pagesSuporte.inspect;
 export default function PageInspect(props: IPageProps) { // 
-  const [mainStates, setMainStates] = React.useState(MainStates.new());
-  FillClassProps(mainStatesCache, mainStates); const setMainStatesCache = (newValues: MainStates) => { if (!mount) return; FillClassProps(mainStatesCache, newValues); setMainStates({ ...mainStatesCache }); };
+  // const [mainStates, _setAllStates] = React.useState(AllStates.new());
+  // FillClassProps(allStatesCache, mainStates); const setAllStates = (newValues: AllStates) => { if (!mount) return; FillClassProps(allStatesCache, newValues); _setAllStates({ ...allStatesCache }); };
+  const [_, _setAllStates] = useState(new AllStates());
+  const setAllStates = (newValues: Partial<AllStates>) => { if (!mount) return; FillClassProps(allStatesCache, newValues); _setAllStates({ ...allStatesCache }); };
+
+  const [reactDevDetect, setReactDevDetect] = useState<any>({});
 
   const router = useRouter();
   const { loggedUser, isLoadingUser } = useLoggedUser({ id: 'inspect' });
@@ -83,49 +92,49 @@ export default function PageInspect(props: IPageProps) { //
     //dbg(3, 'page', `setting ${ipType}: ${ip}`);
     if (mount) {
       if (ipType === 'v4')
-        setMainStatesCache({ ipv4: ip });
+        setAllStates({ ipv4: ip });
       else if (ipType === 'v6')
-        setMainStatesCache({ ipv6: ip });
+        setAllStates({ ipv6: ip });
     }
   });
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!router.isReady) return;
     mount = true;
-    setMainStatesCache(MainStates.new(true));
+    setAllStates(AllStates.new(true));
     return () => { mount = false; };
   }, [router?.asPath, router.isReady]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     (async () => {
       try {
-        if (mainStates.preparing === 'initiating') {
+        if (allStatesCache.preparing === 'initiating') {
           dbgTest();
           getIp('v4');
           getIp('v6');
           const loggedUserCookieHttp = await GetLoggedUserServer('inspect');
-          setMainStatesCache({ preparing: 'ready', loggedUserCookieHttp });
+          setAllStates({ preparing: 'ready', loggedUserCookieHttp });
+          const reactDevDetect = { isBrowser, isDesktop, isMobile, isTablet, isAndroid, isIOS, osVersion, osName, getUA, deviceType, isChrome, isFirefox };
+          setReactDevDetect(reactDevDetect);
         }
       } catch (error) {
         LogErrorUnmanaged(error, `${pageSelf.pagePath}-init`);
-        setMainStatesCache({ error });
+        setAllStates({ error });
       }
     })();
-  }, [mainStates.forcePageRestart, mainStates.preparing]);
-  if (mainStates.error != null) return <AbortProc error={mainStates.error} tela={pageSelf.pagePath} />;
-  //if (mainStates.preparing != 'ready') return (<WaitingObs />);
+  }, [allStatesCache.forcePageRestart, allStatesCache.preparing]);
+  if (allStatesCache.error != null) return <AbortProc error={allStatesCache.error} tela={pageSelf.pagePath} />;
+  //if (allStatesCache.preparing != 'ready') return (<WaitingObs />);
 
-  const reactDevDetect = { isBrowser, isDesktop, isMobile, isTablet, isAndroid, isIOS, osVersion, osName, getUA, deviceType, isChrome, isFirefox };
   csd({ reactDevDetect });
 
   try {
     return (
-      <Stack spacing={1} {...fullHeightScroll}>
-        <HorizontalRule />
+      <Stack spacing={2} {...fullHeightScroll}>
 
         <Box>
-          <Tx>ipv4: {mainStates.ipv4}</Tx>
-          <Tx>ipv6: {mainStates.ipv6}</Tx>
+          <Tx>ipv4: {allStatesCache.ipv4}</Tx>
+          <Tx>ipv6: {allStatesCache.ipv6}</Tx>
         </Box>
 
         {/* <Box mt={3}>
@@ -135,33 +144,50 @@ export default function PageInspect(props: IPageProps) { //
           </Box>
         </Box> */}
 
-        <ReactJson src={reactDevDetect} name='reactDevDetect' collapsed={true} collapseStringsAfterLength={30} />
+        <Box>
+          <Tx>reactDevDetect</Tx>
+          <JsonView data={reactDevDetect} style={defaultStyles} shouldExpandNode={() => collapseAllNested(99)} clickToExpandNode />
+        </Box>
 
-        {isLoadingUser
-          ? <Tx>loadingUser</Tx>
-          : <>
-            {loggedUser != null
-              ? <ReactJson src={loggedUser} name='loggedUser' collapsed={true} collapseStringsAfterLength={30} />
-              : <Tx>loggedUser null</Tx>
-            }
-          </>
-        }
+        <Box>
+          {isLoadingUser
+            ? <Tx>loadingUser</Tx>
+            : <>
+              <Tx>loggedUser</Tx>
+              {loggedUser != null
+                ? <JsonView data={loggedUser} style={defaultStyles} shouldExpandNode={() => collapseAllNested(99)} clickToExpandNode />
+                : <Tx>null</Tx>
+              }
+            </>
+          }
+        </Box>
 
-        {mainStates.preparing != 'ready'
-          ? <Tx>preparing: {mainStates.preparing}</Tx>
-          : <>
-            {mainStates.loggedUserCookieHttp != null
-              ? <ReactJson src={mainStates.loggedUserCookieHttp} name='loggedUserCookieHttp' collapsed={true} collapseStringsAfterLength={30} />
-              : <Tx>loggedUserCookieHttp null</Tx>
-            }
-          </>
-        }
+        <Box>
+          {allStatesCache.preparing != 'ready'
+            ? <Tx>preparing: {allStatesCache.preparing}</Tx>
+            : <>
+              <Tx>loggedUserCookieHttp:</Tx>
+              {allStatesCache.loggedUserCookieHttp != null
+                ? <JsonView data={allStatesCache.loggedUserCookieHttp} style={defaultStyles} shouldExpandNode={() => collapseAllNested(99)} clickToExpandNode />
+                : <Tx>null</Tx>
+              }
+            </>
+          }
+        </Box>
 
-        <ReactJson src={envsClient} name='envsClient' collapsed={true} collapseStringsAfterLength={30} />
+        <Box>
+          <Tx>envsClient:</Tx>
+          <JsonView data={envsClient} style={defaultStyles} shouldExpandNode={() => collapseAllNested(99)} clickToExpandNode />
+        </Box>
 
-        {(loggedUser != null && LoggedUserBase.isDev(loggedUser)) &&
-          <ReactJson src={envsSvr} name='envsSvr' collapsed={true} collapseStringsAfterLength={30} />
-        }
+        <Box>
+          {(loggedUser != null && LoggedUserBase.isDev(loggedUser)) &&
+            <>
+              <Tx>envsSvr:</Tx>
+              <JsonView data={envsSvr} style={defaultStyles} shouldExpandNode={() => collapseAllNested(99)} clickToExpandNode />
+            </>
+          }
+        </Box>
 
         {/* <Box>
           <p>Warnings</p>

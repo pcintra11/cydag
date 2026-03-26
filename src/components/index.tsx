@@ -5,7 +5,7 @@ export * from './abortProc';
 export * from './snackBar';
 export * from './fldMyForm';
 export * from './tableGrid';
-export * from './shareIcons';
+//export * from './shareIcons';
 export * from './menus/menuFloat';
 export * from './devConfigBar';
 export * from './menus';

@@ -159,7 +159,7 @@ async function _SendMailASync(sendEmailParams: SendEmailParams, ctrlContext: Ctr
     // });
 
     //const to = sendEmailParams.to === epecialEmailSupport ? (emailConfigUse.to || emailConfigUse.auth.user) : sendEmailParams.to;
-    const to = sendEmailParams.to === sysEmailSupport ? configApp.support.email : sendEmailParams.to;
+    const to = sendEmailParams.to === sysEmailSupport ? configApp.supportSys.email : sendEmailParams.to;
 
     const recipients: Mail.Options = {
       // //from: emailConfigUse.from || emailConfigUse.auth.user,  // o address do 'from' é ignorado (sempre usa o do auth.user, mas é necessário informar!)

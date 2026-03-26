@@ -3,9 +3,6 @@ import { useRouter } from 'next/router';
 import * as Papa from 'papaparse';
 import { FileRejection, useDropzone } from 'react-dropzone';
 
-//import dynamic from 'next/dynamic';
-// const ReactJson = dynamic(() => import('react-json-view'), { ssr: false });
-
 import { Box, Modal, Stack, useTheme } from '@mui/material';
 
 import { ErrorPlus, ForceWait, mimeTypes, ObjUpdAllProps } from '../../libCommon/util';

@@ -10,7 +10,7 @@ import { FakeLink, Tx } from './ui';
 
 // apresenta um link para envio de email para o suporte, com as informações do problema
 export function LinkHelpEmail({ tela, loggedUserBase, info, errorMsgHour }: { tela?: string, loggedUserBase?: LoggedUserBase, info?: string, errorMsgHour?: { message: string, hour: Date } }) {
-  if (configApp.support.email == null)
+  if (configApp.supportApp.email == null)
     return (<></>);
   //const { loggedUser } = useLoggedUser({ id: 'LinkHelpEmail' });
 
@@ -37,7 +37,7 @@ export function LinkHelpEmail({ tela, loggedUserBase, info, errorMsgHour }: { te
   return (
     <Tx>
       {text}
-      {' '}<FakeLink onClick={() => router.push(`${AnchorHrefMailTo(configApp.support.email, subject, body)}`)}>aqui</FakeLink>
+      {' '}<FakeLink onClick={() => router.push(`${AnchorHrefMailTo(configApp.supportApp.email, subject, body)}`)}>aqui</FakeLink>
     </Tx>
     
     // <>

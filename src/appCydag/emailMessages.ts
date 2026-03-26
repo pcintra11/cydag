@@ -62,7 +62,7 @@ const bodyForLinks1 = (props: IBodyForLinks1Props) => {
           Se você não reconhece essa atividade por favor desconsidere a mensagem.
         </p>        
         <p>
-          Não responda para esse endereço. Precisando de ajuda entre em contato por este email: <a href=${AnchorHrefMailTo(configApp.support.email, subjectEmailHelp)}>${configApp.support.email}</a>
+          Não responda para esse endereço. Precisando de ajuda entre em contato por este email: <a href=${AnchorHrefMailTo(configApp.supportApp.email, subjectEmailHelp)}>${configApp.supportApp.email}</a>
         </p>       
       </div>
       ${infoAmbiente}
@@ -100,7 +100,7 @@ async function SendLinkASync(ctrlContext: CtrlContext, userId: ObjectId, email: 
   const elapsedMsApi = ctrlContext.calcExecTime.elapsedMs();
   //let resultOk = null;
   //let resultError = null;
-  const replyTo = configApp.support.email;
+  const replyTo = configApp.supportApp.email;
   // const methodAsync = false; // (new Date()).getSeconds() < 30 ? true : false;
   // dbgInfo('subject', subject, ' - método async', methodAsync);
   try {

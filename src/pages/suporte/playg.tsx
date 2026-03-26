@@ -2,8 +2,10 @@ import React from 'react';
 import { useRouter } from 'next/router';
 import * as yup from 'yup';
 
-import dynamic from 'next/dynamic';
-const ReactJson = dynamic(() => import('react-json-view'), { ssr: false });
+// import dynamic from 'next/dynamic';
+// const ReactJson = dynamic(() => import('react-json-view'), { ssr: false });
+import { JsonView, collapseAllNested, defaultStyles } from 'react-json-view-lite';
+import 'react-json-view-lite/dist/index.css';
 
 import { Box, FormControlLabel, Radio, RadioGroup, Stack } from '@mui/material';
 
@@ -585,7 +587,8 @@ export default function PagePlayg() {
                 {/* <Box>{x.id}</Box> */}
                 {x.result != undefined &&
                   //  <pre>{JSON.stringify(x, null, 2)}</pre>
-                  <ReactJson src={x} name='result' collapsed collapseStringsAfterLength={30} />
+                  // <ReactJson src={x} name='result' collapsed collapseStringsAfterLength={30} />
+                  <JsonView data={x} style={defaultStyles} shouldExpandNode={() => collapseAllNested(99)} clickToExpandNode />
                 }
                 {/* <Divider /> */}
               </Box>

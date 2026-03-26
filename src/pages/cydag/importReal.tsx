@@ -1,8 +1,10 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 
-import dynamic from 'next/dynamic';
-const ReactJson = dynamic(() => import('react-json-view'), { ssr: false });
+// import dynamic from 'next/dynamic';
+// const ReactJson = dynamic(() => import('react-json-view'), { ssr: false });
+import { JsonView, collapseAllNested, defaultStyles } from 'react-json-view-lite';
+import 'react-json-view-lite/dist/index.css';
 
 import { Stack } from '@mui/material';
 
@@ -154,8 +156,10 @@ export default function PageImportReal() {
              {(mainStates.ctrlInterfaceMd.info.msgs as string[]).map((x, index) => <Box key={index}>{x}</Box>)} */}
               <Tx>Veja abaixo os detalhes</Tx>
               <Stack spacing={1} height='100%' overflow='auto'>
-                <ReactJson src={mainStates.ctrlInterfaceMd.info} name='interfaceStatus' collapsed={false} collapseStringsAfterLength={30}
-                displayDataTypes={false} />
+
+                {/* <ReactJson src={mainStates.ctrlInterfaceMd.info} name='interfaceStatus' collapsed={false} collapseStringsAfterLength={30}
+                displayDataTypes={false} /> */}
+                <JsonView data={mainStates.ctrlInterfaceMd.info} style={defaultStyles} clickToExpandNode />
               </Stack>
             </>
           }
