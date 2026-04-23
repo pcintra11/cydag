@@ -4,13 +4,12 @@ import { useRouter } from 'next/router';
 // import dynamic from 'next/dynamic';
 // const ReactJson = dynamic(() => import('react-json-view'), { ssr: false });
 import { JsonView, collapseAllNested, defaultStyles } from 'react-json-view-lite';
-import 'react-json-view-lite/dist/index.css';
+//import 'react-json-view-lite/dist/index.css';
 
 import { Stack } from '@mui/material';
 
 import { DateDisp, ErrorPlus, ForceWait, ObjUpdAllProps } from '../../libCommon/util';
 import { CalcExecTime } from '../../libCommon/calcExectime';
-import { csd } from '../../libCommon/dbg';
 import { PageDef } from '../../libCommon/endPoints';
 import { CallApiCliASync } from '../../fetcher/fetcherCli';
 

@@ -1402,7 +1402,7 @@ export class CtrlInterface {
 }
 export class ValoresRealizadosInterfaceSap {
   _id?: ObjectId;
-  ano?: string;
+  ano?: number;
   centroCusto?: string;
   classeCusto?: string;
   m01?: number;

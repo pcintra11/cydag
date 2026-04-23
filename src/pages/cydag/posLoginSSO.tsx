@@ -40,7 +40,7 @@ export default function PosLoginSSO() {
     (async () => {
       try {
         const { loggedUser, betterAuthUser } = await apis.setLoggedUserServer();
-        if (!isAmbPrd()) //@!!!!!26
+        if (!isAmbPrd()) //@!!!!!!!!!-SSO
           console.log('Usuário betterAuth', betterAuthUser, ', considerado para o Cydag', loggedUser.emailSigned);
         setUser(loggedUser, pageSelf.pagePath);
         router.push({ pathname: pagesApp.home.pagePath });

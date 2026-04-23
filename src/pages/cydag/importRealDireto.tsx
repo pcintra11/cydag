@@ -68,7 +68,7 @@ export default function PageImportRealDireto() {
     error?: Error | ErrorPlus; phase?: Phase;
     importInProgress?: boolean;
     info?: {
-      ano: number,
+      ano: string[],
       registrosSap: number,
       inseridos: number,
       ignorados: number,
@@ -247,7 +247,7 @@ export default function PageImportRealDireto() {
                 <VisualBlock>
                   <Stack spacing={1}>
                     <Tx>Carga concluída, veja abaixo os detalhes</Tx>
-                    <Tx>Ano: {mainStates.info.ano}</Tx>
+                    <Tx>Ano: {mainStates.info.ano.join(', ')}</Tx>
                     <Tx>Registros sap: {mainStates.info.registrosSap}</Tx>
                     <Tx>Ignorados: {mainStates.info.ignorados}</Tx>
                     <Tx>Erros: {mainStates.info.erros}</Tx>

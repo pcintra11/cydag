@@ -326,7 +326,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             if (valsInterface.length !== 0) {
               const ano = valsInterface[0].ano;
               info.ano = ano;
-              const centroCustoConfigArray = await ProcessoOrcamentarioCentroCustoModel.find({ ano }, { _id: 0, centroCusto: 1 }).lean().sort({ centroCusto: 1 });
+              const centroCustoConfigArray = await ProcessoOrcamentarioCentroCustoModel.find({ ano: ano.toString() }, { _id: 0, centroCusto: 1 }).lean().sort({ centroCusto: 1 });
               const classeCustoArray = await ClasseCustoModel.find({}, { _id: 0, classeCusto: 1 }).lean().sort({ classeCusto: 1 });
               const centroCustoNotFoundArray = [];
               const classeCustoNotFoundArray = [];
@@ -364,7 +364,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
               }
               if (valsOk.length !== 0) {
                 //if (errosImport.length == 0) {
-                const resultDel = await ValoresRealizadosModel.deleteMany(ValoresRealizados.fill({ ano }));
+                const resultDel = await ValoresRealizadosModel.deleteMany(ValoresRealizados.fill({ ano: ano.toString() }));
                 //resultProc.push(`Valores anteriores removidos: ${resultDel.deletedCount}`);
                 const resultIncl = await ValoresRealizadosModel.insertMany(valsOk.map((x) => ({
                   ..._.pick(x, ['ano', 'centroCusto', 'classeCusto']),
@@ -382,7 +382,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             info.registrosSap = valsInterface.length;
             info.inseridos = inseridos;
             info.errosImport = errosImport;
-            await ValoresRealizadosInterfaceSapModel.deleteMany({});
+            await ValoresRealizadosInterfaceSapModel.deleteMany({}); //@!!!!!!!!!!
           }
           else if (apiReturn.state === InterfaceSapStatus.failed)
             await NotifyAdmASync('interfaceSapRealizado-carga', `dag_run_id ${ctrlInterfaceMd.dag_run_id}`, ctrlApiExec.ctrlContext, apiReturn);
@@ -397,8 +397,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
 
       else if (parm.cmd == CmdApi.importRealizadoDireto) { // busca direto na tabela de interface, sem acionar a API do datalake
 
-        const info: any = {
-          ano: 0,
+        const info = {
+          ano: [] as string[],
           registrosSap: 0,
           inseridos: 0,
           ignorados: 0, // sem notificação, são desprezíveis
@@ -413,8 +413,8 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
         {
           const valsInterface = await ValoresRealizadosInterfaceSapModel.find({}).lean().sort({ ano: 1, centroCusto: 1, classeCusto: 1 });
           if (valsInterface.length !== 0) {
-            const ano = valsInterface[0].ano;
-            info.ano = ano;
+            let ano = valsInterface[0].ano.toString();
+            info.ano.push(ano);
             const centroCustoConfigArray = await ProcessoOrcamentarioCentroCustoModel.find({ ano }, { _id: 0, centroCusto: 1 }).lean().sort({ centroCusto: 1 });
             const classeCustoArray = await ClasseCustoModel.find({}, { _id: 0, classeCusto: 1 }).lean().sort({ classeCusto: 1 });
             const centroCustoDesprArray = await ValoresRealizadosInterfaceSap_CentroCustoDesprModel.find({}, { _id: 0, centroCusto: 1 }).lean().sort({ centroCusto: 1 });
@@ -425,10 +425,11 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
               const item = valsInterface[index];
               item.classeCusto = item.classeCusto.toString();
               // console.log('item', item);
-              if (item.ano != ano) {
-                info.mensagens.push(`Carga cancelada, foram encontrados dois anos nos dados vindos do SAP: ${ano} e ${item.ano}.`);
-                info.ano = 0;
-                break;
+              if (item.ano.toString() != ano) {
+                //info.mensagens.push(`Carga cancelada, foram encontrados dois anos nos dados vindos do SAP: ${ano} e ${item.ano}.`);
+                ano = item.ano.toString();
+                if (!info.ano.includes(ano)) info.ano.push(ano);
+                //break;
               }
               if (item.centroCusto != lastCentroCusto) {
                 if (BinSearchIndex(centroCustoConfigArray, item.centroCusto, 'centroCusto').found) {
@@ -478,8 +479,10 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
             info.registrosSap = valsInterface.length;
             if (valsOk.length !== 0) {
               //if (errosImport.length == 0) {
-              const resultDel = await ValoresRealizadosModel.deleteMany(ValoresRealizados.fill({ ano }));
-              //resultProc.push(`Valores anteriores removidos: ${resultDel.deletedCount}`);
+              for (const anoDelete of info.ano) {
+                const resultDel = await ValoresRealizadosModel.deleteMany(ValoresRealizados.fill({ ano: anoDelete }));
+                //console.log(`Valores anteriores removidos ano ${anoDelete}: ${resultDel.deletedCount}`);
+              }
               const resultIncl = await ValoresRealizadosModel.insertMany(valsOk.map((x) => ({
                 ..._.pick(x, ['ano', 'centroCusto', 'classeCusto']),
                 valMeses: [
@@ -951,10 +954,10 @@ export const ValoresPlanejadosCalc = async (processoOrcamentario: ProcessoOrcame
 
       const showCalcFunc = showCalcGlobal;
 
-      //@!!!!!!!!!!!!!!!26 dissidio  - ajustar validade no db premissas!!!
-      //const premissa_dissidio_vals = getValPremissa(premissaCod.dissidio, premissas, valoresPremissas, processoOrcamentarioCentroCusto);
-      const premissaDissidioUse = processoOrcamentario.ano >= '2026' ? premissaCod.dissidioTpClb : premissaCod.dissidio;
-      const premissa_dissidio_vals = getValPremissa(premissaDissidioUse, premissas, valoresPremissas, processoOrcamentarioCentroCusto);
+      //@!!!!!!!!!!!!!!!-dissidio - ajustar validade no db premissas @!!!!!!26
+      const premissa_dissidio_vals = getValPremissa(premissaCod.dissidio, premissas, valoresPremissas, processoOrcamentarioCentroCusto);
+      //const premissaDissidioUse = processoOrcamentario.ano >= '2026' ? premissaCod.dissidioTpClb : premissaCod.dissidio;
+      //const premissa_dissidio_vals = getValPremissa(premissaDissidioUse, premissas, valoresPremissas, processoOrcamentarioCentroCusto);
 
       const funcionariosForCalc = FuncionariosForCalc(processoOrcamentarioCentroCusto.centroCusto, premissa_dissidio_vals, funcionarios, revisao);
       if (funcionariosForCalc.length > 0) {

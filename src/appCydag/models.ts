@@ -751,7 +751,7 @@ export const ValoresRealizadosInterfaceSapModel = (() => {
   const modelName = modelNameValoresRealizadosInterfaceSap;
   const mongoose = MongooseSlot(databaseInterfaceSap).mongoose;
   const schema = new mongoose.Schema<ValoresRealizadosInterfaceSap>({
-    ano: { type: String, required: true },
+    ano: { type: Number, required: true },
     centroCusto: { type: String, required: true },
     classeCusto: { type: String, required: true },
     m01: { type: Number, required: false },

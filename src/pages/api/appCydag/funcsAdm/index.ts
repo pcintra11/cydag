@@ -179,7 +179,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       else if (parm.cmd == CmdApi_FuncAdm.testeCodeServer) {
         const msgs = [];
         const resultIncl = await ValoresRealizadosInterfaceSapModel.create({
-          ano: '2000',
+          ano: 2000,
           centroCusto: 'cc1',
           classeCusto: 'cl1',
           m01: 123,

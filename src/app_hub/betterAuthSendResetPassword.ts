@@ -14,7 +14,7 @@ export const SendPasswordResetHub = async (email: string, url: string, token: st
       const userDb = await UserModel.findOne({ email }).lean() as UserMd;
       if (userDb != null) {
         const expireIn = DateAdd(new Date(), { seconds: resetPasswordTokenExpiresInSeconds });
-        console.log('reset psw url', url); //@!!!!!!!!!!26
+        console.log('reset psw url', url);
         if (isAmbDev())
           console.log('email para reset de psw não enviado em DEV ****', url);
         else

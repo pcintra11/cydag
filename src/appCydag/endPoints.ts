@@ -41,6 +41,8 @@ export const pagesApp = {
   processoOrcamentario: new PageDef(`${pathPages}/processoOrcamentario`, { pageTitle: 'Controle do Processo Orçamentário', onlyAuthenticated: true, roles: rolesControladoria }),
   cargaFuncionario: new PageDef(`${pathPages}/cargaFuncionario`, { pageTitle: 'Carga de Funcionários', onlyAuthenticated: true, roles: [rolesApp.cargaFunc] }),
   cargaCentroCusto: new PageDef(`${pathPages}/cargaCentroCusto`, { pageTitle: 'Carga de Centros de Custo', onlyAuthenticated: true, roles: rolesControladoria }),
+
+  // obsoleto, está em uso importRealDireto
   importReal: new PageDef(`${pathPages}/importReal`, { pageTitle: 'Importação do Realizado (por controle dagrun)', onlyAuthenticated: true, roles: rolesControladoria }),
   importRealDireto: new PageDef(`${pathPages}/importRealDireto`, { pageTitle: 'Importação do Realizado', onlyAuthenticated: true, roles: rolesControladoria }),
 
