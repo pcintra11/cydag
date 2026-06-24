@@ -5,6 +5,8 @@ import { mongodbAdapter } from 'better-auth/adapters/mongodb';
 import { EnvDeployConfig, EnvSvr, isAmbDev } from '../app_base/envs';
 import { UriDb } from '../libServer/dbMongo';
 import { SendPasswordResetHub } from '../app_hub/betterAuthSendResetPassword';
+import { cookiesSys } from '../libCommon/cookies_sys';
+import { configApp } from '../app_hub/appConfig';
 
 //#region variáveis
 const databaseUri = UriDb(); // process.env.SITE_DATABASE_APP!;
@@ -16,8 +18,8 @@ const resetPasswordTokenExpiresInSeconds = 2 * 60 * 60;
 const cookieNamePrefixHttps = isAmbDev() ? '' : '__Secure-';
 
 export const cookieBetterAuthSession = {
-  data: `${cookieNamePrefixHttps}better-auth.session_data`,
-  token: `${cookieNamePrefixHttps}better-auth.session_token`,
+  data: `${cookieNamePrefixHttps}${cookiesSys.betterAuth}.session_data`,
+  token: `${cookieNamePrefixHttps}${cookiesSys.betterAuth}.session_token`,
 }
 
 const betterAuthModelName = {
@@ -33,7 +35,7 @@ export const betterAuthExpiresInSeconds = 400 * 24 * 60 * 60;
 
 // https://www.better-auth.com/docs/reference/options
 export const auth = betterAuth({
-  appName: "Cydag",
+  appName: configApp.appName,
   secret: EnvSvr('betterAuthSecret'),
   baseURL: EnvDeployConfig().app_url,
 
@@ -49,15 +51,27 @@ export const auth = betterAuth({
     cookieCache: {
       enabled: true, // habilita o cookie 'better-auth.session_cache'
       maxAge: 1 * 60 * 60,
-      strategy: "compact", // or "jwt" or "jwe"
+      strategy: 'compact', // or 'jwt' or 'jwe'
     },
   },
   advanced: {
+    cookiePrefix: cookiesSys.betterAuth,
+    crossSubDomainCookies: {
+      enabled: true,
+    },
+    cookies: {
+      state: {
+        attributes: {
+          sameSite: 'lax', // lax e none: se o usuário iniciar no browser e tiver o app instalado vai dar erro (é o app que será acionado no retorno do google sso)
+          secure: true,
+        }
+      }
+    },
     defaultCookieAttributes: {
-      sameSite: "lax",
-      secure: !isAmbDev(),
+      sameSite: 'lax',
+      secure: true,
       httpOnly: true,
-      path: "/",
+      path: '/',
     },
   },
   rateLimit: {
@@ -85,48 +99,48 @@ export const auth = betterAuth({
     microsoft: {
       clientId: process.env.MICROSOFT_CLIENT_ID!,
       clientSecret: process.env.MICROSOFT_CLIENT_SECRET!,
-      tenantId: process.env.MICROSOFT_TENANT_ID || "common",
+      tenantId: process.env.MICROSOFT_TENANT_ID || 'common',
     },
   },
 
   // logger: {
-  //   level: "debug",
+  //   level: 'debug',
   //   log: (level, message, ...args) => console.log('betterAuth logger', { level, message, metadata: args, timestamp: new Date().toISOString() }),
   // },
 
   onAPIError: {
     throw: true,
     onError: (error, ctx) => {
-      console.error("Auth error:", error);
+      console.error('Auth error:', error);
     },
-    errorURL: "/auth/error",
+    errorURL: '/auth/error',
     customizeDefaultErrorPage: {
       colors: {
-        background: "#ffffff",
-        foreground: "#000000",
-        primary: "#0070f3",
-        primaryForeground: "#ffffff",
-        mutedForeground: "#666666",
-        border: "#e0e0e0",
-        destructive: "#ef4444",
-        titleBorder: "#0070f3",
-        titleColor: "#000000",
-        gridColor: "#f0f0f0",
-        cardBackground: "#ffffff",
-        cornerBorder: "#0070f3"
+        background: '#ffffff',
+        foreground: '#000000',
+        primary: '#0070f3',
+        primaryForeground: '#ffffff',
+        mutedForeground: '#666666',
+        border: '#e0e0e0',
+        destructive: '#ef4444',
+        titleBorder: '#0070f3',
+        titleColor: '#000000',
+        gridColor: '#f0f0f0',
+        cardBackground: '#ffffff',
+        cornerBorder: '#0070f3'
       },
       size: {
-        radiusSm: "0.25rem",
-        radiusMd: "0.5rem",
-        radiusLg: "1rem",
-        textSm: "0.875rem",
-        text2xl: "1.5rem",
-        text4xl: "2.25rem",
-        text6xl: "3.75rem"
+        radiusSm: '0.25rem',
+        radiusMd: '0.5rem',
+        radiusLg: '1rem',
+        textSm: '0.875rem',
+        text2xl: '1.5rem',
+        text4xl: '2.25rem',
+        text6xl: '3.75rem'
       },
       font: {
-        defaultFamily: "system-ui, sans-serif",
-        monoFamily: "monospace"
+        defaultFamily: 'system-ui, sans-serif',
+        monoFamily: 'monospace'
       },
       disableTitleBorder: false,
       disableCornerDecorations: false,

@@ -1,7 +1,8 @@
 export const configApp = {
-  appVersion: 'v1.6.5',
+  appVersion: 'v1.6.6',
 
-  appName: 'Cydag',
+  appName: 'Cydag' as const,
+  appCode: 'cyd' as const,
   friendlyErrorMessage: 'Ocorreu um erro inesperado',
   supportSys: { email: 'pcintra1@gmail.com', phone: '11999110101' },
   supportApp: { email: 'bruna.aquino@cyrela.com.br' },
