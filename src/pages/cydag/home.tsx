@@ -65,7 +65,7 @@ export default function PageHome() {
             </Tx>
 
             <a href={`${folderManuais}/${files.manualOrcam}`} target='_blank' rel='noreferrer'>
-              <Tx>Manual de Orçamento 2026</Tx>
+              <Tx>Manual de Orçamento 2027</Tx>
             </a>
 
             <a href={`${folderManuais}/${files.classesMateriais}`} target='_blank' rel='noreferrer'>
@@ -73,7 +73,7 @@ export default function PageHome() {
             </a>
 
             <a href={`${folderManuais}/${files.formProjetos}`} target='_blank' rel='noreferrer'>
-              <Tx>Formulário para preenchimento (Projetos) 2026</Tx>
+              <Tx>Formulário para preenchimento (Projetos) 2027</Tx>
             </a>
 
             {/* <a href={`${folderManuais}/${files.manualConsulta}`} target='_blank' rel='noreferrer'>

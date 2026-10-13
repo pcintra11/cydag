@@ -1,5 +1,5 @@
 export const configApp = {
-  appVersion: 'v1.6.7',
+  appVersion: 'v1.6.8',
 
   appName: 'Cydag' as const,
   appCode: 'cyd' as const,
