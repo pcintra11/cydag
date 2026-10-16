@@ -64,7 +64,7 @@ export const pagesApp = {
   valoresTransfer: new PageDef(`${pathPages}/valoresTransfer`, { pageTitle: 'Valores de Viagens', txtDynamicMenu: 'Viagens', onlyAuthenticated: true, roles: rolesControladoria }),
 
   index: new PageDef('/', { pageTitle: 'Cydag' }),
-  home: new PageDef(`${pathPages}/home`, { pageTitle: 'Orientações para Uso do Sistema', txtDynamicMenu: 'Orientações', onlyAuthenticated: true }),
+  home: new PageDef(`${pathPages}/home`, { txtDynamicMenu: 'Orientações', onlyAuthenticated: true }),
 
   //logRedir: new PageDef(`${pathPages}/logRedir`),
   signIn: new PageDef(`${pathPages}/signIn`, { pageTitle: 'Login' }),
