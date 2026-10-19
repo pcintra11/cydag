@@ -10,7 +10,7 @@ import { useLoggedUser } from '../../appCydag/useLoggedUser';
 import { Env, isAmbPrd } from '../../app_base/envs';
 import { configApp } from '../../app_hub/appConfig';
 
-import { HomeContent, SupportMaterial } from './homeContent';
+import { HomeContent, SupportMaterial } from '../../appCydag/homeContent';
 
 const pageSelf = pagesApp.home;
 export default function PageHome() {

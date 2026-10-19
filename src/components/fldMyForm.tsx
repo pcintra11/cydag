@@ -1,6 +1,6 @@
 import React from 'react';
 import { Controller } from 'react-hook-form';
-import { UseFormReturn } from 'react-hook-form/dist/types';
+import { UseFormReturn } from 'react-hook-form';
 
 // import InputLabel_mui from '@mui/material/InputLabel';
 import { Typography as Typography_mui, useTheme } from '@mui/material';

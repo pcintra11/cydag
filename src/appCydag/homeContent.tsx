@@ -3,7 +3,7 @@ import {
   Box, CssBaseline, Link, Paper, Stack, SvgIcon,
   Typography, createTheme, ThemeProvider
 } from '@mui/material';
-import BannerHome from '../../components/bannerHome';
+import BannerHome from '../components/bannerHome';
 
 const theme = createTheme({
   palette: {
